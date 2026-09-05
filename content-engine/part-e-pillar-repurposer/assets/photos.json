@@ -1,0 +1,65 @@
+{
+  "photos": [
+    {
+      "id": "consult-room-neutral",
+      "file": "consult-room-neutral.jpg",
+      "description": "The consult room where treatment plans get talked through. Neutral light, two chairs, a screen on the wall.",
+      "tags": [
+        "consult",
+        "conversation",
+        "neutral"
+      ],
+      "depicts_patient": false,
+      "subject_ref": "",
+      "consent": "not_applicable",
+      "orientation": "portrait",
+      "bright_area": "center",
+      "size": [
+        1600,
+        2000
+      ],
+      "_note": "SYNTHETIC TEST IMAGE - replace with a real photo of the practice"
+    },
+    {
+      "id": "operatory-window-light",
+      "file": "operatory-window-light.jpg",
+      "description": "The treatment room in daylight, chair empty and made up, window light falling across the left side. Calm and clinical without being cold.",
+      "tags": [
+        "operatory",
+        "daylight",
+        "empty chair"
+      ],
+      "depicts_patient": false,
+      "subject_ref": "",
+      "consent": "not_applicable",
+      "orientation": "portrait",
+      "bright_area": "top",
+      "size": [
+        1600,
+        2000
+      ],
+      "_note": "SYNTHETIC TEST IMAGE - replace with a real photo of the practice"
+    },
+    {
+      "id": "reception-warm-evening",
+      "file": "reception-warm-evening.jpg",
+      "description": "Front desk at the end of the day, warm lamp light, nobody waiting. Reads as welcoming and unhurried.",
+      "tags": [
+        "reception",
+        "warm",
+        "evening"
+      ],
+      "depicts_patient": false,
+      "subject_ref": "",
+      "consent": "not_applicable",
+      "orientation": "portrait",
+      "bright_area": "bottom",
+      "size": [
+        1600,
+        2000
+      ],
+      "_note": "SYNTHETIC TEST IMAGE - replace with a real photo of the practice"
+    }
+  ],
+  "_note": "Fill in 'description' for every photo - it is what the picker reads. Set depicts_patient/subject_ref/consent for anything showing a patient; publishing is blocked unless a matching release is in the consent register."
+}

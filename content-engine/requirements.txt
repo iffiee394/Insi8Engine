@@ -1,0 +1,24 @@
+# Chairside Content Engine
+# Everything here is already installed in the parent project's .venv.
+# Listed so the engine can stand alone if you move it out.
+
+# --- core (required) ---
+python-dotenv>=1.0.0      # reads the project .env
+Jinja2>=3.1.0             # carousel templates
+
+# --- intelligence (at least one provider required) ---
+google-genai>=2.0.0       # Gemini  - primary, free daily tier
+anthropic>=0.40.0         # Claude  - fallback + clinical claim extraction
+groq>=1.0.0               # Whisper - transcription
+
+# --- research (optional; without it Part C runs in degraded mode) ---
+tavily-python>=0.7.0
+
+# --- Part D sources (optional) ---
+yt-dlp>=2026.1.1                 # free scraping + audio download
+youtube-transcript-api>=1.0.0    # free YouTube transcripts
+requests>=2.31.0                 # Apify / Blotato adapters
+
+# --- external binaries, NOT pip-installable ---
+# Chrome or Edge : carousel rendering (already on this machine)
+# ffmpeg + ffprobe: reel post-production (already on this machine, v8.1.2)

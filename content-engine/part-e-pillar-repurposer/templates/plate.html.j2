@@ -1,0 +1,138 @@
+{# PLATE — the interior slides.
+
+   Reference video 1 arrives at exactly this: after generating a photographic
+   cover, it renders the information slides as plain HTML because paying an
+   image model for typography is wasteful. Here that is the default, and it is
+   free rather than merely cheaper.
+
+   Carries an optional pull-quote, because pillar content has real sentences the
+   speaker actually said and those are the most credible thing on the slide.
+#}
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family={{ brand.display_font|default('Archivo')|replace(' ','+') }}:wght@600;700;800&family={{ brand.body_font|default('Source Serif 4')|replace(' ','+') }}:opsz,wght@8..60,400;8..60,600&family={{ brand.mono_font|default('IBM Plex Mono')|replace(' ','+') }}:wght@500;600&display=swap">
+<style>
+  :root{
+    --accent:{{ brand.accent|default('#0E6A70') }};
+    --accent-deep:{{ brand.accent_deep|default('#0A4E53') }};
+    --accent-wash:{{ brand.accent_wash|default('#E4F0F0') }};
+    --ink:{{ brand.ink|default('#15202A') }};
+    --ink-muted:{{ brand.ink_muted|default('#546674') }};
+    --paper:{{ brand.paper|default('#FBFCFC') }};
+    --paper-alt:{{ brand.paper_alt|default('#EEF3F4') }};
+    --rule:{{ brand.rule|default('#D9E2E6') }};
+    --highlight:{{ brand.highlight|default('#C97B4A') }};
+    --display:"{{ brand.display_font|default('Archivo') }}","Helvetica Neue",Arial,sans-serif;
+    --body:"{{ brand.body_font|default('Source Serif 4') }}",Georgia,serif;
+    --mono:"{{ brand.mono_font|default('IBM Plex Mono') }}",ui-monospace,Consolas,monospace;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{width:{{ W }}px;height:{{ H }}px;overflow:hidden}
+  body{background:var(--paper);color:var(--ink);font-family:var(--body)}
+
+  .canvas{
+    width:{{ W }}px;height:{{ H }}px;position:relative;
+    display:flex;flex-direction:column;padding:84px 76px 72px;
+  }
+  .top-band{display:flex;flex-direction:column;gap:22px}
+  .center{flex:1;min-height:0;display:flex;flex-direction:column;
+    justify-content:center;gap:30px}
+
+  .step{
+    font-family:var(--display);font-weight:800;font-size:126px;line-height:.82;
+    color:var(--accent);opacity:.16;letter-spacing:-.05em;
+  }
+  .kicker{
+    font-family:var(--mono);font-size:23px;font-weight:600;letter-spacing:.19em;
+    text-transform:uppercase;color:var(--accent);
+    display:flex;align-items:center;gap:16px;
+  }
+  .kicker:after{content:"";flex:1;height:2px;background:var(--rule)}
+  .headline{
+    font-family:var(--display);font-weight:700;font-size:64px;line-height:1.06;
+    letter-spacing:-.024em;text-wrap:balance;
+  }
+  .body-copy{font-size:36px;line-height:1.52;color:var(--ink-muted);text-wrap:pretty}
+
+  .quote{
+    border-left:5px solid var(--highlight);
+    padding:6px 0 6px 30px;
+    font-family:var(--body);font-style:italic;font-size:38px;line-height:1.36;
+    color:var(--ink);
+  }
+
+  .counter{
+    position:absolute;bottom:44px;right:76px;
+    font-family:var(--mono);font-size:21px;color:var(--ink-muted);letter-spacing:.09em;
+  }
+  .swipe{
+    position:absolute;bottom:42px;left:76px;
+    font-family:var(--mono);font-size:21px;letter-spacing:.14em;text-transform:uppercase;
+    color:var(--accent);display:flex;align-items:center;gap:10px;
+  }
+  .cite{
+    font-family:var(--mono);font-size:16px;color:var(--ink-muted);opacity:.75;
+    word-break:break-all;line-height:1.45;
+  }
+
+  /* ---- CTA plate ----------------------------------------------------- */
+  .canvas.cta{background:var(--accent-deep)}
+  .canvas.cta .headline{color:#fff;font-size:72px}
+  .canvas.cta .body-copy{color:var(--accent-wash)}
+  .canvas.cta .kicker{color:var(--highlight)}
+  .canvas.cta .kicker:after{background:rgba(255,255,255,.22)}
+  .canvas.cta .counter{color:var(--accent-wash)}
+  .ident-card{
+    border-top:3px solid var(--highlight);padding-top:26px;
+    display:flex;flex-direction:column;gap:10px;
+  }
+  .logo{
+    font-family:var(--mono);font-size:20px;font-weight:600;letter-spacing:.2em;
+    text-transform:uppercase;color:var(--accent-wash);opacity:.9;
+  }
+  .ident{
+    font-family:var(--mono);font-size:20px;line-height:1.6;
+    color:var(--accent-wash);opacity:.85;
+  }
+</style>
+</head>
+<body>
+  <div class="canvas {{ slide.role }}">
+    {% if slide.role == 'cta' %}
+      <div class="center" style="gap:28px">
+        <div class="kicker">{{ slide.kicker|default('Save this') }}</div>
+        <h2 class="headline">{{ slide.headline }}</h2>
+        <p class="body-copy">{{ slide.body }}</p>
+      </div>
+      <div class="ident-card">
+        <div class="logo">{{ brand.logo_text|default(client_name) }}</div>
+        <div class="ident">{{ identification }}</div>
+      </div>
+    {% else %}
+      <div class="top-band">
+        <div class="step">{{ '%02d'|format(index - 1) }}</div>
+        {% if slide.kicker %}<div class="kicker">{{ slide.kicker }}</div>{% endif %}
+      </div>
+      <div class="center">
+        <h2 class="headline">{{ slide.headline }}</h2>
+        <p class="body-copy">{{ slide.body }}</p>
+        {% if slide.quote %}<div class="quote">&ldquo;{{ slide.quote }}&rdquo;</div>{% endif %}
+      </div>
+      {% if slide.claims %}
+        <div class="cite">
+          {% for c in slide.claims %}{% if c.source_url %}Source: {{ c.source_url }}{% if not loop.last %}<br>{% endif %}{% endif %}{% endfor %}
+        </div>
+      {% endif %}
+      <div style="height:40px"></div>
+      <div class="counter">{{ index }}/{{ total }}</div>
+      {% if index < total %}
+        <div class="swipe"><span>Swipe</span><span>&rarr;</span></div>
+      {% endif %}
+    {% endif %}
+  </div>
+</body>
+</html>

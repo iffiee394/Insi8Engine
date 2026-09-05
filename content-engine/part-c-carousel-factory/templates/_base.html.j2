@@ -1,0 +1,97 @@
+{# Shared shell for every carousel template.
+   Fixed 1080x1350 canvas. All colour comes from the client brand kit so the
+   same templates serve every client without a code change. #}
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family={{ brand.display_font|default('Archivo')|replace(' ','+') }}:wght@500;600;700;800&family={{ brand.body_font|default('Source Serif 4')|replace(' ','+') }}:opsz,wght@8..60,400;8..60,600&family={{ brand.mono_font|default('IBM Plex Mono')|replace(' ','+') }}:wght@400;500;600&display=swap">
+<style>
+  :root{
+    --accent:{{ brand.accent|default('#0E6A70') }};
+    --accent-deep:{{ brand.accent_deep|default('#0A4E53') }};
+    --accent-wash:{{ brand.accent_wash|default('#E4F0F0') }};
+    --ink:{{ brand.ink|default('#15202A') }};
+    --ink-muted:{{ brand.ink_muted|default('#546674') }};
+    --paper:{{ brand.paper|default('#FBFCFC') }};
+    --paper-alt:{{ brand.paper_alt|default('#EEF3F4') }};
+    --rule:{{ brand.rule|default('#D9E2E6') }};
+    --highlight:{{ brand.highlight|default('#C97B4A') }};
+    --display:"{{ brand.display_font|default('Archivo') }}","Helvetica Neue",Arial,sans-serif;
+    --body:"{{ brand.body_font|default('Source Serif 4') }}",Georgia,serif;
+    --mono:"{{ brand.mono_font|default('IBM Plex Mono') }}",ui-monospace,Consolas,monospace;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{width:{{ W }}px;height:{{ H }}px;overflow:hidden}
+  body{
+    background:var(--paper);color:var(--ink);
+    font-family:var(--body);-webkit-font-smoothing:antialiased;
+  }
+  .canvas{
+    width:{{ W }}px;height:{{ H }}px;position:relative;
+    display:flex;flex-direction:column;
+    padding:84px 76px 72px;
+  }
+  .kicker{
+    font-family:var(--mono);font-size:23px;font-weight:600;
+    letter-spacing:.19em;text-transform:uppercase;color:var(--accent);
+  }
+  .headline{
+    font-family:var(--display);font-weight:700;letter-spacing:-.024em;
+    line-height:1.04;text-wrap:balance;color:var(--ink);
+  }
+  .body-copy{
+    font-size:36px;line-height:1.52;color:var(--ink-muted);text-wrap:pretty;
+  }
+  .counter{
+    position:absolute;bottom:44px;right:76px;
+    font-family:var(--mono);font-size:21px;color:var(--ink-muted);
+    letter-spacing:.09em;
+  }
+  .swipe{
+    position:absolute;bottom:42px;left:76px;
+    font-family:var(--mono);font-size:21px;letter-spacing:.14em;
+    text-transform:uppercase;color:var(--accent);
+    display:flex;align-items:center;gap:10px;
+  }
+  .swipe .arrow{font-size:26px;line-height:1}
+  .rule{height:3px;background:var(--accent);width:96px;border-radius:2px}
+  .ident{
+    font-family:var(--mono);font-size:20px;line-height:1.6;
+    color:var(--ink-muted);letter-spacing:.02em;
+  }
+  .logo{
+    font-family:var(--mono);font-size:20px;font-weight:600;
+    letter-spacing:.2em;color:var(--ink-muted);text-transform:uppercase;
+  }
+  .spacer{flex:1}
+  /* Vertical composition: the middle band centres itself so a slide never
+     leaves a dead zone regardless of how long the copy runs. */
+  .center{
+    flex:1;min-height:0;display:flex;flex-direction:column;
+    justify-content:center;gap:30px;
+  }
+  .top-band{display:flex;flex-direction:column;gap:22px}
+  .bottom-band{display:flex;flex-direction:column;gap:16px}
+  .cite{
+    font-family:var(--mono);font-size:16px;color:var(--ink-muted);
+    opacity:.75;letter-spacing:.01em;word-break:break-all;line-height:1.45;
+  }
+  {% block styles %}{% endblock %}
+</style>
+</head>
+<body>
+  <div class="canvas {{ slide.role }}">
+    {% block content %}{% endblock %}
+
+    {% if slide.role != 'cta' %}
+      <div class="counter">{{ index }}/{{ total }}</div>
+      {% if index < total %}
+        <div class="swipe"><span>Swipe</span><span class="arrow">&rarr;</span></div>
+      {% endif %}
+    {% endif %}
+  </div>
+</body>
+</html>

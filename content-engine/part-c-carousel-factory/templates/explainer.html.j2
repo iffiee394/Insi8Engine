@@ -1,0 +1,67 @@
+{% extends "_base.html.j2" %}
+{# EXPLAINER — editorial, generous whitespace, accent rail on the hook.
+   Reads as a well-set article page. Default template. #}
+
+{% block styles %}
+  .canvas.hook{background:var(--accent-deep);color:var(--paper)}
+  .canvas.hook .kicker{color:var(--accent-wash)}
+  .canvas.hook .headline{color:#fff;font-size:98px}
+  .canvas.hook .body-copy{color:var(--accent-wash);font-size:38px;opacity:.92}
+  .canvas.hook .rule{background:var(--highlight);width:130px}
+  .canvas.hook .counter,.canvas.hook .swipe{color:var(--accent-wash)}
+
+  .canvas.body .headline{font-size:64px}
+
+  .canvas.cta{background:var(--paper-alt)}
+  .canvas.cta .headline{font-size:72px}
+
+  .step{
+    font-family:var(--display);font-weight:800;font-size:132px;line-height:.82;
+    color:var(--accent);opacity:.17;letter-spacing:-.05em;
+  }
+  .ident-card{
+    border-top:3px solid var(--accent);padding-top:26px;
+    display:flex;flex-direction:column;gap:10px;
+  }
+{% endblock %}
+
+{% block content %}
+  {% if slide.role == 'hook' %}
+    <div class="top-band">
+      <div class="kicker">{{ slide.kicker|default('Patient guide') }}</div>
+      <div class="rule"></div>
+    </div>
+    <div class="center" style="gap:38px">
+      <h1 class="headline">{{ slide.headline }}</h1>
+      <p class="body-copy">{{ slide.body }}</p>
+    </div>
+    <div style="height:36px"></div>
+
+  {% elif slide.role == 'cta' %}
+    <div class="center" style="gap:28px">
+      <div class="kicker">{{ slide.kicker|default('Save this') }}</div>
+      <h2 class="headline">{{ slide.headline }}</h2>
+      <p class="body-copy">{{ slide.body }}</p>
+    </div>
+    <div class="ident-card">
+      <div class="logo">{{ brand.logo_text|default(client.name) }}</div>
+      <div class="ident">{{ identification }}</div>
+    </div>
+
+  {% else %}
+    <div class="top-band">
+      <div class="step">{{ '%02d'|format(index - 1) }}</div>
+      {% if slide.kicker %}<div class="kicker">{{ slide.kicker }}</div>{% endif %}
+    </div>
+    <div class="center" style="gap:30px">
+      <h2 class="headline">{{ slide.headline }}</h2>
+      <p class="body-copy">{{ slide.body }}</p>
+    </div>
+    {% if slide.claims %}
+      <div class="cite">
+        {% for c in slide.claims %}{% if c.source_url %}Source: {{ c.source_url }}{% if not loop.last %}<br>{% endif %}{% endif %}{% endfor %}
+      </div>
+    {% endif %}
+    <div style="height:40px"></div>
+  {% endif %}
+{% endblock %}

@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Settings | InsightEngine</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        ::-webkit-scrollbar {
+            width: 4px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #111221;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #2A2A42;
+            border-radius: 2px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #3A3A5C;
+        }
+        .glass-panel {
+            background: rgba(26, 26, 46, 0.6);
+            backdrop-filter: blur(12px);
+            border: 1px solid #2A2A42;
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "surface-bright": "#373849",
+                      "on-tertiary-fixed": "#231a0b",
+                      "surface-container-lowest": "#0c0d1c",
+                      "outline": "#929096",
+                      "background": "#111221",
+                      "elevated": "#24243D",
+                      "text-muted": "#5C5C70",
+                      "surface-variant": "#323344",
+                      "text-primary": "#E8E8F0",
+                      "tertiary-container": "#170f03",
+                      "on-secondary": "#2900a0",
+                      "secondary-fixed-dim": "#c6bfff",
+                      "surface-container-highest": "#323344",
+                      "primary-fixed": "#e3e0f1",
+                      "border-hover": "#3A3A5C",
+                      "inverse-on-surface": "#2e2f40",
+                      "primary-fixed-dim": "#c7c5d5",
+                      "on-primary-fixed": "#1b1a26",
+                      "tertiary": "#d5c4ac",
+                      "on-primary": "#302f3b",
+                      "surface-tint": "#c7c5d5",
+                      "status-processing": "#F5A623",
+                      "accent-soft": "rgba(108, 92, 231, 0.1)",
+                      "status-pending": "#5C5C70",
+                      "on-primary-container": "#7c7b89",
+                      "surface-container-high": "#282939",
+                      "tertiary-fixed-dim": "#d5c4ac",
+                      "error": "#ffb4ab",
+                      "on-tertiary-container": "#897a65",
+                      "on-surface-variant": "#c8c5cc",
+                      "surface-dim": "#111221",
+                      "on-background": "#e1e0f6",
+                      "surface-container-low": "#191a2a",
+                      "on-surface": "#e1e0f6",
+                      "secondary-container": "#4029ba",
+                      "surface-container": "#1d1e2e",
+                      "on-primary-fixed-variant": "#464552",
+                      "surface-hover": "#22223A",
+                      "surface": "#1A1A2E",
+                      "inverse-primary": "#5e5d6b",
+                      "on-secondary-fixed-variant": "#4029ba",
+                      "on-error": "#690005",
+                      "on-secondary-fixed": "#160066",
+                      "error-container": "#93000a",
+                      "secondary": "#c6bfff",
+                      "status-done": "#2ECC71",
+                      "border": "#2A2A42",
+                      "on-secondary-container": "#b4abff",
+                      "inverse-surface": "#e1e0f6",
+                      "status-failed": "#E74C3C",
+                      "on-tertiary": "#392f1e",
+                      "tertiary-fixed": "#f2e0c7",
+                      "primary-container": "#0f0f1a",
+                      "on-error-container": "#ffdad6",
+                      "primary": "#c7c5d5",
+                      "on-tertiary-fixed-variant": "#514533",
+                      "secondary-fixed": "#e4dfff",
+                      "outline-variant": "#47464c"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.125rem",
+                      "lg": "0.25rem",
+                      "xl": "0.5rem",
+                      "full": "0.75rem"
+              },
+              "spacing": {
+                      "rail-width": "56px",
+                      "container-padding": "1.5rem",
+                      "gutter": "1px",
+                      "sidebar-width": "400px",
+                      "element-spacing-md": "1rem",
+                      "card-gap": "0.75rem",
+                      "element-spacing-sm": "0.5rem"
+              },
+              "fontFamily": {
+                      "metadata-mono": ["JetBrains Mono"],
+                      "headline-lg": ["Inter"],
+                      "body-md": ["Inter"],
+                      "tab-label": ["Inter"],
+                      "card-title": ["Inter"],
+                      "label-caps": ["Inter"]
+              },
+              "fontSize": {
+                      "metadata-mono": ["12px", {"lineHeight": "16px", "fontWeight": "400"}],
+                      "headline-lg": ["20px", {"lineHeight": "28px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                      "body-md": ["14px", {"lineHeight": "1.6", "fontWeight": "400"}],
+                      "tab-label": ["13px", {"lineHeight": "18px", "fontWeight": "500"}],
+                      "card-title": ["15px", {"lineHeight": "20px", "fontWeight": "600"}],
+                      "label-caps": ["11px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600"}]
+              }
+            },
+          },
+        }
+    </script>
+</head>
+<body class="bg-background text-text-primary font-body-md overflow-hidden h-screen flex">
+<!-- Predicted SideNavBar Component -->
+<aside class="fixed left-0 top-0 h-full w-[56px] bg-background dark:bg-background flex flex-col items-center py-4 space-y-8 border-r border-border z-50">
+<div class="font-headline-lg text-headline-lg text-text-primary dark:text-text-primary font-bold">IE</div>
+<nav class="flex flex-col space-y-6">
+<button class="text-text-muted dark:text-text-muted hover:bg-surface-hover dark:hover:bg-surface-hover transition-colors active:scale-95 duration-150 p-2 rounded">
+<span class="material-symbols-outlined">home</span>
+</button>
+<button class="text-text-muted dark:text-text-muted hover:bg-surface-hover dark:hover:bg-surface-hover transition-colors active:scale-95 duration-150 p-2 rounded">
+<span class="material-symbols-outlined">hourglass_empty</span>
+</button>
+<button class="text-text-muted dark:text-text-muted hover:bg-surface-hover dark:hover:bg-surface-hover transition-colors active:scale-95 duration-150 p-2 rounded">
+<span class="material-symbols-outlined">search</span>
+</button>
+<button class="text-secondary dark:text-secondary hover:bg-surface-hover dark:hover:bg-surface-hover transition-colors active:scale-95 duration-150 p-2 rounded">
+<span class="material-symbols-outlined">settings</span>
+</button>
+</nav>
+<div class="mt-auto pb-4">
+<div class="w-8 h-8 rounded-full overflow-hidden border border-border">
+<img class="w-full h-full object-cover" data-alt="A high-quality professional studio portrait of a technology executive, featuring soft cinematic lighting, a clean dark background, and a modern aesthetic consistent with a high-end SaaS platform. The individual wears a minimal charcoal turtleneck, projecting an image of focus and expertise." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDhnxXklbC6fFMt7_7YyOuNRiRMs4k6WDaeAoowuCAzwzHLiEReCEqFAipvSoyUW2_PrCAXaC7DRxT5oWqbkwlb_oK8xGfyTccZmG5JLibjdhdF-b-I4c2s3eH1P-Wkw7jWlxTo1csHCuSOhMFvWyFIxrn2giCcjC4QDr_aqxo03DN_YSizjEJhBDMYSU_oD1SkxZJxZk2kai1GT0sLoL3DKtucU_KDDAhiQdaI_hdENiUXZwXYJQjrTA"/>
+</div>
+</div>
+</aside>
+<!-- Main Content Area -->
+<main class="ml-[56px] flex-1 flex flex-col h-screen">
+<!-- Predicted TopAppBar Component -->
+<header class="fixed top-0 right-0 left-[56px] z-40 bg-surface-container-low dark:bg-surface-container-low border-b border-border flex justify-between items-center h-16 px-6">
+<div class="flex items-center space-x-4">
+<h1 class="font-headline-lg text-headline-lg font-bold text-text-primary">Settings</h1>
+</div>
+<div class="flex items-center space-x-8">
+<nav class="hidden md:flex space-x-6">
+<span class="font-tab-label text-tab-label text-text-muted cursor-pointer hover:text-text-primary transition-colors">Queue</span>
+<span class="font-tab-label text-tab-label text-text-muted cursor-pointer hover:text-text-primary transition-colors">Library</span>
+<span class="font-tab-label text-tab-label text-text-muted cursor-pointer hover:text-text-primary transition-colors">Playlists</span>
+</nav>
+<div class="flex items-center space-x-4">
+<span class="material-symbols-outlined text-text-muted cursor-pointer hover:text-text-primary transition-colors">notifications</span>
+<span class="material-symbols-outlined text-text-muted cursor-pointer hover:text-text-primary transition-colors">help_outline</span>
+</div>
+</div>
+</header>
+<!-- Content Canvas -->
+<div class="mt-16 p-container-padding grid grid-cols-12 gap-gutter h-full overflow-hidden bg-border">
+<!-- Left Column: Profile & API -->
+<div class="col-span-12 lg:col-span-5 bg-background flex flex-col overflow-y-auto pr-4 space-y-8">
+<!-- Profile Section -->
+<section class="space-y-6 pt-2">
+<div>
+<h2 class="font-headline-lg text-headline-lg text-text-primary border-b border-border pb-2 mb-4">Profile</h2>
+<div class="flex items-center space-x-6 p-4 rounded-lg bg-surface border border-border">
+<div class="w-20 h-20 rounded-lg overflow-hidden border border-border shadow-inner">
+<img class="w-full h-full object-cover" data-alt="A close-up shot of a sophisticated digital avatar representing a user profile. The image features clean lines, muted metallic textures, and a soft violet glow that matches the accent color of the UI. The lighting is low-key and professional, suitable for a dark-mode data processing application." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCPPqhXZyFWLCTXtPEnlsdkjLfMHsDhOKiY4C5fDgHbIl0welPS6xLJmIQ7Uyi4wEo1uNiEl0S_0D3rj6iTIGxtnp9UUCN0w04QPv4vOGJ8y6SqCd_CkIeBhFDZNryyykiREjF_berwnab89j5P5WaVfYF3OIUJghsuYRv1NHfANA4gY_PbI_3rw6gGE6smwa5XekZtC9QKnHIu6YkfZivO2fC853K-WPuC3Sw4LWH2GUNmXVXKPhuVDQ"/>
+</div>
+<div class="space-y-1">
+<p class="font-card-title text-card-title text-text-primary">Alex Chen</p>
+<p class="font-body-md text-body-md text-text-muted">Principal Researcher • Professional Tier</p>
+<button class="mt-2 px-3 py-1 bg-surface-hover border border-border rounded font-tab-label text-tab-label text-text-primary hover:border-secondary transition-all">Change Avatar</button>
+</div>
+</div>
+</div>
+<div class="space-y-4">
+<div class="group">
+<label class="font-label-caps text-label-caps text-text-muted block mb-2 uppercase">Full Name</label>
+<input class="w-full bg-surface border border-border px-4 py-2.5 rounded text-text-primary focus:border-secondary focus:ring-0 transition-colors" type="text" value="Alex Chen"/>
+</div>
+<div class="group">
+<label class="font-label-caps text-label-caps text-text-muted block mb-2 uppercase">Email Address</label>
+<input class="w-full bg-surface border border-border px-4 py-2.5 rounded text-text-primary focus:border-secondary focus:ring-0 transition-colors" type="email" value="alex.chen@insightengine.io"/>
+</div><div class="space-y-4 mt-6">
+<div class="group">
+<label class="font-label-caps text-label-caps text-text-muted block mb-2 uppercase">User Bio &amp; Global Extraction Interests</label>
+<textarea class="w-full bg-surface border border-border px-4 py-2.5 rounded text-text-primary focus:border-secondary focus:ring-0 transition-colors min-h-[100px] font-body-md" placeholder="e.g., Focus on market trends, competitive analysis, and emerging tech in the SaaS space..."></textarea>
+</div>
+<div class="flex items-center justify-between p-3 bg-surface-container-low border border-border rounded-lg">
+<div class="flex flex-col">
+<span class="text-card-title font-card-title text-text-primary">Personalize extractions using Profile Bio</span>
+<p class="text-[11px] text-text-muted mt-1">AI insights will prioritize topics matching these interests alongside core content.</p>
+</div>
+<label class="relative inline-flex items-center cursor-pointer">
+<input checked="" class="sr-only peer" type="checkbox"/>
+<div class="w-11 h-6 bg-primary-container peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-secondary"></div>
+</label>
+</div>
+</div>
+</div>
+</section>
+<!-- API Configuration Section -->
+<section class="space-y-6">
+<div>
+<h2 class="font-headline-lg text-headline-lg text-text-primary border-b border-border pb-2 mb-4">API Configuration</h2>
+<p class="font-body-md text-body-md text-text-muted mb-4">Connect your own provider keys to enable higher processing limits and specialized model access.</p>
+</div>
+<div class="space-y-4">
+<div class="p-4 bg-surface border border-border rounded-lg space-y-4">
+<div class="flex items-center justify-between mb-2">
+<div class="flex items-center space-x-2">
+<span class="material-symbols-outlined text-secondary">token</span>
+<span class="font-card-title text-card-title">OpenAI API</span>
+</div>
+<span class="px-2 py-0.5 rounded bg-status-done bg-opacity-15 text-status-done text-[10px] font-bold uppercase tracking-wider">Connected</span>
+</div>
+<div class="relative">
+<input class="w-full bg-primary-container border border-border px-4 py-2 rounded font-metadata-mono text-text-muted text-sm focus:border-secondary focus:ring-0" type="password" value="••••••••••••••••••••••••••••"/>
+<button class="absolute right-3 top-2 text-text-muted hover:text-text-primary">
+<span class="material-symbols-outlined text-sm">visibility</span>
+</button>
+</div>
+</div>
+<div class="p-4 bg-surface border border-border rounded-lg space-y-4">
+<div class="flex items-center justify-between mb-2">
+<div class="flex items-center space-x-2">
+<span class="material-symbols-outlined text-secondary">psychology</span>
+<span class="font-card-title text-card-title">Anthropic API</span>
+</div>
+<span class="px-2 py-0.5 rounded bg-status-pending bg-opacity-15 text-status-pending text-[10px] font-bold uppercase tracking-wider">Not Set</span>
+</div>
+<input class="w-full bg-primary-container border border-border px-4 py-2 rounded font-metadata-mono text-text-muted text-sm focus:border-secondary focus:ring-0" placeholder="sk-ant-..." type="password"/>
+</div>
+</div>
+<div class="pt-4 flex space-x-3">
+<button class="px-6 py-2 bg-secondary text-on-secondary rounded font-tab-label font-bold hover:opacity-90 transition-opacity">Save Changes</button>
+<button class="px-6 py-2 border border-border text-text-muted rounded font-tab-label hover:bg-surface-hover transition-colors">Discard</button>
+</div>
+</section>
+</div>
+<!-- Right Column: Usage & Activity -->
+<div class="col-span-12 lg:col-span-7 bg-background flex flex-col overflow-y-auto pl-4 space-y-8">
+<!-- Usage & Tokens Section -->
+<section class="space-y-6 pt-2">
+<h2 class="font-headline-lg text-headline-lg text-text-primary border-b border-border pb-2 mb-4">Usage &amp; Tokens</h2>
+<!-- Current Usage Card -->
+<div class="relative overflow-hidden glass-panel p-6 rounded-xl border-border">
+<div class="absolute top-0 right-0 p-4">
+<span class="font-metadata-mono text-metadata-mono text-text-muted">Cycle resets in 12 days</span>
+</div>
+<div class="mb-8">
+<p class="font-label-caps text-label-caps text-text-muted uppercase mb-1">Current Month Usage</p>
+<div class="flex items-end space-x-2">
+<span class="text-4xl font-bold text-text-primary">1.2M</span>
+<span class="text-xl text-text-muted mb-1">/ 2.5M Tokens</span>
+</div>
+</div>
+<div class="space-y-2">
+<div class="w-full h-2 bg-primary-container rounded-full overflow-hidden">
+<div class="h-full bg-secondary w-[48%] rounded-full"></div>
+</div>
+<div class="flex justify-between text-[11px] font-metadata-mono text-text-muted">
+<span>48% Consumed</span>
+<span>1.3M Remaining</span>
+</div>
+</div>
+<!-- Cost Estimate Badge -->
+<div class="mt-6 flex items-center justify-between border-t border-border pt-4">
+<div class="flex items-center space-x-2">
+<span class="material-symbols-outlined text-secondary text-sm">payments</span>
+<span class="font-tab-label text-tab-label text-text-muted">Estimated Month-to-Date Cost:</span>
+</div>
+<span class="px-3 py-1 bg-accent-soft text-secondary font-bold font-metadata-mono rounded border border-secondary/20">$42.84</span>
+</div>
+</div>
+<!-- Token Breakdown -->
+<div class="grid grid-cols-2 gap-4">
+<div class="p-4 bg-surface border border-border rounded-lg">
+<p class="font-label-caps text-label-caps text-text-muted uppercase mb-3">GPT-4 High Density</p>
+<div class="flex items-center justify-between">
+<span class="font-metadata-mono text-2xl font-medium text-text-primary">842k</span>
+<span class="text-[10px] text-status-processing">+12% vs LY</span>
+</div>
+</div>
+<div class="p-4 bg-surface border border-border rounded-lg">
+<p class="font-label-caps text-label-caps text-text-muted uppercase mb-3">GPT-3.5 Fast Stream</p>
+<div class="flex items-center justify-between">
+<span class="font-metadata-mono text-2xl font-medium text-text-primary">358k</span>
+<span class="text-[10px] text-text-muted">-4% vs LY</span>
+</div>
+</div>
+</div>
+</section>
+<!-- Activity Log Section -->
+<section class="flex-1 min-h-[400px] flex flex-col space-y-4 pb-8">
+<div class="flex justify-between items-center border-b border-border pb-2 mb-2">
+<h2 class="font-headline-lg text-headline-lg text-text-primary">Recent Activity Log</h2>
+<button class="text-secondary text-xs hover:underline flex items-center space-x-1">
+<span class="material-symbols-outlined text-sm">download</span>
+<span>Export CSV</span>
+</button>
+</div>
+<div class="flex-1 bg-primary-container border border-border rounded-lg overflow-hidden flex flex-col">
+<div class="grid grid-cols-12 gap-2 p-3 bg-surface border-b border-border font-label-caps text-label-caps text-text-muted uppercase">
+<div class="col-span-4">Timestamp</div>
+<div class="col-span-4">Batch ID</div>
+<div class="col-span-2">Tokens</div>
+<div class="col-span-2 text-right">Cost</div>
+</div>
+<div class="flex-1 overflow-y-auto">
+<!-- Log Entry 1 -->
+<div class="grid grid-cols-12 gap-2 p-3 border-b border-border/50 hover:bg-surface-hover transition-colors items-center group">
+<div class="col-span-4 font-metadata-mono text-text-muted text-[11px]">2023-11-24 14:22:18</div>
+<div class="col-span-4 font-metadata-mono text-text-primary text-[12px] flex items-center space-x-2">
+<span class="material-symbols-outlined text-[14px] text-status-done">check_circle</span>
+<span>VID-2442-QX</span>
+</div>
+<div class="col-span-2 font-metadata-mono text-text-muted text-[11px]">12,402</div>
+<div class="col-span-2 text-right font-metadata-mono text-text-primary text-[11px]">$0.37</div>
+</div>
+<!-- Log Entry 2 -->
+<div class="grid grid-cols-12 gap-2 p-3 border-b border-border/50 hover:bg-surface-hover transition-colors items-center group">
+<div class="col-span-4 font-metadata-mono text-text-muted text-[11px]">2023-11-24 13:05:42</div>
+<div class="col-span-4 font-metadata-mono text-text-primary text-[12px] flex items-center space-x-2">
+<span class="material-symbols-outlined text-[14px] text-status-done">check_circle</span>
+<span>VID-2441-MA</span>
+</div>
+<div class="col-span-2 font-metadata-mono text-text-muted text-[11px]">45,800</div>
+<div class="col-span-2 text-right font-metadata-mono text-text-primary text-[11px]">$1.37</div>
+</div>
+<!-- Log Entry 3 -->
+<div class="grid grid-cols-12 gap-2 p-3 border-b border-border/50 hover:bg-surface-hover transition-colors items-center group">
+<div class="col-span-4 font-metadata-mono text-text-muted text-[11px]">2023-11-24 09:12:11</div>
+<div class="col-span-4 font-metadata-mono text-text-primary text-[12px] flex items-center space-x-2">
+<span class="material-symbols-outlined text-[14px] text-status-failed">error</span>
+<span>VID-2439-LL</span>
+</div>
+<div class="col-span-2 font-metadata-mono text-text-muted text-[11px]">0</div>
+<div class="col-span-2 text-right font-metadata-mono text-text-primary text-[11px]">$0.00</div>
+</div>
+<!-- Log Entry 4 -->
+<div class="grid grid-cols-12 gap-2 p-3 border-b border-border/50 hover:bg-surface-hover transition-colors items-center group">
+<div class="col-span-4 font-metadata-mono text-text-muted text-[11px]">2023-11-23 22:45:10</div>
+<div class="col-span-4 font-metadata-mono text-text-primary text-[12px] flex items-center space-x-2">
+<span class="material-symbols-outlined text-[14px] text-status-done">check_circle</span>
+<span>VID-2438-BT</span>
+</div>
+<div class="col-span-2 font-metadata-mono text-text-muted text-[11px]">104,220</div>
+<div class="col-span-2 text-right font-metadata-mono text-text-primary text-[11px]">$3.12</div>
+</div>
+<!-- Log Entry 5 -->
+<div class="grid grid-cols-12 gap-2 p-3 border-b border-border/50 hover:bg-surface-hover transition-colors items-center group">
+<div class="col-span-4 font-metadata-mono text-text-muted text-[11px]">2023-11-23 18:30:15</div>
+<div class="col-span-4 font-metadata-mono text-text-primary text-[12px] flex items-center space-x-2">
+<span class="material-symbols-outlined text-[14px] text-status-done">check_circle</span>
+<span>VID-2437-PK</span>
+</div>
+<div class="col-span-2 font-metadata-mono text-text-muted text-[11px]">2,150</div>
+<div class="col-span-2 text-right font-metadata-mono text-text-primary text-[11px]">$0.06</div>
+</div>
+</div>
+</div>
+</section>
+</div>
+</div>
+<!-- Floating Atmosphere/Kinetic Element (Bottom Right) -->
+<div class="fixed bottom-6 right-6 z-50 pointer-events-none opacity-40">
+<div class="w-64 h-64 rounded-full bg-secondary blur-[120px] absolute -bottom-32 -right-32 animate-pulse"></div>
+</div>
+</main>
+<script>
+        // Simple Interaction logic for demo
+        document.querySelectorAll('input').forEach(input => {
+            input.addEventListener('focus', () => {
+                input.parentElement.classList.add('border-secondary');
+            });
+            input.addEventListener('blur', () => {
+                input.parentElement.classList.remove('border-secondary');
+            });
+        });
+
+        // Toggle visibility icon logic
+        const toggleBtn = document.querySelector('.material-symbols-outlined[data-icon="visibility"]');
+        if(toggleBtn) {
+            toggleBtn.addEventListener('click', function() {
+                const input = this.closest('div').querySelector('input');
+                if (input.type === 'password') {
+                    input.type = 'text';
+                    this.textContent = 'visibility_off';
+                } else {
+                    input.type = 'password';
+                    this.textContent = 'visibility';
+                }
+            });
+        }
+    </script>
+</body></html>

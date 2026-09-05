@@ -1,0 +1,84 @@
+{% extends "_base.html.j2" %}
+{# MYTH — horizontal split. The claim being corrected sits struck through in the
+   dark upper field; the correction sits in the light lower field. Used for
+   correcting misconceptions without mocking the reader. #}
+
+{% block styles %}
+  .canvas{padding:0}
+  .top{
+    background:var(--ink);color:var(--paper);
+    padding:84px 76px 60px;display:flex;flex-direction:column;gap:26px;
+    min-height:44%;
+  }
+  .bottom{
+    background:var(--paper);padding:64px 76px 96px;flex:1;
+    display:flex;flex-direction:column;gap:26px;
+  }
+  .tag{
+    font-family:var(--mono);font-size:22px;font-weight:600;letter-spacing:.2em;
+    text-transform:uppercase;display:inline-flex;align-items:center;gap:12px;
+  }
+  .tag.myth{color:var(--highlight)}
+  .tag.truth{color:var(--accent)}
+  .tag .dot{width:13px;height:13px;border-radius:50%;background:currentColor;display:block}
+  .struck{
+    font-family:var(--display);font-weight:700;font-size:66px;line-height:1.08;
+    color:#fff;text-decoration:line-through;text-decoration-thickness:5px;
+    text-decoration-color:var(--highlight);letter-spacing:-.02em;text-wrap:balance;
+  }
+  .truth-line{
+    font-family:var(--display);font-weight:700;font-size:62px;line-height:1.1;
+    color:var(--ink);letter-spacing:-.022em;text-wrap:balance;
+  }
+  .canvas.hook .top{min-height:56%;justify-content:center}
+  .canvas.hook .struck{font-size:88px}
+  .canvas.cta .top{background:var(--accent-deep);min-height:40%;justify-content:center}
+  .canvas.cta .struck{text-decoration:none;font-size:76px}
+  .counter,.swipe{z-index:2}
+  .canvas.hook .counter,.canvas.hook .swipe{color:var(--ink-muted)}
+  .ident-card{border-top:3px solid var(--accent);padding-top:24px;
+              display:flex;flex-direction:column;gap:10px}
+{% endblock %}
+
+{% block content %}
+  {% if slide.role == 'hook' %}
+    <div class="top">
+      <div class="tag myth"><span class="dot"></span>{{ slide.kicker|default('Common belief') }}</div>
+      <div class="struck">{{ slide.headline }}</div>
+    </div>
+    <div class="bottom">
+      <div class="tag truth"><span class="dot"></span>Here is what is actually true</div>
+      <p class="body-copy">{{ slide.body }}</p>
+    </div>
+
+  {% elif slide.role == 'cta' %}
+    <div class="top">
+      <div class="tag truth" style="color:var(--accent-wash)"><span class="dot"></span>{{ slide.kicker|default('Save this') }}</div>
+      <div class="struck">{{ slide.headline }}</div>
+    </div>
+    <div class="bottom">
+      <p class="body-copy">{{ slide.body }}</p>
+      <div class="spacer"></div>
+      <div class="ident-card">
+        <div class="logo">{{ brand.logo_text|default(client.name) }}</div>
+        <div class="ident">{{ identification }}</div>
+      </div>
+    </div>
+
+  {% else %}
+    <div class="top">
+      <div class="tag myth"><span class="dot"></span>{{ slide.kicker|default('Myth') }}</div>
+      <div class="struck">{{ slide.headline }}</div>
+    </div>
+    <div class="bottom">
+      <div class="tag truth"><span class="dot"></span>Fact</div>
+      <p class="body-copy">{{ slide.body }}</p>
+      <div class="spacer"></div>
+      {% if slide.claims %}
+        <div class="cite">
+          {% for c in slide.claims %}{% if c.source_url %}Source: {{ c.source_url }}{% if not loop.last %}<br>{% endif %}{% endif %}{% endfor %}
+        </div>
+      {% endif %}
+    </div>
+  {% endif %}
+{% endblock %}

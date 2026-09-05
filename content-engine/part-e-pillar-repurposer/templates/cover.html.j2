@@ -1,0 +1,175 @@
+{# COVER — a real photograph with a text treatment on top.
+
+   This is the free replacement for the paid image-generation step in reference
+   video 1. Everything that step bought (golden-hour grade, vignette, film grain,
+   text sitting into the image) is CSS, so it costs nothing, is deterministic,
+   and never hallucinates a sixth finger. See DECISIONS.md D-25.
+
+   Treatments: editorial | band | frame
+#}
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family={{ brand.display_font|default('Archivo')|replace(' ','+') }}:wght@600;700;800&family={{ brand.body_font|default('Source Serif 4')|replace(' ','+') }}:opsz,wght@8..60,400;8..60,600&family={{ brand.mono_font|default('IBM Plex Mono')|replace(' ','+') }}:wght@500;600&display=swap">
+<style>
+  :root{
+    --accent:{{ brand.accent|default('#0E6A70') }};
+    --accent-deep:{{ brand.accent_deep|default('#0A4E53') }};
+    --accent-wash:{{ brand.accent_wash|default('#E4F0F0') }};
+    --ink:{{ brand.ink|default('#15202A') }};
+    --paper:{{ brand.paper|default('#FBFCFC') }};
+    --highlight:{{ brand.highlight|default('#C97B4A') }};
+    --display:"{{ brand.display_font|default('Archivo') }}","Helvetica Neue",Arial,sans-serif;
+    --body:"{{ brand.body_font|default('Source Serif 4') }}",Georgia,serif;
+    --mono:"{{ brand.mono_font|default('IBM Plex Mono') }}",ui-monospace,Consolas,monospace;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{width:{{ W }}px;height:{{ H }}px;overflow:hidden;background:var(--ink)}
+
+  .canvas{position:relative;width:{{ W }}px;height:{{ H }}px;overflow:hidden}
+
+  /* ---- the photograph ---------------------------------------------- */
+  .photo{
+    position:absolute;inset:0;
+    background-image:url("{{ photo_uri }}");
+    background-size:cover;
+    background-position:{{ focal|default('center') }};
+    /* Warm editorial grade. Approximates the "golden hour" look the reference
+       build paid an image model for. */
+    filter:saturate({{ grade.saturate|default(1.06) }})
+           contrast({{ grade.contrast|default(1.05) }})
+           brightness({{ grade.brightness|default(1.0) }})
+           sepia({{ grade.sepia|default(0.10) }});
+  }
+
+  /* ---- vignette ----------------------------------------------------- */
+  .vignette{
+    position:absolute;inset:0;pointer-events:none;
+    background:radial-gradient(ellipse at 50% 45%,
+      rgba(0,0,0,0) 38%, rgba(0,0,0,{{ vignette|default(0.38) }}) 100%);
+  }
+
+  /* ---- film grain: SVG turbulence, no image asset --------------------- */
+  .grain{
+    position:absolute;inset:-40px;pointer-events:none;
+    opacity:{{ grain|default(0.13) }};
+    mix-blend-mode:overlay;
+    background-image:url("data:image/svg+xml;utf8,\
+<svg xmlns='http://www.w3.org/2000/svg' width='220' height='220'>\
+<filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.82' numOctaves='3' stitchTiles='stitch'/>\
+<feColorMatrix type='saturate' values='0'/></filter>\
+<rect width='220' height='220' filter='url(%23n)'/></svg>");
+    background-size:220px 220px;
+  }
+
+  /* ---- scrim: makes the text legible without hiding the photo -------- */
+  .scrim{position:absolute;inset:0;pointer-events:none}
+  .scrim.dark.bottom{background:linear-gradient(to top,
+      rgba(8,14,18,.92) 0%, rgba(8,14,18,.72) 26%, rgba(8,14,18,.12) 55%, rgba(8,14,18,0) 74%)}
+  .scrim.dark.top{background:linear-gradient(to bottom,
+      rgba(8,14,18,.92) 0%, rgba(8,14,18,.70) 26%, rgba(8,14,18,.10) 56%, rgba(8,14,18,0) 74%)}
+  .scrim.dark.center{background:linear-gradient(to bottom,
+      rgba(8,14,18,.25) 0%, rgba(8,14,18,.78) 38%, rgba(8,14,18,.78) 66%, rgba(8,14,18,.25) 100%)}
+  .scrim.light.bottom{background:linear-gradient(to top,
+      rgba(251,252,252,.95) 0%, rgba(251,252,252,.78) 28%, rgba(251,252,252,0) 68%)}
+  .scrim.light.top{background:linear-gradient(to bottom,
+      rgba(251,252,252,.95) 0%, rgba(251,252,252,.78) 28%, rgba(251,252,252,0) 68%)}
+  .scrim.light.center{background:linear-gradient(to bottom,
+      rgba(251,252,252,.30) 0%, rgba(251,252,252,.86) 38%, rgba(251,252,252,.86) 66%, rgba(251,252,252,.30) 100%)}
+
+  /* ---- text --------------------------------------------------------- */
+  .text{
+    position:absolute;left:0;right:0;
+    padding:0 76px;
+    display:flex;flex-direction:column;gap:26px;
+    {% if position == 'top' %}top:96px;
+    {% elif position == 'center' %}top:50%;transform:translateY(-50%);
+    {% else %}bottom:118px;{% endif %}
+  }
+  .kicker{
+    font-family:var(--mono);font-size:23px;font-weight:600;
+    letter-spacing:.2em;text-transform:uppercase;
+    color:{{ '#fff' if scrim == 'dark' else 'var(--accent-deep)' }};
+    opacity:.92;
+    display:flex;align-items:center;gap:14px;
+  }
+  .kicker:before{content:"";width:44px;height:3px;border-radius:2px;
+    background:var(--highlight)}
+  .headline{
+    font-family:var(--display);font-weight:800;
+    font-size:{{ headline_size|default(96) }}px;line-height:1.02;
+    letter-spacing:-.032em;text-wrap:balance;
+    color:{{ '#fff' if scrim == 'dark' else 'var(--ink)' }};
+    text-shadow:{{ '0 2px 40px rgba(0,0,0,.42)' if scrim == 'dark' else 'none' }};
+  }
+  .subtext{
+    font-family:var(--body);font-size:38px;line-height:1.42;max-width:88%;
+    color:{{ 'rgba(255,255,255,.90)' if scrim == 'dark' else 'var(--ink)' }};
+    text-shadow:{{ '0 1px 24px rgba(0,0,0,.44)' if scrim == 'dark' else 'none' }};
+  }
+  .swipe{
+    position:absolute;bottom:44px;left:76px;
+    font-family:var(--mono);font-size:21px;letter-spacing:.14em;
+    text-transform:uppercase;
+    color:{{ 'rgba(255,255,255,.82)' if scrim == 'dark' else 'var(--accent-deep)' }};
+    display:flex;align-items:center;gap:10px;
+  }
+  .logo{
+    position:absolute;top:56px;left:76px;
+    font-family:var(--mono);font-size:20px;font-weight:600;letter-spacing:.2em;
+    text-transform:uppercase;
+    color:{{ 'rgba(255,255,255,.80)' if scrim == 'dark' else 'var(--accent-deep)' }};
+  }
+
+  /* ---- treatment: band ---------------------------------------------- */
+  {% if treatment == 'band' %}
+  .photo,.vignette,.grain,.scrim{height:58%}
+  .text{
+    top:58%;bottom:0;background:var(--accent-deep);
+    justify-content:center;padding:60px 76px 110px;
+  }
+  .headline{color:#fff;font-size:{{ headline_size|default(84) }}px;text-shadow:none}
+  .subtext{color:var(--accent-wash);text-shadow:none}
+  .kicker{color:var(--highlight)}
+  .swipe{color:rgba(255,255,255,.8)}
+  {% endif %}
+
+  /* ---- treatment: frame --------------------------------------------- */
+  {% if treatment == 'frame' %}
+  .canvas{background:var(--paper);padding:64px 64px 0}
+  .photo{inset:64px 64px 40% 64px;border-radius:4px}
+  .vignette,.grain{inset:64px 64px 40% 64px;border-radius:4px}
+  .scrim{display:none}
+  .text{bottom:96px;top:auto}
+  .headline{color:var(--ink);font-size:{{ headline_size|default(80) }}px;text-shadow:none}
+  .subtext{color:var(--ink);opacity:.72;text-shadow:none}
+  .kicker{color:var(--accent-deep)}
+  .swipe{color:var(--accent-deep)}
+  .logo{color:var(--accent-deep)}
+  {% endif %}
+</style>
+</head>
+<body>
+  <div class="canvas">
+    <div class="photo"></div>
+    <div class="vignette"></div>
+    {% if treatment != 'frame' %}
+      <div class="scrim {{ scrim|default('dark') }} {{ position|default('bottom') }}"></div>
+    {% endif %}
+    <div class="grain"></div>
+
+    {% if show_logo %}<div class="logo">{{ brand.logo_text|default(client_name) }}</div>{% endif %}
+
+    <div class="text">
+      {% if kicker %}<div class="kicker">{{ kicker }}</div>{% endif %}
+      <h1 class="headline">{{ headline }}</h1>
+      {% if subtext %}<p class="subtext">{{ subtext }}</p>{% endif %}
+    </div>
+
+    <div class="swipe"><span>Swipe</span><span>&rarr;</span></div>
+  </div>
+</body>
+</html>

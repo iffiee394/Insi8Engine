@@ -1,0 +1,10 @@
+{
+  "_note": "EXAMPLE WATCHLIST. Replace with 20-40 real creators before running. 'source' picks the adapter: ytdlp (free, best for YouTube/Shorts), apify (paid, needed for Instagram at volume, set APIFY_TOKEN), csv (manual export).",
+  "creators": [
+    {"handle": "https://www.youtube.com/@ADAvideo/shorts", "source": "ytdlp", "why": "ADA consumer channel - claim-safe reference for tone"},
+    {"handle": "https://www.youtube.com/@thebentist/shorts", "source": "ytdlp", "why": "high-volume dental short-form, strong hooks"},
+    {"handle": "https://www.youtube.com/@DrJoyceKahng/shorts", "source": "ytdlp", "why": "explainer format, patient-anxiety angle"},
+    {"handle": "example_local_dentist", "source": "apify", "why": "Instagram - needs APIFY_TOKEN"},
+    {"handle": "fixtures/sample_posts.csv", "source": "csv", "why": "offline fixture for testing the miner"}
+  ]
+}

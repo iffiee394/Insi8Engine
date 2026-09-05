@@ -1,0 +1,19 @@
+
+# Environment / secrets
+.env
+.streamlit/secrets.toml
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+
+# Data (all runtime state — DB, profile, fixtures, exports, logs)
+data/
+poll_worker.log
+exports/
+
+# Misc
+.cursor/
+.claude/
+*.log

@@ -1,0 +1,106 @@
+# Knowledge Base — Northfield Family Dental (EXAMPLE)
+
+> **This is example data for a fictional practice.** Replace every section with
+> the real client's answers before running the engine against a live account.
+> The rewrite step in Part D and the grounding step in Part C both read this
+> file — the quality of everything downstream is capped by the quality of this
+> file. See DECISIONS.md D-03.
+
+---
+
+## 1. Services offered
+
+| Service | Notes for content | Typical range (placeholder) |
+|---|---|---|
+| Routine cleaning + exam | Entry point for most new patients | $120–$220 |
+| Deep cleaning (scaling/root planing) | Often the first "why do I need this?" objection | $600–$1,200 full mouth |
+| Composite fillings | Same-day, tooth-coloured | $180–$400 per tooth |
+| Crowns | Two-visit and same-day options | $1,100–$1,800 |
+| Root canal therapy | Highest anxiety topic in the practice | $800–$1,500 |
+| Extractions incl. wisdom teeth | Surgical vs simple distinction matters | $200–$650 |
+| Implants | Long consideration cycle, high value | $3,500–$5,000 per tooth |
+| Invisalign / clear aligners | Strong visual before/after potential | $4,000–$6,500 |
+| Professional whitening | In-office and take-home | $300–$600 |
+| Night guards | For grinding / clenching | $400–$700 |
+| Emergency visits | Same-day slots held daily | Varies |
+
+> Prices are **placeholders**. Any post that mentions a fee or discount is routed
+> to the pricing approval path and requires the preceding-60-day baseline fee.
+
+---
+
+## 2. The top 20 patient objections and questions
+
+These are the raw material for both lanes. A reel that answers one of these and
+gets DM'd to a nervous friend is worth more than any trend format.
+
+1. "Is a root canal as bad as everyone says?"
+2. "Why do I need a deep cleaning when nothing hurts?"
+3. "I haven't been in years and I'm embarrassed."
+4. "How much is this going to cost me out of pocket?"
+5. "Do you take my insurance? What if I don't have any?"
+6. "Will it hurt? What are my numbing options?"
+7. "Do I really need this crown or are you upselling me?"
+8. "Can I just get the tooth pulled instead? It's cheaper."
+9. "My gums bleed when I brush — is that normal?"
+10. "Are dental X-rays safe? How often do I need them?"
+11. "Is whitening bad for my enamel?"
+12. "Invisalign vs braces — which is actually right for me?"
+13. "How long do implants last? Am I too old for one?"
+14. "My kid is scared of the dentist. What do you do differently?"
+15. "I grind my teeth at night — does that matter?"
+16. "What counts as a dental emergency? Can I wait until Monday?"
+17. "Is an electric toothbrush actually worth it?"
+18. "Why does my filling need replacing? I just got it."
+19. "Can I be sedated for this?"
+20. "What happens if I just do nothing?"
+
+---
+
+## 3. Practice-specific facts worth repeating
+
+- Emergency slots held open every weekday morning.
+- Digital scanner instead of putty impressions for crowns and aligners.
+- Treatment plans always presented with a printed cost breakdown before anything starts.
+- The practice will tell a patient when something can be watched rather than treated.
+- Evening appointments two days a week.
+- Same dentist sees a patient through a course of treatment — not rotating providers.
+
+---
+
+## 4. Voice — how the dentist actually talks
+
+**Signature moves**
+- Names the fear out loud first: *"Everyone's scared of this one, so let's just talk about it."*
+- Gives the honest number, including when it's bad news: *"It's about an hour and a half. It's not a quick one."*
+- Says when treatment isn't needed: *"I'd watch that for six months before I'd touch it."*
+- Reframes rather than reassures: *"The root canal isn't the pain. The infection is the pain. The root canal is what stops it."*
+
+**Never says**
+- "Painless", "you'll feel nothing", "totally safe", "best in the area"
+- Anything that shames the patient for how long it's been
+- Jargon without an immediate plain gloss
+
+---
+
+## 5. Approved clinical positions
+
+Claims in this section still require a citation at render time — this section
+records the practice's *position*, not the evidence. The research step attaches
+sources; the dentist signs off before anything renders.
+
+- Untreated gum disease is progressive; early intervention is less invasive than late.
+- Modern local anaesthetic makes most restorative work tolerable for most patients, but individual experience varies and is never guaranteed.
+- Dental radiographs use low doses; frequency should be based on individual risk, not a fixed schedule.
+- Whitening enamel safety depends on concentration, contact time, and supervision.
+- An extraction is sometimes the right answer and is presented as a real option, not a failure.
+
+---
+
+## 6. What we will not post
+
+- Patient faces or intraoral photos without a signed release naming the channel.
+- Before/afters implying a typical result.
+- Anything comparing the practice to a named competitor.
+- Fee or discount copy generated by the automated pipeline without owner sign-off.
+- Trend audio skits, pranks, or shock hooks (see banned_formats in client.json).

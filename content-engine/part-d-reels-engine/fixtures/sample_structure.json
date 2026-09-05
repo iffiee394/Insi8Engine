@@ -1,0 +1,51 @@
+{
+  "_note": "OFFLINE TEST FIXTURE. An abstract beat sheet of the kind extract_structure() produces. It carries no phrasing and no claims from any source video — which is the whole point of the structure/content separation. Used to exercise the rewrite + compliance + packet path without API calls.",
+  "topic": "I have not been to a dentist in years and I am embarrassed",
+  "structure": {
+    "beats": [
+      {
+        "name": "hook",
+        "seconds": 0.0,
+        "function": "Says out loud the thing the viewer has been privately avoiding, so they feel identified rather than caught.",
+        "device": "names a shame the viewer has not admitted, in the first person"
+      },
+      {
+        "name": "tension",
+        "seconds": 3.0,
+        "function": "Confirms the fear is real and common rather than dismissing it, which buys permission to keep talking.",
+        "device": "validates before correcting"
+      },
+      {
+        "name": "turn",
+        "seconds": 9.0,
+        "function": "Reframes what the viewer assumed the professional was thinking about them.",
+        "device": "reveals the insider perspective the viewer cannot see"
+      },
+      {
+        "name": "evidence",
+        "seconds": 18.0,
+        "function": "Gives one concrete, checkable detail that makes the reframe credible rather than merely kind.",
+        "device": "specific number or process detail"
+      },
+      {
+        "name": "payoff",
+        "seconds": 30.0,
+        "function": "Lowers the cost of the first step so it stops feeling like a commitment.",
+        "device": "shrinks the ask to something smaller than the viewer expected"
+      },
+      {
+        "name": "cta",
+        "seconds": 40.0,
+        "function": "Invites without pressure and gives the viewer a reason to pass it to someone else.",
+        "device": "addresses the person watching on behalf of someone they love"
+      }
+    ],
+    "hook_mechanism": "Opens on an admission rather than a question, so the viewer recognises themselves before deciding whether to keep watching.",
+    "retention_device": "The viewer wants to know what the professional actually thinks of them, which is only answered at the turn.",
+    "share_trigger": "A viewer sends this to a partner or parent they have been quietly nagging to book an appointment, because it makes the point for them without sounding like nagging.",
+    "format": "direct-to-camera explainer",
+    "target_seconds": 45,
+    "transferable": true,
+    "why_not_transferable": ""
+  }
+}

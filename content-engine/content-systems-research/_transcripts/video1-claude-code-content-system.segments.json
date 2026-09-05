@@ -1,0 +1,9482 @@
+[
+ {
+  "start": 0.08,
+  "end": 3.84,
+  "text": "In this video, I'm going to be showing"
+ },
+ {
+  "start": 1.52,
+  "end": 6.16,
+  "text": "you how to build a 100% automated"
+ },
+ {
+  "start": 3.84,
+  "end": 8.48,
+  "text": "content generation system for your"
+ },
+ {
+  "start": 6.16,
+  "end": 9.76,
+  "text": "business using Claude Code. We're going"
+ },
+ {
+  "start": 8.48,
+  "end": 11.200000000000001,
+  "text": "to start with the basics [music] like"
+ },
+ {
+  "start": 9.76,
+  "end": 12.48,
+  "text": "connecting your tools and setting up"
+ },
+ {
+  "start": 11.2,
+  "end": 14.239999999999998,
+  "text": "your environment. Then, we're going to"
+ },
+ {
+  "start": 12.48,
+  "end": 17.359,
+  "text": "get into ideation and [music] creating"
+ },
+ {
+  "start": 14.24,
+  "end": 18.995,
+  "text": "assets that look amazing for your brand."
+ },
+ {
+  "start": 17.359,
+  "end": 20.880000000000003,
+  "text": "After that, I'm going to show you"
+ },
+ {
+  "start": 18.995,
+  "end": 22.64,
+  "text": "[music] how to not only schedule all of"
+ },
+ {
+  "start": 20.88,
+  "end": 24.64,
+  "text": "your posts from Claude Code, but how to"
+ },
+ {
+  "start": 22.64,
+  "end": 25.68,
+  "text": "automate the entire process. So, all you"
+ },
+ {
+  "start": 24.64,
+  "end": 27.84,
+  "text": "have to do is type in a [music] couple"
+ },
+ {
+  "start": 25.68,
+  "end": 29.679,
+  "text": "of words and you get all of your social"
+ },
+ {
+  "start": 27.84,
+  "end": 31.119,
+  "text": "media handled. Now, the promise might"
+ },
+ {
+  "start": 29.679,
+  "end": 32.8,
+  "text": "sound too good to be true. [music] So,"
+ },
+ {
+  "start": 31.119,
+  "end": 34.8,
+  "text": "first, let me just show you what we're"
+ },
+ {
+  "start": 32.8,
+  "end": 36.8,
+  "text": "going to be building today live. Let's"
+ },
+ {
+  "start": 34.8,
+  "end": 39.12,
+  "text": "say I want to create a LinkedIn [music]"
+ },
+ {
+  "start": 36.8,
+  "end": 41.68,
+  "text": "post and an Instagram post around this"
+ },
+ {
+  "start": 39.12,
+  "end": 43.76,
+  "text": "video right here where this Claude setup"
+ },
+ {
+  "start": 41.68,
+  "end": 46.32,
+  "text": "does weeks of work and hours. What I can"
+ },
+ {
+  "start": 43.76,
+  "end": 48.718999999999994,
+  "text": "do is I can click this. I can copy the"
+ },
+ {
+  "start": 46.32,
+  "end": 51.12,
+  "text": "link up here. I can go to Claude and I"
+ },
+ {
+  "start": 48.719,
+  "end": 53.68,
+  "text": "can type in /carous"
+ },
+ {
+  "start": 51.12,
+  "end": 56.64,
+  "text": "creator and then [music] paste in my"
+ },
+ {
+  "start": 53.68,
+  "end": 58.64,
+  "text": "YouTube video URL and then send it off."
+ },
+ {
+  "start": 56.64,
+  "end": 60.559,
+  "text": "And now my LinkedIn and Instagram posts"
+ },
+ {
+  "start": 58.64,
+  "end": 62.0,
+  "text": "are going to be created for me. [music]"
+ },
+ {
+  "start": 60.559,
+  "end": 64.08,
+  "text": "And it's not just going to generate some"
+ },
+ {
+  "start": 62.0,
+  "end": 65.68,
+  "text": "weird AI slop. We have a lot working"
+ },
+ {
+  "start": 64.08,
+  "end": 68.08,
+  "text": "underneath the hood that's making this"
+ },
+ {
+  "start": 65.68,
+  "end": 70.799,
+  "text": "possible. We have real images of me that"
+ },
+ {
+  "start": 68.08,
+  "end": 74.15899999999999,
+  "text": "it's going to be using in the post. We"
+ },
+ {
+  "start": 70.799,
+  "end": 75.68,
+  "text": "have assets like a voice file that has"
+ },
+ {
+  "start": 74.159,
+  "end": 77.52000000000001,
+  "text": "captured my voice that I'm going to show"
+ },
+ {
+  "start": 75.68,
+  "end": 79.52000000000001,
+  "text": "you how to create today. We have"
+ },
+ {
+  "start": 77.52,
+  "end": 81.52,
+  "text": "instruction files in here for certain"
+ },
+ {
+  "start": 79.52,
+  "end": 83.28,
+  "text": "image styles and how we need to create"
+ },
+ {
+  "start": 81.52,
+  "end": 85.119,
+  "text": "images. All of this is stuff that we're"
+ },
+ {
+  "start": 83.28,
+  "end": 87.759,
+  "text": "going to be creating together in this"
+ },
+ {
+  "start": 85.119,
+  "end": 89.439,
+  "text": "video. you will have a fully automated"
+ },
+ {
+  "start": 87.759,
+  "end": 92.24,
+  "text": "content generation system with your"
+ },
+ {
+  "start": 89.439,
+  "end": 94.24,
+  "text": "voice, your assets, your images, and"
+ },
+ {
+  "start": 92.24,
+  "end": 96.88,
+  "text": "everything in between. Now, after this"
+ },
+ {
+  "start": 94.24,
+  "end": 99.52,
+  "text": "single prompt that I typed out, that's"
+ },
+ {
+  "start": 96.88,
+  "end": 102.479,
+  "text": "all it took, and this was the result. If"
+ },
+ {
+  "start": 99.52,
+  "end": 105.19999999999999,
+  "text": "we scroll down, as you can see, we have"
+ },
+ {
+  "start": 102.479,
+  "end": 107.67999999999999,
+  "text": "the deck that I built for this. An image"
+ },
+ {
+  "start": 105.2,
+  "end": 110.07900000000001,
+  "text": "of me on the balcony over here, a"
+ },
+ {
+  "start": 107.68,
+  "end": 113.119,
+  "text": "complete Instagram carousel using all of"
+ },
+ {
+  "start": 110.079,
+  "end": 115.03999999999999,
+  "text": "the data that I had from that video,"
+ },
+ {
+  "start": 113.119,
+  "end": 117.28,
+  "text": "actual words that I spoke in the video."
+ },
+ {
+  "start": 115.04,
+  "end": 120.0,
+  "text": "It repurposed them into this nice"
+ },
+ {
+  "start": 117.28,
+  "end": 122.56,
+  "text": "branded format. And it's a scroll"
+ },
+ {
+  "start": 120.0,
+  "end": 125.68,
+  "text": "stopping post. And this was automated."
+ },
+ {
+  "start": 122.56,
+  "end": 129.84,
+  "text": "All I have to say now in clawed code is"
+ },
+ {
+  "start": 125.68,
+  "end": 131.92000000000002,
+  "text": "schedule for AG6. and I can send it off."
+ },
+ {
+  "start": 129.84,
+  "end": 134.64000000000001,
+  "text": "And that's it. That took two prompts."
+ },
+ {
+  "start": 131.92,
+  "end": 137.35999999999999,
+  "text": "Prompt number one, prompt number two."
+ },
+ {
+  "start": 134.64,
+  "end": 139.51999999999998,
+  "text": "And it didn't only generate the images"
+ },
+ {
+  "start": 137.36,
+  "end": 141.44000000000003,
+  "text": "from the video, but it also created text"
+ },
+ {
+  "start": 139.52,
+  "end": 143.36,
+  "text": "to go in those posts. And so, just like"
+ },
+ {
+  "start": 141.44,
+  "end": 145.2,
+  "text": "that, those have been scheduled for my"
+ },
+ {
+  "start": 143.36,
+  "end": 147.04000000000002,
+  "text": "social media accounts because of this"
+ },
+ {
+  "start": 145.2,
+  "end": 148.72,
+  "text": "automated system. We could have even"
+ },
+ {
+  "start": 147.04,
+  "end": 150.48,
+  "text": "automated the scheduling if we wanted"
+ },
+ {
+  "start": 148.72,
+  "end": 152.08,
+  "text": "to. And you can even see that over here"
+ },
+ {
+  "start": 150.48,
+  "end": 154.48,
+  "text": "in my content calendar that I've"
+ },
+ {
+  "start": 152.08,
+  "end": 156.56,
+  "text": "connected to Claude Code. We have all of"
+ },
+ {
+  "start": 154.48,
+  "end": 158.23899999999998,
+  "text": "our posts being scheduled now with"
+ },
+ {
+  "start": 156.56,
+  "end": 160.4,
+  "text": "Claude Code. And we can easily fill up"
+ },
+ {
+  "start": 158.239,
+  "end": 161.68,
+  "text": "our calendar with this automation. This"
+ },
+ {
+  "start": 160.4,
+  "end": 163.36,
+  "text": "is what it's going to look like on"
+ },
+ {
+  "start": 161.68,
+  "end": 165.84,
+  "text": "LinkedIn. This is what it's going to"
+ },
+ {
+  "start": 163.36,
+  "end": 167.68,
+  "text": "look like on Instagram with all of those"
+ },
+ {
+  "start": 165.84,
+  "end": 169.04,
+  "text": "images in that nice carousel format. And"
+ },
+ {
+  "start": 167.68,
+  "end": 170.8,
+  "text": "now it's just about filling up your"
+ },
+ {
+  "start": 169.04,
+  "end": 173.35999999999999,
+  "text": "calendar with amazing content. This"
+ },
+ {
+  "start": 170.8,
+  "end": 175.20000000000002,
+  "text": "setup gives that capability to you. So,"
+ },
+ {
+  "start": 173.36,
+  "end": 177.36,
+  "text": "in order to create what I just showed"
+ },
+ {
+  "start": 175.2,
+  "end": 179.28,
+  "text": "you, it takes about five steps. And"
+ },
+ {
+  "start": 177.36,
+  "end": 181.28,
+  "text": "after this video, you'll have all of"
+ },
+ {
+  "start": 179.28,
+  "end": 182.879,
+  "text": "your social media pretty much on an"
+ },
+ {
+  "start": 181.28,
+  "end": 184.64000000000001,
+  "text": "automated schedule, and it's going to be"
+ },
+ {
+  "start": 182.879,
+  "end": 186.56,
+  "text": "a lot easier to get in a rhythm when it"
+ },
+ {
+  "start": 184.64,
+  "end": 189.599,
+  "text": "comes to posting. So, let's get into"
+ },
+ {
+  "start": 186.56,
+  "end": 191.84,
+  "text": "those five steps. So, step number one is"
+ },
+ {
+  "start": 189.599,
+  "end": 193.44,
+  "text": "to set up your environment. So, there's"
+ },
+ {
+  "start": 191.84,
+  "end": 195.36,
+  "text": "three tools that you need in order to"
+ },
+ {
+  "start": 193.44,
+  "end": 197.2,
+  "text": "accomplish this. And it takes about 10"
+ },
+ {
+  "start": 195.36,
+  "end": 199.20000000000002,
+  "text": "minutes to set up and connect all of"
+ },
+ {
+  "start": 197.2,
+  "end": 201.11999999999998,
+  "text": "those tools. So, in this video, I'm"
+ },
+ {
+  "start": 199.2,
+  "end": 203.11999999999998,
+  "text": "going to be showing you how to do that."
+ },
+ {
+  "start": 201.12,
+  "end": 205.04,
+  "text": "Next stage is ideation. After you have"
+ },
+ {
+  "start": 203.12,
+  "end": 207.12,
+  "text": "everything connected, this is a stage"
+ },
+ {
+  "start": 205.04,
+  "end": 208.319,
+  "text": "where you find different social media"
+ },
+ {
+  "start": 207.12,
+  "end": 210.64000000000001,
+  "text": "posts that you like, that you're"
+ },
+ {
+  "start": 208.319,
+  "end": 212.79899999999998,
+  "text": "inspired by, different styles that you"
+ },
+ {
+  "start": 210.64,
+  "end": 214.64,
+  "text": "want to replicate. Do something that"
+ },
+ {
+  "start": 212.799,
+  "end": 217.04000000000002,
+  "text": "already works and mix it with your"
+ },
+ {
+  "start": 214.64,
+  "end": 219.11999999999998,
+  "text": "brand. It's never that good of an idea"
+ },
+ {
+  "start": 217.04,
+  "end": 220.56,
+  "text": "to reinvent the wheel on social media"
+ },
+ {
+  "start": 219.12,
+  "end": 221.92000000000002,
+  "text": "because there's an algorithm for a"
+ },
+ {
+  "start": 220.56,
+  "end": 223.28,
+  "text": "reason. People don't want to be seeing"
+ },
+ {
+  "start": 221.92,
+  "end": 224.879,
+  "text": "something new. They want to be seeing"
+ },
+ {
+  "start": 223.28,
+  "end": 226.64000000000001,
+  "text": "something that they've already seen"
+ },
+ {
+  "start": 224.879,
+  "end": 228.72,
+  "text": "before with a different character behind"
+ },
+ {
+  "start": 226.64,
+  "end": 231.599,
+  "text": "it. And that character is your business"
+ },
+ {
+  "start": 228.72,
+  "end": 233.599,
+  "text": "or your brand. And the ideas are just"
+ },
+ {
+  "start": 231.599,
+  "end": 234.959,
+  "text": "reused in a better way. And so the"
+ },
+ {
+  "start": 233.599,
+  "end": 236.879,
+  "text": "ideation phase is where you're going to"
+ },
+ {
+  "start": 234.959,
+  "end": 239.439,
+  "text": "gather your assets, decide on your post"
+ },
+ {
+  "start": 236.879,
+  "end": 241.92,
+  "text": "types, like do you want text and image,"
+ },
+ {
+  "start": 239.439,
+  "end": 243.92,
+  "text": "just text posts? Do you want a carousel"
+ },
+ {
+  "start": 241.92,
+  "end": 246.95899999999997,
+  "text": "post? What platforms do you want to be"
+ },
+ {
+  "start": 243.92,
+  "end": 248.79899999999998,
+  "text": "posting on? These are post types and you"
+ },
+ {
+  "start": 246.959,
+  "end": 251.12,
+  "text": "can kind of create templates with this"
+ },
+ {
+  "start": 248.799,
+  "end": 252.56,
+  "text": "ideation phase. The next step is to"
+ },
+ {
+  "start": 251.12,
+  "end": 254.879,
+  "text": "shape your voice. In this video, I'm"
+ },
+ {
+  "start": 252.56,
+  "end": 256.479,
+  "text": "going to show one file that allows your"
+ },
+ {
+  "start": 254.879,
+  "end": 259.12,
+  "text": "post to stop sounding like everyone"
+ },
+ {
+  "start": 256.479,
+  "end": 260.479,
+  "text": "else's and to not make them sound so AI"
+ },
+ {
+  "start": 259.12,
+  "end": 263.28000000000003,
+  "text": "generated. This is going to help you"
+ },
+ {
+  "start": 260.479,
+  "end": 265.59999999999997,
+  "text": "mitigate AI slop entirely. And so, it's"
+ },
+ {
+  "start": 263.28,
+  "end": 267.59999999999997,
+  "text": "kind of an interview process where you"
+ },
+ {
+  "start": 265.6,
+  "end": 270.24,
+  "text": "can use claw code to shape your voice"
+ },
+ {
+  "start": 267.6,
+  "end": 273.12,
+  "text": "file so it writes content like you"
+ },
+ {
+  "start": 270.24,
+  "end": 274.72,
+  "text": "instead of like AI. Next, we're going to"
+ },
+ {
+  "start": 273.12,
+  "end": 276.24,
+  "text": "build a carousel post. So, I think"
+ },
+ {
+  "start": 274.72,
+  "end": 278.56,
+  "text": "carousels are one of the more dynamic"
+ },
+ {
+  "start": 276.24,
+  "end": 281.36,
+  "text": "things that need to flow. And a carousel"
+ },
+ {
+  "start": 278.56,
+  "end": 284.24,
+  "text": "is five images back to back to back on"
+ },
+ {
+  "start": 281.36,
+  "end": 286.24,
+  "text": "Instagram or LinkedIn. And this is a"
+ },
+ {
+  "start": 284.24,
+  "end": 287.84000000000003,
+  "text": "complex thing to do. But in this video,"
+ },
+ {
+  "start": 286.24,
+  "end": 289.919,
+  "text": "I want to show you how to do it from"
+ },
+ {
+  "start": 287.84,
+  "end": 292.08,
+  "text": "start to finish on camera so you can see"
+ },
+ {
+  "start": 289.919,
+  "end": 293.75899999999996,
+  "text": "the entire ideation and design process"
+ },
+ {
+  "start": 292.08,
+  "end": 295.919,
+  "text": "when it comes to something a little bit"
+ },
+ {
+  "start": 293.759,
+  "end": 297.6,
+  "text": "more complex like a carousel. And if you"
+ },
+ {
+  "start": 295.919,
+  "end": 299.28,
+  "text": "can build a carousel, you can build"
+ },
+ {
+  "start": 297.6,
+  "end": 300.8,
+  "text": "pretty much anything. And then I'm going"
+ },
+ {
+  "start": 299.28,
+  "end": 302.88,
+  "text": "to show you how to automate it. And this"
+ },
+ {
+  "start": 300.8,
+  "end": 305.12,
+  "text": "is just something you can type in one"
+ },
+ {
+  "start": 302.88,
+  "end": 306.8,
+  "text": "command. You can run this on a schedule"
+ },
+ {
+  "start": 305.12,
+  "end": 308.72,
+  "text": "and it allows you to stop thinking about"
+ },
+ {
+  "start": 306.8,
+  "end": 310.56,
+  "text": "it and like I said earlier, get in a"
+ },
+ {
+  "start": 308.72,
+  "end": 312.47900000000004,
+  "text": "better rhythm with your content. So"
+ },
+ {
+  "start": 310.56,
+  "end": 314.88,
+  "text": "let's start with step number one,"
+ },
+ {
+  "start": 312.479,
+  "end": 316.24,
+  "text": "setting up the environment. First, we"
+ },
+ {
+  "start": 314.88,
+  "end": 317.84,
+  "text": "need to understand what tools do we need"
+ },
+ {
+  "start": 316.24,
+  "end": 320.08,
+  "text": "to accomplish this and what do those"
+ },
+ {
+  "start": 317.84,
+  "end": 322.88,
+  "text": "tools cost. So the first tool you need"
+ },
+ {
+  "start": 320.08,
+  "end": 324.8,
+  "text": "is Claude Code. Claude code is not only"
+ },
+ {
+  "start": 322.88,
+  "end": 326.96,
+  "text": "your designer that's going to help you"
+ },
+ {
+  "start": 324.8,
+  "end": 328.639,
+  "text": "create the image and video prompts if"
+ },
+ {
+  "start": 326.96,
+  "end": 330.71999999999997,
+  "text": "you're going to be uploading videos, but"
+ },
+ {
+  "start": 328.639,
+  "end": 333.52,
+  "text": "it's also your writer. It's the thing"
+ },
+ {
+  "start": 330.72,
+  "end": 335.52000000000004,
+  "text": "that takes your ideas and makes actual"
+ },
+ {
+  "start": 333.52,
+  "end": 337.52,
+  "text": "good posts. And it's also going to be"
+ },
+ {
+  "start": 335.52,
+  "end": 340.32,
+  "text": "deciding for you and strategizing for"
+ },
+ {
+  "start": 337.52,
+  "end": 342.15999999999997,
+  "text": "you. Obviously, claude code is one of"
+ },
+ {
+  "start": 340.32,
+  "end": 344.71999999999997,
+  "text": "the most important tools here because"
+ },
+ {
+  "start": 342.16,
+  "end": 346.8,
+  "text": "it's the engine around everything in the"
+ },
+ {
+  "start": 344.72,
+  "end": 348.47900000000004,
+  "text": "execution layer. Now, if you're nervous"
+ },
+ {
+  "start": 346.8,
+  "end": 350.88,
+  "text": "about cloud code or you've never used"
+ },
+ {
+  "start": 348.479,
+  "end": 352.56,
+  "text": "claw code before, don't be. You can use"
+ },
+ {
+  "start": 350.88,
+  "end": 354.4,
+  "text": "it without knowing how to code without"
+ },
+ {
+  "start": 352.56,
+  "end": 356.24,
+  "text": "being that technical. And if you're"
+ },
+ {
+  "start": 354.4,
+  "end": 358.32,
+  "text": "really wanting to understand it deeper,"
+ },
+ {
+  "start": 356.24,
+  "end": 360.16,
+  "text": "first go watch the tutorial I've linked"
+ },
+ {
+  "start": 358.32,
+  "end": 361.919,
+  "text": "in the upper right hand corner, my full"
+ },
+ {
+  "start": 360.16,
+  "end": 363.6,
+  "text": "Clawed Code guide. And that will get you"
+ },
+ {
+  "start": 361.919,
+  "end": 365.19899999999996,
+  "text": "up to speed on what Claude Code is."
+ },
+ {
+  "start": 363.6,
+  "end": 366.96000000000004,
+  "text": "It'll get you using it and comfortable"
+ },
+ {
+  "start": 365.199,
+  "end": 368.40000000000003,
+  "text": "and get it installed on your computer."
+ },
+ {
+  "start": 366.96,
+  "end": 370.4,
+  "text": "So, make sure you do that first and then"
+ },
+ {
+  "start": 368.4,
+  "end": 372.15999999999997,
+  "text": "come back to this video if you're on"
+ },
+ {
+  "start": 370.4,
+  "end": 375.84,
+  "text": "edge about that. The next tool we need"
+ },
+ {
+  "start": 372.16,
+  "end": 378.0,
+  "text": "is FAL. And FAL is an aggregate for"
+ },
+ {
+  "start": 375.84,
+  "end": 380.23999999999995,
+  "text": "image generation tools and video"
+ },
+ {
+  "start": 378.0,
+  "end": 382.24,
+  "text": "generation tools. We're going to be"
+ },
+ {
+  "start": 380.24,
+  "end": 383.68,
+  "text": "running GPT image 2. I think that's"
+ },
+ {
+  "start": 382.24,
+  "end": 386.72,
+  "text": "probably the best for carousels right"
+ },
+ {
+  "start": 383.68,
+  "end": 388.8,
+  "text": "now and just good AI generated images"
+ },
+ {
+  "start": 386.72,
+  "end": 391.199,
+  "text": "with anything. It could be a picture of"
+ },
+ {
+  "start": 388.8,
+  "end": 393.36,
+  "text": "you and it maintains the exact way you"
+ },
+ {
+  "start": 391.199,
+  "end": 395.28000000000003,
+  "text": "look. It can add text to images and do"
+ },
+ {
+  "start": 393.36,
+  "end": 397.039,
+  "text": "so many cool things. And instead of"
+ },
+ {
+  "start": 395.28,
+  "end": 398.31899999999996,
+  "text": "paying a monthly fee, you pay per image"
+ },
+ {
+  "start": 397.039,
+  "end": 399.52,
+  "text": "so there's less of a commitment. And"
+ },
+ {
+  "start": 398.319,
+  "end": 401.91900000000004,
+  "text": "they have pretty much all the image and"
+ },
+ {
+  "start": 399.52,
+  "end": 403.84,
+  "text": "video models. So a week of posts costs"
+ },
+ {
+  "start": 401.919,
+  "end": 405.35999999999996,
+  "text": "about a coffee. I like how it said that"
+ },
+ {
+  "start": 403.84,
+  "end": 407.28,
+  "text": "there. And the last tool that we're"
+ },
+ {
+  "start": 405.36,
+  "end": 410.47900000000004,
+  "text": "going to need, which is the crucial"
+ },
+ {
+  "start": 407.28,
+  "end": 412.79999999999995,
+  "text": "bridge between Claude Code and FA to our"
+ },
+ {
+  "start": 410.479,
+  "end": 414.639,
+  "text": "actual social accounts, is Blatado."
+ },
+ {
+  "start": 412.8,
+  "end": 417.6,
+  "text": "Blatado is the scheduling tool that"
+ },
+ {
+  "start": 414.639,
+  "end": 419.919,
+  "text": "allows you to link all nine platforms"
+ },
+ {
+  "start": 417.6,
+  "end": 422.08000000000004,
+  "text": "for your social media. So Claude doesn't"
+ },
+ {
+  "start": 419.919,
+  "end": 423.44,
+  "text": "have to try to go connect and it's very"
+ },
+ {
+  "start": 422.08,
+  "end": 425.599,
+  "text": "hard to connect your platforms"
+ },
+ {
+  "start": 423.44,
+  "end": 427.84,
+  "text": "otherwise. So Blatado is a thing that"
+ },
+ {
+  "start": 425.599,
+  "end": 429.68,
+  "text": "allows you to schedule your posts out,"
+ },
+ {
+  "start": 427.84,
+  "end": 432.08,
+  "text": "connect your platforms in one place. And"
+ },
+ {
+  "start": 429.68,
+  "end": 434.479,
+  "text": "Blatato also comes packed with a bunch"
+ },
+ {
+  "start": 432.08,
+  "end": 436.88,
+  "text": "of skills and prompts to write social"
+ },
+ {
+  "start": 434.479,
+  "end": 440.24,
+  "text": "media posts. So all in all for"
+ },
+ {
+  "start": 436.88,
+  "end": 441.759,
+  "text": "scheduling, Blatado is the best tool."
+ },
+ {
+  "start": 440.24,
+  "end": 443.599,
+  "text": "And this is the tool stack that we're"
+ },
+ {
+  "start": 441.759,
+  "end": 445.44,
+  "text": "going to need. And this is basically"
+ },
+ {
+  "start": 443.599,
+  "end": 446.8,
+  "text": "your social media marketing department"
+ },
+ {
+  "start": 445.44,
+  "end": 448.88,
+  "text": "right here. Now, let's take a look at"
+ },
+ {
+  "start": 446.8,
+  "end": 451.52000000000004,
+  "text": "what these tools cost. So Claude on the"
+ },
+ {
+  "start": 448.88,
+  "end": 453.52,
+  "text": "floor plan is $20 a month if you want to"
+ },
+ {
+  "start": 451.52,
+  "end": 455.039,
+  "text": "run Claude code, which I highly"
+ },
+ {
+  "start": 453.52,
+  "end": 457.599,
+  "text": "recommend. I don't know how I would do"
+ },
+ {
+  "start": 455.039,
+  "end": 459.199,
+  "text": "this otherwise. I'm on the $200 a month"
+ },
+ {
+  "start": 457.599,
+  "end": 461.52,
+  "text": "plan. And I've been paying Claude 200 a"
+ },
+ {
+  "start": 459.199,
+  "end": 463.36,
+  "text": "month for the past year, a little over a"
+ },
+ {
+  "start": 461.52,
+  "end": 465.599,
+  "text": "year now. I don't regret a single month."
+ },
+ {
+  "start": 463.36,
+  "end": 467.44,
+  "text": "It is the best tool on the market. Then"
+ },
+ {
+  "start": 465.599,
+  "end": 468.639,
+  "text": "we have foul. This costs you cents per"
+ },
+ {
+  "start": 467.44,
+  "end": 470.4,
+  "text": "image, especially if you get your"
+ },
+ {
+  "start": 468.639,
+  "end": 472.08,
+  "text": "prompts dialed in with Claude, which it"
+ },
+ {
+  "start": 470.4,
+  "end": 474.23999999999995,
+  "text": "can easily help you create amazing image"
+ },
+ {
+  "start": 472.08,
+  "end": 476.15999999999997,
+  "text": "prompts. You can put $10 on this thing"
+ },
+ {
+  "start": 474.24,
+  "end": 477.759,
+  "text": "and forget about it for months. Maybe"
+ },
+ {
+  "start": 476.16,
+  "end": 480.0,
+  "text": "not months if you're posting a lot, but"
+ },
+ {
+  "start": 477.759,
+  "end": 482.879,
+  "text": "10 to 20 bucks and it will go a long"
+ },
+ {
+  "start": 480.0,
+  "end": 484.24,
+  "text": "way. The next tool, Blatato, which make"
+ },
+ {
+  "start": 482.879,
+  "end": 485.68,
+  "text": "sure you use my link in the description"
+ },
+ {
+  "start": 484.24,
+  "end": 487.28000000000003,
+  "text": "because they are the sponsor of this"
+ },
+ {
+  "start": 485.68,
+  "end": 489.039,
+  "text": "video. I was using them before they"
+ },
+ {
+  "start": 487.28,
+  "end": 491.75899999999996,
+  "text": "sponsored, but Blatado is going to run"
+ },
+ {
+  "start": 489.039,
+  "end": 493.12,
+  "text": "you $29 a month on their starter plan."
+ },
+ {
+  "start": 491.759,
+  "end": 495.12,
+  "text": "The starter plan has always worked out"
+ },
+ {
+  "start": 493.12,
+  "end": 496.72,
+  "text": "great for me because I don't have over"
+ },
+ {
+  "start": 495.12,
+  "end": 498.56,
+  "text": "39 social accounts that I'm connecting"
+ },
+ {
+  "start": 496.72,
+  "end": 500.96000000000004,
+  "text": "to. I have about three. So, that's what"
+ },
+ {
+  "start": 498.56,
+  "end": 503.759,
+  "text": "Blato costs for the scheduling tool and"
+ },
+ {
+  "start": 500.96,
+  "end": 507.84,
+  "text": "it's a necessity for this video. So, all"
+ },
+ {
+  "start": 503.759,
+  "end": 509.91900000000004,
+  "text": "in all, for I would say $60 to $70, you"
+ },
+ {
+  "start": 507.84,
+  "end": 512.8,
+  "text": "could have a full month worth of social"
+ },
+ {
+  "start": 509.919,
+  "end": 515.76,
+  "text": "media posts all planned out and ready to"
+ },
+ {
+  "start": 512.8,
+  "end": 517.5989999999999,
+  "text": "go, which is not bad considering what a"
+ },
+ {
+  "start": 515.76,
+  "end": 519.68,
+  "text": "marketing agency will run you. So, now"
+ },
+ {
+  "start": 517.599,
+  "end": 521.36,
+  "text": "let's connect all of these tools and get"
+ },
+ {
+  "start": 519.68,
+  "end": 523.12,
+  "text": "our environment set up. I'm going to"
+ },
+ {
+  "start": 521.36,
+  "end": 525.12,
+  "text": "walk you through the entire process step"
+ },
+ {
+  "start": 523.12,
+  "end": 526.5600000000001,
+  "text": "by step. And this is like a one-time"
+ },
+ {
+  "start": 525.12,
+  "end": 528.08,
+  "text": "thing. Once you get everything set up"
+ },
+ {
+  "start": 526.56,
+  "end": 530.399,
+  "text": "and connected, then you just live in"
+ },
+ {
+  "start": 528.08,
+  "end": 532.32,
+  "text": "Cloud Code and you can generate all the"
+ },
+ {
+  "start": 530.399,
+  "end": 534.959,
+  "text": "images there. You can generate all the"
+ },
+ {
+  "start": 532.32,
+  "end": 537.36,
+  "text": "text for any post on LinkedIn,"
+ },
+ {
+  "start": 534.959,
+  "end": 538.88,
+  "text": "Instagram, anything you want. You can do"
+ },
+ {
+  "start": 537.36,
+  "end": 540.5600000000001,
+  "text": "it all from cloud code after you get"
+ },
+ {
+  "start": 538.88,
+  "end": 542.399,
+  "text": "this all connected. So, let's get the"
+ },
+ {
+  "start": 540.56,
+  "end": 544.0,
+  "text": "boring stuff out of the way. Right now,"
+ },
+ {
+  "start": 542.399,
+  "end": 545.839,
+  "text": "before we get into connecting anything"
+ },
+ {
+  "start": 544.0,
+  "end": 547.279,
+  "text": "or setting up any of these fancy tools,"
+ },
+ {
+  "start": 545.839,
+  "end": 549.44,
+  "text": "what we need to do is we need to create"
+ },
+ {
+  "start": 547.279,
+  "end": 550.959,
+  "text": "a working directory where we are going"
+ },
+ {
+  "start": 549.44,
+  "end": 553.0400000000001,
+  "text": "to store all of our images and where"
+ },
+ {
+  "start": 550.959,
+  "end": 554.959,
+  "text": "Claude Code is going to work from. And"
+ },
+ {
+  "start": 553.04,
+  "end": 557.8389999999999,
+  "text": "so, a working directory when using"
+ },
+ {
+  "start": 554.959,
+  "end": 559.76,
+  "text": "Claude Code is literally a folder on"
+ },
+ {
+  "start": 557.839,
+  "end": 561.519,
+  "text": "your desktop. And so let's create a"
+ },
+ {
+  "start": 559.76,
+  "end": 564.16,
+  "text": "folder on our desktop where we will be"
+ },
+ {
+  "start": 561.519,
+  "end": 566.16,
+  "text": "generating our images to and from. I'm"
+ },
+ {
+  "start": 564.16,
+  "end": 567.519,
+  "text": "in a location on my computer. What I'm"
+ },
+ {
+  "start": 566.16,
+  "end": 569.1999999999999,
+  "text": "going to do is rightclick and hit new"
+ },
+ {
+  "start": 567.519,
+  "end": 571.76,
+  "text": "folder. And what I'm going to call this"
+ },
+ {
+  "start": 569.2,
+  "end": 574.0,
+  "text": "is content system. And then in"
+ },
+ {
+  "start": 571.76,
+  "end": 575.6,
+  "text": "parenthesis I will put Aif for AI"
+ },
+ {
+  "start": 574.0,
+  "end": 578.08,
+  "text": "foundations. And then I'm going to hit"
+ },
+ {
+  "start": 575.6,
+  "end": 580.24,
+  "text": "enter. So here we have a folder. This is"
+ },
+ {
+  "start": 578.08,
+  "end": 582.32,
+  "text": "Claude's working directory. So anything"
+ },
+ {
+  "start": 580.24,
+  "end": 584.399,
+  "text": "we put in here can be used by Claude."
+ },
+ {
+  "start": 582.32,
+  "end": 586.5600000000001,
+  "text": "And it will also be putting its contents"
+ },
+ {
+  "start": 584.399,
+  "end": 588.72,
+  "text": "that it generates with foul in here. And"
+ },
+ {
+  "start": 586.56,
+  "end": 591.1999999999999,
+  "text": "so I'm going to click in here. Then I'm"
+ },
+ {
+  "start": 588.72,
+  "end": 594.0,
+  "text": "going to create a new folder called"
+ },
+ {
+  "start": 591.2,
+  "end": 596.08,
+  "text": "assets. Now, what I want you to do now"
+ },
+ {
+  "start": 594.0,
+  "end": 597.839,
+  "text": "is think about any assets you currently"
+ },
+ {
+  "start": 596.08,
+  "end": 600.24,
+  "text": "have that you want to be used in your"
+ },
+ {
+  "start": 597.839,
+  "end": 602.399,
+  "text": "social media. I recommend you do real"
+ },
+ {
+  "start": 600.24,
+  "end": 604.08,
+  "text": "photos of real things that you do, real"
+ },
+ {
+  "start": 602.399,
+  "end": 606.0,
+  "text": "images of yourself. I see a lot of"
+ },
+ {
+  "start": 604.08,
+  "end": 608.8000000000001,
+  "text": "people now doing AI generated images of"
+ },
+ {
+  "start": 606.0,
+  "end": 610.48,
+  "text": "everything of their yourself and then"
+ },
+ {
+  "start": 608.8,
+  "end": 612.399,
+  "text": "their AI generated content doesn't"
+ },
+ {
+  "start": 610.48,
+  "end": 614.16,
+  "text": "perform. And there's a reason for that."
+ },
+ {
+  "start": 612.399,
+  "end": 616.079,
+  "text": "The more human you can make something"
+ },
+ {
+  "start": 614.16,
+  "end": 618.24,
+  "text": "look in an automated fashion, the better"
+ },
+ {
+  "start": 616.079,
+  "end": 619.92,
+  "text": "it's going to perform. So right now what"
+ },
+ {
+  "start": 618.24,
+  "end": 623.76,
+  "text": "I'm going to do is I'm going to click in"
+ },
+ {
+  "start": 619.92,
+  "end": 625.12,
+  "text": "my assets folder. And now I'm in assets."
+ },
+ {
+  "start": 623.76,
+  "end": 626.959,
+  "text": "I'm going to rightclick and hit new"
+ },
+ {
+  "start": 625.12,
+  "end": 629.2,
+  "text": "folder again. And what I can do is I can"
+ },
+ {
+  "start": 626.959,
+  "end": 634.079,
+  "text": "create a folder within assets. I will"
+ },
+ {
+  "start": 629.2,
+  "end": 635.76,
+  "text": "call this something like images of me."
+ },
+ {
+  "start": 634.079,
+  "end": 637.8389999999999,
+  "text": "You can call this anything. You could"
+ },
+ {
+  "start": 635.76,
+  "end": 639.68,
+  "text": "even have images and then you could have"
+ },
+ {
+  "start": 637.839,
+  "end": 641.519,
+  "text": "multiple subfolders within images. You"
+ },
+ {
+  "start": 639.68,
+  "end": 642.8,
+  "text": "can organize this however you want, but"
+ },
+ {
+  "start": 641.519,
+  "end": 645.12,
+  "text": "I'm just going to create a folder called"
+ },
+ {
+  "start": 642.8,
+  "end": 647.1999999999999,
+  "text": "images of me. So now we have our main"
+ },
+ {
+  "start": 645.12,
+  "end": 649.92,
+  "text": "content system folder with an assets"
+ },
+ {
+  "start": 647.2,
+  "end": 651.76,
+  "text": "folder in it and then an images of me."
+ },
+ {
+  "start": 649.92,
+  "end": 654.56,
+  "text": "And here I'm going to go find a bunch of"
+ },
+ {
+  "start": 651.76,
+  "end": 655.92,
+  "text": "images of me that I want to use in my"
+ },
+ {
+  "start": 654.56,
+  "end": 658.2399999999999,
+  "text": "social media content. And these are"
+ },
+ {
+  "start": 655.92,
+  "end": 660.4799999999999,
+  "text": "going to be real life images taken of me"
+ },
+ {
+  "start": 658.24,
+  "end": 662.32,
+  "text": "that we can AI enhance. So I've prepared"
+ },
+ {
+  "start": 660.48,
+  "end": 664.399,
+  "text": "for this. I've got a couple of images of"
+ },
+ {
+  "start": 662.32,
+  "end": 666.0790000000001,
+  "text": "me out in public. And if I'm trying to"
+ },
+ {
+  "start": 664.399,
+  "end": 669.04,
+  "text": "sell the dream of AI, I've got to show"
+ },
+ {
+  "start": 666.079,
+  "end": 670.7199999999999,
+  "text": "me, of course, by the ocean out when I'm"
+ },
+ {
+  "start": 669.04,
+  "end": 672.48,
+  "text": "actually not working at my desk because"
+ },
+ {
+  "start": 670.72,
+  "end": 674.72,
+  "text": "that is what makes an attractive brand"
+ },
+ {
+  "start": 672.48,
+  "end": 676.24,
+  "text": "is the dream, I guess. So, I'm going to"
+ },
+ {
+  "start": 674.72,
+  "end": 679.2,
+  "text": "find all of these photos of me I have"
+ },
+ {
+  "start": 676.24,
+  "end": 681.12,
+  "text": "kind of working on the go uh because"
+ },
+ {
+  "start": 679.2,
+  "end": 683.76,
+  "text": "Claude's basically working in the"
+ },
+ {
+  "start": 681.12,
+  "end": 685.92,
+  "text": "background in all of these images. So, I"
+ },
+ {
+  "start": 683.76,
+  "end": 687.68,
+  "text": "can present my social media content that"
+ },
+ {
+  "start": 685.92,
+  "end": 689.5999999999999,
+  "text": "way as well. And I'm going to drag all"
+ },
+ {
+  "start": 687.68,
+  "end": 691.4399999999999,
+  "text": "of these in here and just show a little"
+ },
+ {
+  "start": 689.6,
+  "end": 692.9590000000001,
+  "text": "bit of the lifestyle to show me and what"
+ },
+ {
+  "start": 691.44,
+  "end": 694.399,
+  "text": "I do on a day-to-day basis rather than"
+ },
+ {
+  "start": 692.959,
+  "end": 696.4799999999999,
+  "text": "me at the desk. It's not too attractive"
+ },
+ {
+  "start": 694.399,
+  "end": 698.32,
+  "text": "to be at a desk for 12 hours a day. What"
+ },
+ {
+  "start": 696.48,
+  "end": 700.32,
+  "text": "is attractive though is being out and"
+ },
+ {
+  "start": 698.32,
+  "end": 702.399,
+  "text": "about. And I can use that to enhance my"
+ },
+ {
+  "start": 700.32,
+  "end": 705.0400000000001,
+  "text": "quality. So I've got some images in here"
+ },
+ {
+  "start": 702.399,
+  "end": 708.079,
+  "text": "of me and I've got them named. So"
+ },
+ {
+  "start": 705.04,
+  "end": 710.88,
+  "text": "balcony ocean coffee cafe pink laptop"
+ },
+ {
+  "start": 708.079,
+  "end": 713.1999999999999,
+  "text": "Harris lunch phone balcony sea laptop."
+ },
+ {
+  "start": 710.88,
+  "end": 714.959,
+  "text": "So that Claude can read in here and see"
+ },
+ {
+  "start": 713.2,
+  "end": 716.88,
+  "text": "what type of image would be good for a"
+ },
+ {
+  "start": 714.959,
+  "end": 718.7199999999999,
+  "text": "specific post. I'm going to add one more"
+ },
+ {
+  "start": 716.88,
+  "end": 721.12,
+  "text": "image. And so now we have images of me"
+ },
+ {
+  "start": 718.72,
+  "end": 722.88,
+  "text": "within my assets folder. And so this is"
+ },
+ {
+  "start": 721.12,
+  "end": 725.04,
+  "text": "setting up your environment and getting"
+ },
+ {
+  "start": 722.88,
+  "end": 727.04,
+  "text": "it ready for claude code. All of our"
+ },
+ {
+  "start": 725.04,
+  "end": 729.04,
+  "text": "outputs will come to this as well. We"
+ },
+ {
+  "start": 727.04,
+  "end": 730.639,
+  "text": "can probably have a folder in here or"
+ },
+ {
+  "start": 729.04,
+  "end": 732.399,
+  "text": "claude can create a folder for us called"
+ },
+ {
+  "start": 730.639,
+  "end": 734.16,
+  "text": "like outputs and it will be able to do"
+ },
+ {
+  "start": 732.399,
+  "end": 735.92,
+  "text": "that for us. And just to show you what's"
+ },
+ {
+  "start": 734.16,
+  "end": 737.76,
+  "text": "happening right now, if I go to Claude"
+ },
+ {
+  "start": 735.92,
+  "end": 739.92,
+  "text": "Code, as you can see, I'm in Claude"
+ },
+ {
+  "start": 737.76,
+  "end": 741.519,
+  "text": "Code, and I open up the folder, my"
+ },
+ {
+  "start": 739.92,
+  "end": 743.12,
+  "text": "working directory, which if you don't"
+ },
+ {
+  "start": 741.519,
+  "end": 744.8,
+  "text": "know what this is, again, go watch that"
+ },
+ {
+  "start": 743.12,
+  "end": 746.639,
+  "text": "video that I linked earlier, my full"
+ },
+ {
+  "start": 744.8,
+  "end": 748.8,
+  "text": "Claw Code tutorial, cuz I explain all of"
+ },
+ {
+  "start": 746.639,
+  "end": 751.12,
+  "text": "this. But I'm going to hit open folder"
+ },
+ {
+  "start": 748.8,
+  "end": 752.56,
+  "text": "and open that folder with Claw Code. So,"
+ },
+ {
+  "start": 751.12,
+  "end": 753.839,
+  "text": "I'm going to select open. And then what"
+ },
+ {
+  "start": 752.56,
+  "end": 756.0,
+  "text": "I'm going to do is I'm going to select"
+ },
+ {
+  "start": 753.839,
+  "end": 758.72,
+  "text": "the content system that we just created,"
+ },
+ {
+  "start": 756.0,
+  "end": 760.8,
+  "text": "and then hit open. Now, when I open it,"
+ },
+ {
+  "start": 758.72,
+  "end": 763.6800000000001,
+  "text": "I'll hit trust workspace. I'll turn the"
+ },
+ {
+  "start": 760.8,
+  "end": 765.279,
+  "text": "mode to auto and enable auto mode. What"
+ },
+ {
+  "start": 763.68,
+  "end": 767.5999999999999,
+  "text": "I can do is I can talk to Claude about"
+ },
+ {
+  "start": 765.279,
+  "end": 769.92,
+  "text": "my folder. I can ask it, what do you see"
+ },
+ {
+  "start": 767.6,
+  "end": 771.279,
+  "text": "in this folder right now? And I can send"
+ },
+ {
+  "start": 769.92,
+  "end": 772.959,
+  "text": "it off. I'm going to make the effort"
+ },
+ {
+  "start": 771.279,
+  "end": 774.48,
+  "text": "level medium. And right now, I'm just"
+ },
+ {
+  "start": 772.959,
+  "end": 776.56,
+  "text": "showing you how your environment works"
+ },
+ {
+  "start": 774.48,
+  "end": 778.0790000000001,
+  "text": "in Claude code. Claude can write to a"
+ },
+ {
+  "start": 776.56,
+  "end": 779.92,
+  "text": "folder on your computer. And it can also"
+ },
+ {
+  "start": 778.079,
+  "end": 781.279,
+  "text": "take a look at the elements within the"
+ },
+ {
+  "start": 779.92,
+  "end": 783.68,
+  "text": "folder. So right now, it's looking at"
+ },
+ {
+  "start": 781.279,
+  "end": 786.0,
+  "text": "the entire tree. It says the folder is"
+ },
+ {
+  "start": 783.68,
+  "end": 788.16,
+  "text": "nearly empty, just one asset directory."
+ },
+ {
+  "start": 786.0,
+  "end": 790.32,
+  "text": "and it lists all of my files, six photos"
+ },
+ {
+  "start": 788.16,
+  "end": 792.3199999999999,
+  "text": "of you, you know, scripts, docs, etc."
+ },
+ {
+  "start": 790.32,
+  "end": 793.6800000000001,
+  "text": "It's a fresh workspace, which is what we"
+ },
+ {
+  "start": 792.32,
+  "end": 795.44,
+  "text": "want because this is going to become our"
+ },
+ {
+  "start": 793.68,
+  "end": 796.88,
+  "text": "content system. And just so you know,"
+ },
+ {
+  "start": 795.44,
+  "end": 798.639,
+  "text": "Claude can actually look at these"
+ },
+ {
+  "start": 796.88,
+  "end": 800.72,
+  "text": "images. So that's what makes it so"
+ },
+ {
+  "start": 798.639,
+  "end": 802.639,
+  "text": "powerful is having real images of you in"
+ },
+ {
+  "start": 800.72,
+  "end": 804.639,
+  "text": "here. Next, we need to connect our tools"
+ },
+ {
+  "start": 802.639,
+  "end": 806.88,
+  "text": "to make this setup actually powerful. We"
+ },
+ {
+  "start": 804.639,
+  "end": 808.8,
+  "text": "need to go get a foul API key and"
+ },
+ {
+  "start": 806.88,
+  "end": 810.8,
+  "text": "connect our foul. And we also need to"
+ },
+ {
+  "start": 808.8,
+  "end": 812.7199999999999,
+  "text": "connect Blatado and get signed up and"
+ },
+ {
+  "start": 810.8,
+  "end": 815.12,
+  "text": "logged into all of our social accounts"
+ },
+ {
+  "start": 812.72,
+  "end": 818.0790000000001,
+  "text": "so posting becomes super easy. So this"
+ },
+ {
+  "start": 815.12,
+  "end": 819.6,
+  "text": "is FAL. You can go to fal.ai. That's"
+ },
+ {
+  "start": 818.079,
+  "end": 821.1999999999999,
+  "text": "fal.ai."
+ },
+ {
+  "start": 819.6,
+  "end": 823.279,
+  "text": "And this is the generative media"
+ },
+ {
+  "start": 821.2,
+  "end": 824.88,
+  "text": "platform for developers. So yes, you can"
+ },
+ {
+  "start": 823.279,
+  "end": 827.2,
+  "text": "consider yourself a developer now, I"
+ },
+ {
+  "start": 824.88,
+  "end": 829.36,
+  "text": "suppose. But the pricing is what's"
+ },
+ {
+  "start": 827.2,
+  "end": 830.8000000000001,
+  "text": "making this app so nice. You just pay"
+ },
+ {
+  "start": 829.36,
+  "end": 832.0,
+  "text": "per use. You're not paying a monthly"
+ },
+ {
+  "start": 830.8,
+  "end": 834.3199999999999,
+  "text": "subscription for something you're never"
+ },
+ {
+  "start": 832.0,
+  "end": 836.639,
+  "text": "going to use. You pay 3 cents if you"
+ },
+ {
+  "start": 834.32,
+  "end": 838.399,
+  "text": "want an image or 1 cent depending on the"
+ },
+ {
+  "start": 836.639,
+  "end": 839.76,
+  "text": "model. Videos are a little bit more"
+ },
+ {
+  "start": 838.399,
+  "end": 841.76,
+  "text": "expensive, but you're paying like seven"
+ },
+ {
+  "start": 839.76,
+  "end": 843.8389999999999,
+  "text": "cents to get a nice video generated or 5"
+ },
+ {
+  "start": 841.76,
+  "end": 846.8,
+  "text": "cents. So, make sure that you get logged"
+ },
+ {
+  "start": 843.839,
+  "end": 848.24,
+  "text": "in and signed up for FAL. And then we're"
+ },
+ {
+  "start": 846.8,
+  "end": 850.0,
+  "text": "going to load in some credits. So, you"
+ },
+ {
+  "start": 848.24,
+  "end": 852.639,
+  "text": "can hit login. You can do GitHub,"
+ },
+ {
+  "start": 850.0,
+  "end": 854.16,
+  "text": "Google, or SSO. And then you're going to"
+ },
+ {
+  "start": 852.639,
+  "end": 855.76,
+  "text": "be brought to a dashboard that looks"
+ },
+ {
+  "start": 854.16,
+  "end": 858.24,
+  "text": "something like this. So, here's my"
+ },
+ {
+  "start": 855.76,
+  "end": 860.3199999999999,
+  "text": "dashboard. What you want to do when you"
+ },
+ {
+  "start": 858.24,
+  "end": 861.6,
+  "text": "log in is add credits. So, in the upper"
+ },
+ {
+  "start": 860.32,
+  "end": 863.519,
+  "text": "right hand corner, you're going to see"
+ },
+ {
+  "start": 861.6,
+  "end": 867.279,
+  "text": "something that says credits. You can"
+ },
+ {
+  "start": 863.519,
+  "end": 869.44,
+  "text": "just buy 5 to10 to $15, something small"
+ },
+ {
+  "start": 867.279,
+  "end": 871.8389999999999,
+  "text": "to begin with. I've only got $20 loaded"
+ },
+ {
+  "start": 869.44,
+  "end": 874.0,
+  "text": "in right now. And make sure that if"
+ },
+ {
+  "start": 871.839,
+  "end": 875.7600000000001,
+  "text": "there is any autopay on that you can"
+ },
+ {
+  "start": 874.0,
+  "end": 877.68,
+  "text": "just shut that off just in case your"
+ },
+ {
+  "start": 875.76,
+  "end": 879.279,
+  "text": "model goes rogue and starts generating a"
+ },
+ {
+  "start": 877.68,
+  "end": 881.4399999999999,
+  "text": "bunch of images. It's never happened to"
+ },
+ {
+  "start": 879.279,
+  "end": 882.959,
+  "text": "me, but just be safe. Don't turn auto"
+ },
+ {
+  "start": 881.44,
+  "end": 884.24,
+  "text": "top up on. But once you add in some"
+ },
+ {
+  "start": 882.959,
+  "end": 886.7199999999999,
+  "text": "credits, the next thing you need to do"
+ },
+ {
+  "start": 884.24,
+  "end": 888.5600000000001,
+  "text": "is generate an API key. So click this"
+ },
+ {
+  "start": 886.72,
+  "end": 890.48,
+  "text": "button right here that says get an API"
+ },
+ {
+  "start": 888.56,
+  "end": 891.76,
+  "text": "key. You can find this elsewhere as"
+ },
+ {
+  "start": 890.48,
+  "end": 893.519,
+  "text": "well, but there should be a button that"
+ },
+ {
+  "start": 891.76,
+  "end": 896.3199999999999,
+  "text": "says get an API key. And it's going to"
+ },
+ {
+  "start": 893.519,
+  "end": 898.079,
+  "text": "take you to your settings and developer"
+ },
+ {
+  "start": 896.32,
+  "end": 900.0790000000001,
+  "text": "API keys. What you want to do is you"
+ },
+ {
+  "start": 898.079,
+  "end": 902.399,
+  "text": "want to select add key. Make sure the"
+ },
+ {
+  "start": 900.079,
+  "end": 903.8389999999999,
+  "text": "scope is on API. And then you can just"
+ },
+ {
+  "start": 902.399,
+  "end": 905.36,
+  "text": "name your key. This is going to be the"
+ },
+ {
+  "start": 903.839,
+  "end": 907.7600000000001,
+  "text": "key name. So you can give it a"
+ },
+ {
+  "start": 905.36,
+  "end": 910.5600000000001,
+  "text": "description. I'm just going to say this"
+ },
+ {
+  "start": 907.76,
+  "end": 912.16,
+  "text": "is a test key for a video. Then I'll hit"
+ },
+ {
+  "start": 910.56,
+  "end": 913.92,
+  "text": "create key. And then that gives you an"
+ },
+ {
+  "start": 912.16,
+  "end": 916.16,
+  "text": "API key right here that you do not want"
+ },
+ {
+  "start": 913.92,
+  "end": 919.12,
+  "text": "to show to anybody because it gives"
+ },
+ {
+  "start": 916.16,
+  "end": 920.399,
+  "text": "people access to use your credits. So I"
+ },
+ {
+  "start": 919.12,
+  "end": 922.24,
+  "text": "will hit copy key. And then what you"
+ },
+ {
+  "start": 920.399,
+  "end": 923.76,
+  "text": "need to do is head back over to Claude"
+ },
+ {
+  "start": 922.24,
+  "end": 925.199,
+  "text": "and make sure that you select new"
+ },
+ {
+  "start": 923.76,
+  "end": 926.56,
+  "text": "session. When you do that, you're going"
+ },
+ {
+  "start": 925.199,
+  "end": 928.399,
+  "text": "to see this little button that says"
+ },
+ {
+  "start": 926.56,
+  "end": 930.0,
+  "text": "local popup. You want to select that."
+ },
+ {
+  "start": 928.399,
+  "end": 931.76,
+  "text": "And then in the upper right hand corner"
+ },
+ {
+  "start": 930.0,
+  "end": 933.04,
+  "text": "of that popup by that blue check mark,"
+ },
+ {
+  "start": 931.76,
+  "end": 934.48,
+  "text": "if you hover over this local"
+ },
+ {
+  "start": 933.04,
+  "end": 936.079,
+  "text": "environment, there's going to be a"
+ },
+ {
+  "start": 934.48,
+  "end": 937.6800000000001,
+  "text": "little settings icon. What you want to"
+ },
+ {
+  "start": 936.079,
+  "end": 939.279,
+  "text": "do is you want to click that settings"
+ },
+ {
+  "start": 937.68,
+  "end": 941.5999999999999,
+  "text": "icon. And this is where your secret"
+ },
+ {
+  "start": 939.279,
+  "end": 943.199,
+  "text": "passwords are stored in Claude. And it's"
+ },
+ {
+  "start": 941.6,
+  "end": 945.36,
+  "text": "your local environment. Claude never"
+ },
+ {
+  "start": 943.199,
+  "end": 947.199,
+  "text": "actually sees the key here, but what it"
+ },
+ {
+  "start": 945.36,
+  "end": 949.1990000000001,
+  "text": "can do is it can use it. It can call"
+ },
+ {
+  "start": 947.199,
+  "end": 951.04,
+  "text": "your computer to run a command to use"
+ },
+ {
+  "start": 949.199,
+  "end": 953.3599999999999,
+  "text": "the capabilities of FAL and generate"
+ },
+ {
+  "start": 951.04,
+  "end": 955.8389999999999,
+  "text": "images and stuff like that. The format"
+ },
+ {
+  "start": 953.36,
+  "end": 957.279,
+  "text": "is falc_key"
+ },
+ {
+  "start": 955.839,
+  "end": 959.9200000000001,
+  "text": "and you want to type that out in all"
+ },
+ {
+  "start": 957.279,
+  "end": 962.48,
+  "text": "capitals and then type in equals and"
+ },
+ {
+  "start": 959.92,
+  "end": 964.56,
+  "text": "then paste in your API key and then you"
+ },
+ {
+  "start": 962.48,
+  "end": 966.24,
+  "text": "want to hit save changes and just like"
+ },
+ {
+  "start": 964.56,
+  "end": 967.8389999999999,
+  "text": "that you've added your key and you now"
+ },
+ {
+  "start": 966.24,
+  "end": 971.44,
+  "text": "have image and video generation"
+ },
+ {
+  "start": 967.839,
+  "end": 973.2790000000001,
+  "text": "capabilities in your clawed account. So"
+ },
+ {
+  "start": 971.44,
+  "end": 975.1990000000001,
+  "text": "here I'll show you a quick test so that"
+ },
+ {
+  "start": 973.279,
+  "end": 977.12,
+  "text": "you can see the image capability working"
+ },
+ {
+  "start": 975.199,
+  "end": 979.92,
+  "text": "firsthand. I'm going to be a little bit"
+ },
+ {
+  "start": 977.12,
+  "end": 982.0,
+  "text": "goofy, but you want to give context into"
+ },
+ {
+  "start": 979.92,
+  "end": 984.639,
+  "text": "what you've just done to your claude so"
+ },
+ {
+  "start": 982.0,
+  "end": 987.68,
+  "text": "it knows. I can say I've just connected"
+ },
+ {
+  "start": 984.639,
+  "end": 989.36,
+  "text": "my foul API key and I want you to"
+ },
+ {
+  "start": 987.68,
+  "end": 990.7199999999999,
+  "text": "generate an image of a cat running on"
+ },
+ {
+  "start": 989.36,
+  "end": 992.16,
+  "text": "the beach with a big rainbow in the"
+ },
+ {
+  "start": 990.72,
+  "end": 993.6,
+  "text": "background as cheap and fast as you"
+ },
+ {
+  "start": 992.16,
+  "end": 996.0,
+  "text": "possibly can. Make sure that you read"
+ },
+ {
+  "start": 993.6,
+  "end": 997.839,
+  "text": "the foul documentation so you can make"
+ },
+ {
+  "start": 996.0,
+  "end": 999.36,
+  "text": "this request. And so just giving a"
+ },
+ {
+  "start": 997.839,
+  "end": 1001.759,
+  "text": "little bit of context so it understands"
+ },
+ {
+  "start": 999.36,
+  "end": 1003.6800000000001,
+  "text": "I have my foul API key. I'm telling it"
+ },
+ {
+  "start": 1001.759,
+  "end": 1006.399,
+  "text": "to read the documentation and then I can"
+ },
+ {
+  "start": 1003.68,
+  "end": 1008.3199999999999,
+  "text": "send it off. You can create rules around"
+ },
+ {
+  "start": 1006.399,
+  "end": 1009.68,
+  "text": "this stuff that are in your folder. You"
+ },
+ {
+  "start": 1008.32,
+  "end": 1011.839,
+  "text": "don't have to tell it that every single"
+ },
+ {
+  "start": 1009.68,
+  "end": 1013.92,
+  "text": "time. It will just know and understand"
+ },
+ {
+  "start": 1011.839,
+  "end": 1015.9200000000001,
+  "text": "that, okay, this is how I generate an"
+ },
+ {
+  "start": 1013.92,
+  "end": 1018.0,
+  "text": "image because this is Drake's image"
+ },
+ {
+  "start": 1015.92,
+  "end": 1019.68,
+  "text": "generation file guide. Whatever you want"
+ },
+ {
+  "start": 1018.0,
+  "end": 1021.279,
+  "text": "to do, but giving it context on the"
+ },
+ {
+  "start": 1019.68,
+  "end": 1024.1599999999999,
+  "text": "first couple of runs, letting it know"
+ },
+ {
+  "start": 1021.279,
+  "end": 1026.079,
+  "text": "that you use foul is ideal. Then just"
+ },
+ {
+  "start": 1024.16,
+  "end": 1027.919,
+  "text": "tell it to bake it in its instruction"
+ },
+ {
+  "start": 1026.079,
+  "end": 1029.4389999999999,
+  "text": "file for that directory and it will"
+ },
+ {
+  "start": 1027.919,
+  "end": 1031.199,
+  "text": "remember to do that every time to use"
+ },
+ {
+  "start": 1029.439,
+  "end": 1033.28,
+  "text": "foul. And just like that, Claude has"
+ },
+ {
+  "start": 1031.199,
+  "end": 1035.039,
+  "text": "image generation capabilities. generated"
+ },
+ {
+  "start": 1033.28,
+  "end": 1036.8799999999999,
+  "text": "a bad image of a cat on a beach because"
+ },
+ {
+  "start": 1035.039,
+  "end": 1039.52,
+  "text": "we went with the cheapest model"
+ },
+ {
+  "start": 1036.88,
+  "end": 1042.5590000000002,
+  "text": "possible. I mean, it's so cheap, it's"
+ },
+ {
+  "start": 1039.52,
+  "end": 1044.4,
+  "text": "almost insane. It cost me less than 1"
+ },
+ {
+  "start": 1042.559,
+  "end": 1046.48,
+  "text": "cent, a third of a cent to generate that"
+ },
+ {
+  "start": 1044.4,
+  "end": 1048.3190000000002,
+  "text": "image. So, even this can be good"
+ },
+ {
+  "start": 1046.48,
+  "end": 1050.48,
+  "text": "inspiration, I guess. So, next, what we"
+ },
+ {
+  "start": 1048.319,
+  "end": 1052.0,
+  "text": "need to do is connect Blatado. And after"
+ },
+ {
+  "start": 1050.48,
+  "end": 1053.679,
+  "text": "that, the environment will be set up."
+ },
+ {
+  "start": 1052.0,
+  "end": 1055.919,
+  "text": "All of the tools you need to create"
+ },
+ {
+  "start": 1053.679,
+  "end": 1058.24,
+  "text": "amazing social media content will be"
+ },
+ {
+  "start": 1055.919,
+  "end": 1059.76,
+  "text": "ready to go. So, again, Blato is the"
+ },
+ {
+  "start": 1058.24,
+  "end": 1062.32,
+  "text": "social media hub. It's where you"
+ },
+ {
+  "start": 1059.76,
+  "end": 1064.64,
+  "text": "securely link all of your accounts so"
+ },
+ {
+  "start": 1062.32,
+  "end": 1066.72,
+  "text": "that Claude can post on your behalf or"
+ },
+ {
+  "start": 1064.64,
+  "end": 1068.0800000000002,
+  "text": "schedule things on your behalf. Let's"
+ },
+ {
+  "start": 1066.72,
+  "end": 1069.84,
+  "text": "get signed up now and I'm going to show"
+ },
+ {
+  "start": 1068.08,
+  "end": 1071.4399999999998,
+  "text": "you how to log into everything. So, I'm"
+ },
+ {
+  "start": 1069.84,
+  "end": 1073.6789999999999,
+  "text": "going to leave a link down in the"
+ },
+ {
+  "start": 1071.44,
+  "end": 1076.3200000000002,
+  "text": "description for Blatado. Make sure you"
+ },
+ {
+  "start": 1073.679,
+  "end": 1078.0800000000002,
+  "text": "go and use my link. Again, Blatado is"
+ },
+ {
+  "start": 1076.32,
+  "end": 1080.0,
+  "text": "the sponsor of this video and they"
+ },
+ {
+  "start": 1078.08,
+  "end": 1082.3999999999999,
+  "text": "reached out to me after I was already"
+ },
+ {
+  "start": 1080.0,
+  "end": 1084.0,
+  "text": "busy using them. So, it made it super"
+ },
+ {
+  "start": 1082.4,
+  "end": 1086.48,
+  "text": "convenient. The pricing is"
+ },
+ {
+  "start": 1084.0,
+  "end": 1089.12,
+  "text": "straightforward. They have three plans."
+ },
+ {
+  "start": 1086.48,
+  "end": 1091.76,
+  "text": "The starter plan, the creator plan, and"
+ },
+ {
+  "start": 1089.12,
+  "end": 1093.1999999999998,
+  "text": "the agency plan. So, the starter plan,"
+ },
+ {
+  "start": 1091.76,
+  "end": 1094.8799999999999,
+  "text": "that's the one I'm on, and it's been"
+ },
+ {
+  "start": 1093.2,
+  "end": 1096.799,
+  "text": "more than enough for me because you get"
+ },
+ {
+  "start": 1094.88,
+  "end": 1098.88,
+  "text": "20 social media accounts that you can"
+ },
+ {
+  "start": 1096.799,
+  "end": 1101.84,
+  "text": "connect. You get all of the viral"
+ },
+ {
+  "start": 1098.88,
+  "end": 1104.5590000000002,
+  "text": "templates, you get unlimited AI writing"
+ },
+ {
+  "start": 1101.84,
+  "end": 1106.24,
+  "text": "threads, the social media API, literally"
+ },
+ {
+  "start": 1104.559,
+  "end": 1107.9189999999999,
+  "text": "everything you need. So, I would"
+ },
+ {
+  "start": 1106.24,
+  "end": 1109.76,
+  "text": "recommend starting on this plan and"
+ },
+ {
+  "start": 1107.919,
+  "end": 1112.0,
+  "text": "working your way up as you start"
+ },
+ {
+  "start": 1109.76,
+  "end": 1113.76,
+  "text": "scaling, but this should be more than"
+ },
+ {
+  "start": 1112.0,
+  "end": 1115.679,
+  "text": "enough for most of you. And so get"
+ },
+ {
+  "start": 1113.76,
+  "end": 1117.679,
+  "text": "signed up for starter. I do believe you"
+ },
+ {
+  "start": 1115.679,
+  "end": 1119.679,
+  "text": "get a free trial. So make sure you use"
+ },
+ {
+  "start": 1117.679,
+  "end": 1121.3600000000001,
+  "text": "your free trial and get logged in. And"
+ },
+ {
+  "start": 1119.679,
+  "end": 1124.0800000000002,
+  "text": "once you're logged in, you're going to"
+ },
+ {
+  "start": 1121.36,
+  "end": 1126.7199999999998,
+  "text": "be looking at a nice backend dashboard"
+ },
+ {
+  "start": 1124.08,
+  "end": 1129.6789999999999,
+  "text": "where yes, you can create posts in here"
+ },
+ {
+  "start": 1126.72,
+  "end": 1131.1200000000001,
+  "text": "and schedule from this dashboard. But"
+ },
+ {
+  "start": 1129.679,
+  "end": 1133.52,
+  "text": "the real power comes from when you hook"
+ },
+ {
+  "start": 1131.12,
+  "end": 1136.2399999999998,
+  "text": "it up to Claude. So let's connect our"
+ },
+ {
+  "start": 1133.52,
+  "end": 1139.039,
+  "text": "social media accounts. That way we can"
+ },
+ {
+  "start": 1136.24,
+  "end": 1140.799,
+  "text": "post on them from Claude. I'm going to"
+ },
+ {
+  "start": 1139.039,
+  "end": 1142.799,
+  "text": "go to my settings right here in the"
+ },
+ {
+  "start": 1140.799,
+  "end": 1144.559,
+  "text": "sidebar. And once you go to settings,"
+ },
+ {
+  "start": 1142.799,
+  "end": 1146.96,
+  "text": "make sure you read these account notices"
+ },
+ {
+  "start": 1144.559,
+  "end": 1148.799,
+  "text": "and that you uh don't just connect to"
+ },
+ {
+  "start": 1146.96,
+  "end": 1150.96,
+  "text": "anything so you don't get flagged or"
+ },
+ {
+  "start": 1148.799,
+  "end": 1153.679,
+  "text": "banned because a lot of social media"
+ },
+ {
+  "start": 1150.96,
+  "end": 1155.679,
+  "text": "platforms are a little picky about"
+ },
+ {
+  "start": 1153.679,
+  "end": 1157.3600000000001,
+  "text": "connecting to outside sources. So be"
+ },
+ {
+  "start": 1155.679,
+  "end": 1159.44,
+  "text": "careful with that. I've got my LinkedIn"
+ },
+ {
+  "start": 1157.36,
+  "end": 1162.1599999999999,
+  "text": "connected, my Instagram, and my X"
+ },
+ {
+  "start": 1159.44,
+  "end": 1164.4,
+  "text": "account. Logging into this is as simple"
+ },
+ {
+  "start": 1162.16,
+  "end": 1166.72,
+  "text": "as it sounds. You click it and then you"
+ },
+ {
+  "start": 1164.4,
+  "end": 1168.72,
+  "text": "log in through a secure authenticated"
+ },
+ {
+  "start": 1166.72,
+  "end": 1170.0,
+  "text": "link. So when I hit login with LinkedIn,"
+ },
+ {
+  "start": 1168.72,
+  "end": 1173.52,
+  "text": "it's literally like I'm using my"
+ },
+ {
+  "start": 1170.0,
+  "end": 1176.08,
+  "text": "LinkedIn login just except here. So it"
+ },
+ {
+  "start": 1173.52,
+  "end": 1177.44,
+  "text": "can connect in that secured OOTH like"
+ },
+ {
+  "start": 1176.08,
+  "end": 1180.559,
+  "text": "fashion. And so I've connected"
+ },
+ {
+  "start": 1177.44,
+  "end": 1182.24,
+  "text": "personally my LinkedIn, my X, and my"
+ },
+ {
+  "start": 1180.559,
+  "end": 1184.16,
+  "text": "Instagram since those are the three"
+ },
+ {
+  "start": 1182.24,
+  "end": 1185.919,
+  "text": "things that I don't focus enough on that"
+ },
+ {
+  "start": 1184.16,
+  "end": 1188.24,
+  "text": "I want to start scaling YouTube. I'm"
+ },
+ {
+  "start": 1185.919,
+  "end": 1190.96,
+  "text": "good. And I create all of my content"
+ },
+ {
+  "start": 1188.24,
+  "end": 1192.88,
+  "text": "organically. So I don't really want to"
+ },
+ {
+  "start": 1190.96,
+  "end": 1195.44,
+  "text": "automate that. But you can do Pinterest,"
+ },
+ {
+  "start": 1192.88,
+  "end": 1197.7600000000002,
+  "text": "Threads, Facebook, you can do pretty"
+ },
+ {
+  "start": 1195.44,
+  "end": 1199.28,
+  "text": "much any platform you can think of. So,"
+ },
+ {
+  "start": 1197.76,
+  "end": 1201.28,
+  "text": "what you need to do right now is get"
+ },
+ {
+  "start": 1199.28,
+  "end": 1202.8799999999999,
+  "text": "connected and logged in to all of the"
+ },
+ {
+  "start": 1201.28,
+  "end": 1204.96,
+  "text": "accounts that you want to automate in"
+ },
+ {
+  "start": 1202.88,
+  "end": 1206.48,
+  "text": "your accounts section of your settings."
+ },
+ {
+  "start": 1204.96,
+  "end": 1207.76,
+  "text": "And while you're still in settings,"
+ },
+ {
+  "start": 1206.48,
+  "end": 1209.1200000000001,
+  "text": "after you get all of your accounts"
+ },
+ {
+  "start": 1207.76,
+  "end": 1211.84,
+  "text": "connected, what you need to do is go to"
+ },
+ {
+  "start": 1209.12,
+  "end": 1214.2399999999998,
+  "text": "this little API section right here. And"
+ },
+ {
+  "start": 1211.84,
+  "end": 1215.6,
+  "text": "then you just need to hit copy API key."
+ },
+ {
+  "start": 1214.24,
+  "end": 1217.52,
+  "text": "There are multiple ways to connect. You"
+ },
+ {
+  "start": 1215.6,
+  "end": 1219.1999999999998,
+  "text": "can add a custom connector. You can do"
+ },
+ {
+  "start": 1217.52,
+  "end": 1220.48,
+  "text": "it through the terminal. so many"
+ },
+ {
+  "start": 1219.2,
+  "end": 1222.72,
+  "text": "different ways. But what I'm going to do"
+ },
+ {
+  "start": 1220.48,
+  "end": 1224.16,
+  "text": "is the exact same way we set up fal."
+ },
+ {
+  "start": 1222.72,
+  "end": 1226.32,
+  "text": "That's how I'm going to set it up. What"
+ },
+ {
+  "start": 1224.16,
+  "end": 1228.159,
+  "text": "I'm going to do is select copy API key"
+ },
+ {
+  "start": 1226.32,
+  "end": 1229.4399999999998,
+  "text": "and it's copied to my clipboard. I'm"
+ },
+ {
+  "start": 1228.159,
+  "end": 1232.0,
+  "text": "going to go back to my claw code"
+ },
+ {
+  "start": 1229.44,
+  "end": 1233.52,
+  "text": "session. I'm going to select new session"
+ },
+ {
+  "start": 1232.0,
+  "end": 1235.84,
+  "text": "and then again I'm going to go into my"
+ },
+ {
+  "start": 1233.52,
+  "end": 1238.08,
+  "text": "local environment and hit the settings"
+ },
+ {
+  "start": 1235.84,
+  "end": 1241.08,
+  "text": "icon. And then I'm going to type out"
+ },
+ {
+  "start": 1238.08,
+  "end": 1241.08,
+  "text": "blotado_key"
+ },
+ {
+  "start": 1242.799,
+  "end": 1248.96,
+  "text": "equals. And then I'm going to paste in"
+ },
+ {
+  "start": 1245.6,
+  "end": 1251.12,
+  "text": "that API key just like that. Now I'm"
+ },
+ {
+  "start": 1248.96,
+  "end": 1253.52,
+  "text": "going to hit save. And just like that,"
+ },
+ {
+  "start": 1251.12,
+  "end": 1255.6789999999999,
+  "text": "Claude Code has access to Blato"
+ },
+ {
+  "start": 1253.52,
+  "end": 1258.32,
+  "text": "capabilities. So I can say I've just"
+ },
+ {
+  "start": 1255.679,
+  "end": 1260.5590000000002,
+  "text": "connected my Blotado API key. What I"
+ },
+ {
+  "start": 1258.32,
+  "end": 1262.96,
+  "text": "want you to do is read the documentation"
+ },
+ {
+  "start": 1260.559,
+  "end": 1265.12,
+  "text": "and post a textonly post on LinkedIn"
+ },
+ {
+  "start": 1262.96,
+  "end": 1269.039,
+  "text": "that says hello world. And I will send"
+ },
+ {
+  "start": 1265.12,
+  "end": 1270.9599999999998,
+  "text": "this off just to show you spelled blat"
+ },
+ {
+  "start": 1269.039,
+  "end": 1273.2,
+  "text": "wrong, but I'm sure it will figure it"
+ },
+ {
+  "start": 1270.96,
+  "end": 1275.1200000000001,
+  "text": "out. Uh, but I just want to show you"
+ },
+ {
+  "start": 1273.2,
+  "end": 1277.039,
+  "text": "what this looks like and how we will"
+ },
+ {
+  "start": 1275.12,
+  "end": 1279.84,
+  "text": "actually upload a post to LinkedIn that"
+ },
+ {
+  "start": 1277.039,
+  "end": 1281.36,
+  "text": "says hello world, a textonly post. And I"
+ },
+ {
+  "start": 1279.84,
+  "end": 1284.72,
+  "text": "spelled it wrong, so it's searching all"
+ },
+ {
+  "start": 1281.36,
+  "end": 1286.1589999999999,
+  "text": "over the place. I'm going to say blow."
+ },
+ {
+  "start": 1284.72,
+  "end": 1288.159,
+  "text": "And then I'm going to upload the"
+ },
+ {
+  "start": 1286.159,
+  "end": 1291.1200000000001,
+  "text": "documentation. I'm going to go to API"
+ },
+ {
+  "start": 1288.159,
+  "end": 1294.64,
+  "text": "quickart. And then I'm going to paste in"
+ },
+ {
+  "start": 1291.12,
+  "end": 1296.4799999999998,
+  "text": "help.blat.com API start. And I'll go"
+ },
+ {
+  "start": 1294.64,
+  "end": 1298.0,
+  "text": "back to claude, put that in quotes, and"
+ },
+ {
+  "start": 1296.48,
+  "end": 1301.52,
+  "text": "then paste in the documentation. And"
+ },
+ {
+  "start": 1298.0,
+  "end": 1303.52,
+  "text": "then I'll say this should help. and send"
+ },
+ {
+  "start": 1301.52,
+  "end": 1305.44,
+  "text": "it off. And the documentation is what"
+ },
+ {
+  "start": 1303.52,
+  "end": 1307.28,
+  "text": "allows Claude to understand how to"
+ },
+ {
+  "start": 1305.44,
+  "end": 1309.44,
+  "text": "create requests with the API key that"
+ },
+ {
+  "start": 1307.28,
+  "end": 1310.799,
+  "text": "you uploaded to your local environment."
+ },
+ {
+  "start": 1309.44,
+  "end": 1313.039,
+  "text": "You could do this through the connector,"
+ },
+ {
+  "start": 1310.799,
+  "end": 1315.679,
+  "text": "but I've always found that doing the"
+ },
+ {
+  "start": 1313.039,
+  "end": 1317.84,
+  "text": "documentation is always faster once it"
+ },
+ {
+  "start": 1315.679,
+  "end": 1320.0,
+  "text": "understands it and it uses less context."
+ },
+ {
+  "start": 1317.84,
+  "end": 1321.6789999999999,
+  "text": "It says found the docs and your blat API"
+ },
+ {
+  "start": 1320.0,
+  "end": 1323.36,
+  "text": "key in the environment. First, listing"
+ },
+ {
+  "start": 1321.679,
+  "end": 1325.2800000000002,
+  "text": "your connected accounts. It says one"
+ },
+ {
+  "start": 1323.36,
+  "end": 1328.0,
+  "text": "LinkedIn account, Drake Srirach, posting"
+ },
+ {
+  "start": 1325.28,
+  "end": 1330.559,
+  "text": "the text there now. And it says posted."
+ },
+ {
+  "start": 1328.0,
+  "end": 1333.039,
+  "text": "And so what I can do is I can go look"
+ },
+ {
+  "start": 1330.559,
+  "end": 1334.799,
+  "text": "and see did that actually post on my"
+ },
+ {
+  "start": 1333.039,
+  "end": 1337.84,
+  "text": "LinkedIn. I'm here on LinkedIn right"
+ },
+ {
+  "start": 1334.799,
+  "end": 1341.2,
+  "text": "now. I'm just going to go to my page and"
+ },
+ {
+  "start": 1337.84,
+  "end": 1343.1999999999998,
+  "text": "scroll down. Let's see if Yep. Okay, it"
+ },
+ {
+  "start": 1341.2,
+  "end": 1344.72,
+  "text": "posted. So, it's already gotten one"
+ },
+ {
+  "start": 1343.2,
+  "end": 1347.1200000000001,
+  "text": "impression and I think this is going to"
+ },
+ {
+  "start": 1344.72,
+  "end": 1349.1200000000001,
+  "text": "make me a lot of money. Two impressions"
+ },
+ {
+  "start": 1347.12,
+  "end": 1350.799,
+  "text": "now. Okay, I better take this off before"
+ },
+ {
+  "start": 1349.12,
+  "end": 1352.2399999999998,
+  "text": "people start getting concerned. And so"
+ },
+ {
+  "start": 1350.799,
+  "end": 1354.1589999999999,
+  "text": "that is how to set up your environment"
+ },
+ {
+  "start": 1352.24,
+  "end": 1356.559,
+  "text": "to where you can generate an image and"
+ },
+ {
+  "start": 1354.159,
+  "end": 1357.919,
+  "text": "you can even use that image to post on"
+ },
+ {
+  "start": 1356.559,
+  "end": 1360.1589999999999,
+  "text": "any of your social accounts. you've"
+ },
+ {
+  "start": 1357.919,
+  "end": 1362.0800000000002,
+  "text": "connected in blat. From here, it's all"
+ },
+ {
+  "start": 1360.159,
+  "end": 1363.8400000000001,
+  "text": "about taste and creativity. So, let's"
+ },
+ {
+  "start": 1362.08,
+  "end": 1366.0,
+  "text": "move on to the next step, which is"
+ },
+ {
+  "start": 1363.84,
+  "end": 1368.3999999999999,
+  "text": "ideation. This is where you find what"
+ },
+ {
+  "start": 1366.0,
+  "end": 1371.12,
+  "text": "you like. As I just said, gather your"
+ },
+ {
+  "start": 1368.4,
+  "end": 1373.2800000000002,
+  "text": "assets and decide your post types. So,"
+ },
+ {
+  "start": 1371.12,
+  "end": 1375.039,
+  "text": "do you want to be posting text with"
+ },
+ {
+  "start": 1373.28,
+  "end": 1377.84,
+  "text": "images? Do you want to be posting just"
+ },
+ {
+  "start": 1375.039,
+  "end": 1379.36,
+  "text": "text? What do you want that text to be?"
+ },
+ {
+  "start": 1377.84,
+  "end": 1381.6,
+  "text": "What do you want those images to look"
+ },
+ {
+  "start": 1379.36,
+  "end": 1382.9599999999998,
+  "text": "like? That type of thing. After we"
+ },
+ {
+  "start": 1381.6,
+  "end": 1385.12,
+  "text": "idiate, we're going to shape our voice"
+ },
+ {
+  "start": 1382.96,
+  "end": 1388.88,
+  "text": "so that the text that we generate is"
+ },
+ {
+  "start": 1385.12,
+  "end": 1390.8799999999999,
+  "text": "actually real and it's us and it's not"
+ },
+ {
+  "start": 1388.88,
+  "end": 1392.7990000000002,
+  "text": "AI like sounding. And then we're going"
+ },
+ {
+  "start": 1390.88,
+  "end": 1394.48,
+  "text": "to build the carousel and we're going to"
+ },
+ {
+  "start": 1392.799,
+  "end": 1397.12,
+  "text": "learn how to automate some of this"
+ },
+ {
+  "start": 1394.48,
+  "end": 1399.2,
+  "text": "process with a clawed routine. So you"
+ },
+ {
+  "start": 1397.12,
+  "end": 1401.84,
+  "text": "can set rules, you can tell your content"
+ },
+ {
+  "start": 1399.2,
+  "end": 1404.24,
+  "text": "system to never post without you. You"
+ },
+ {
+  "start": 1401.84,
+  "end": 1405.76,
+  "text": "can tell it to only draft, never use the"
+ },
+ {
+  "start": 1404.24,
+  "end": 1407.76,
+  "text": "actual post command so something"
+ },
+ {
+  "start": 1405.76,
+  "end": 1409.679,
+  "text": "accidentally doesn't get posted. You can"
+ },
+ {
+  "start": 1407.76,
+  "end": 1411.84,
+  "text": "set any rule you want and tell it to put"
+ },
+ {
+  "start": 1409.679,
+  "end": 1413.44,
+  "text": "it in its instruction file and it will"
+ },
+ {
+  "start": 1411.84,
+  "end": 1415.4399999999998,
+  "text": "follow those instructions every single"
+ },
+ {
+  "start": 1413.44,
+  "end": 1417.6000000000001,
+  "text": "time. But what I'm mainly concerned with"
+ },
+ {
+  "start": 1415.44,
+  "end": 1420.4,
+  "text": "right now is generating something that"
+ },
+ {
+  "start": 1417.6,
+  "end": 1422.799,
+  "text": "looks good. So what you need to do is"
+ },
+ {
+  "start": 1420.4,
+  "end": 1425.039,
+  "text": "you need to find things that you like"
+ },
+ {
+  "start": 1422.799,
+  "end": 1426.799,
+  "text": "and start injecting your style to create"
+ },
+ {
+  "start": 1425.039,
+  "end": 1429.6,
+  "text": "some good templates that you'll want to"
+ },
+ {
+  "start": 1426.799,
+  "end": 1431.2,
+  "text": "reuse. I recommend that you use two to"
+ },
+ {
+  "start": 1429.6,
+  "end": 1433.4399999999998,
+  "text": "three colors. And I recommend these"
+ },
+ {
+  "start": 1431.2,
+  "end": 1435.039,
+  "text": "colors are contrasting each other a"
+ },
+ {
+  "start": 1433.44,
+  "end": 1436.88,
+  "text": "little bit to have a little bit of pop."
+ },
+ {
+  "start": 1435.039,
+  "end": 1438.96,
+  "text": "For example, orange and blue go really"
+ },
+ {
+  "start": 1436.88,
+  "end": 1440.48,
+  "text": "good with each other. Black and white go"
+ },
+ {
+  "start": 1438.96,
+  "end": 1442.32,
+  "text": "really good with each other with a nice"
+ },
+ {
+  "start": 1440.48,
+  "end": 1443.76,
+  "text": "accent. This is going to be kind of your"
+ },
+ {
+  "start": 1442.32,
+  "end": 1446.0,
+  "text": "own taste. And a lot of you might have a"
+ },
+ {
+  "start": 1443.76,
+  "end": 1447.52,
+  "text": "brand or a color that you like already."
+ },
+ {
+  "start": 1446.0,
+  "end": 1449.2,
+  "text": "You already might have your own branding"
+ },
+ {
+  "start": 1447.52,
+  "end": 1452.4,
+  "text": "guide. It's kind of where you want to"
+ },
+ {
+  "start": 1449.2,
+  "end": 1455.279,
+  "text": "inject your brand, your company values,"
+ },
+ {
+  "start": 1452.4,
+  "end": 1457.76,
+  "text": "and everything that's possible into the"
+ },
+ {
+  "start": 1455.279,
+  "end": 1459.6,
+  "text": "look and feel of your assets. So, I'm"
+ },
+ {
+  "start": 1457.76,
+  "end": 1462.32,
+  "text": "just going to show you an example of how"
+ },
+ {
+  "start": 1459.6,
+  "end": 1464.799,
+  "text": "I might go about ideulating a certain"
+ },
+ {
+  "start": 1462.32,
+  "end": 1466.6399999999999,
+  "text": "file type. So, you can go to any tool"
+ },
+ {
+  "start": 1464.799,
+  "end": 1467.9189999999999,
+  "text": "that you want. Pinterest is a really"
+ },
+ {
+  "start": 1466.64,
+  "end": 1470.0800000000002,
+  "text": "good tool if you want to find"
+ },
+ {
+  "start": 1467.919,
+  "end": 1471.919,
+  "text": "inspiration. You might already know a"
+ },
+ {
+  "start": 1470.08,
+  "end": 1474.8799999999999,
+  "text": "brand you like. Maybe you like Apple's"
+ },
+ {
+  "start": 1471.919,
+  "end": 1476.3200000000002,
+  "text": "branding, Nike's branding, Adidas, any"
+ },
+ {
+  "start": 1474.88,
+  "end": 1477.679,
+  "text": "big company that you might be like,"
+ },
+ {
+  "start": 1476.32,
+  "end": 1479.6789999999999,
+  "text": "\"Yeah, you know, I love the way that"
+ },
+ {
+  "start": 1477.679,
+  "end": 1481.2,
+  "text": "their stuff looks.\" Or you can go to"
+ },
+ {
+  "start": 1479.679,
+  "end": 1482.799,
+  "text": "Pinterest and find new things. Or you"
+ },
+ {
+  "start": 1481.2,
+  "end": 1484.64,
+  "text": "may already have an idea of what you"
+ },
+ {
+  "start": 1482.799,
+  "end": 1486.8799999999999,
+  "text": "want your post to look like. I just"
+ },
+ {
+  "start": 1484.64,
+  "end": 1488.3200000000002,
+  "text": "recommend you get them consistent. So,"
+ },
+ {
+  "start": 1486.88,
+  "end": 1489.8400000000001,
+  "text": "an example, if I'm going to post on"
+ },
+ {
+  "start": 1488.32,
+  "end": 1491.84,
+  "text": "Instagram and I'm a health coach, let's"
+ },
+ {
+  "start": 1489.84,
+  "end": 1493.9189999999999,
+  "text": "say, I might want to type in the search"
+ },
+ {
+  "start": 1491.84,
+  "end": 1496.48,
+  "text": "bar health coach Instagram. And what"
+ },
+ {
+  "start": 1493.919,
+  "end": 1499.3600000000001,
+  "text": "you're going to get is a bunch of images"
+ },
+ {
+  "start": 1496.48,
+  "end": 1501.52,
+  "text": "for aesthetic health coach Instagrams."
+ },
+ {
+  "start": 1499.36,
+  "end": 1503.12,
+  "text": "And you can really start to find clear"
+ },
+ {
+  "start": 1501.52,
+  "end": 1504.559,
+  "text": "styles. And it's important that you try"
+ },
+ {
+  "start": 1503.12,
+  "end": 1506.2399999999998,
+  "text": "to find a clear style that you can"
+ },
+ {
+  "start": 1504.559,
+  "end": 1508.32,
+  "text": "reference. So, if I click in here, for"
+ },
+ {
+  "start": 1506.24,
+  "end": 1510.72,
+  "text": "instance, as you can see, it's the same,"
+ },
+ {
+  "start": 1508.32,
+  "end": 1513.4399999999998,
+  "text": "right? It has this nice text with these"
+ },
+ {
+  "start": 1510.72,
+  "end": 1514.96,
+  "text": "lines. So, that's the kind of style that"
+ },
+ {
+  "start": 1513.44,
+  "end": 1516.559,
+  "text": "you want to go for in my opinion when"
+ },
+ {
+  "start": 1514.96,
+  "end": 1518.48,
+  "text": "you're generating. social post. If"
+ },
+ {
+  "start": 1516.559,
+  "end": 1519.84,
+  "text": "you're a roofing company, obviously it's"
+ },
+ {
+  "start": 1518.48,
+  "end": 1521.52,
+  "text": "going to be completely different. For"
+ },
+ {
+  "start": 1519.84,
+  "end": 1523.52,
+  "text": "instance, you you're not going to want"
+ },
+ {
+  "start": 1521.52,
+  "end": 1524.8799999999999,
+  "text": "it to be as aesthetic, but you're going"
+ },
+ {
+  "start": 1523.52,
+  "end": 1527.2,
+  "text": "to want it to be a little bit more"
+ },
+ {
+  "start": 1524.88,
+  "end": 1529.8400000000001,
+  "text": "hands-on using real images from your"
+ },
+ {
+  "start": 1527.2,
+  "end": 1532.96,
+  "text": "crew. You can get a lot of inspiration"
+ },
+ {
+  "start": 1529.84,
+  "end": 1534.8799999999999,
+  "text": "for what good posts and good feeds look"
+ },
+ {
+  "start": 1532.96,
+  "end": 1537.279,
+  "text": "like and a consistent style. For"
+ },
+ {
+  "start": 1534.88,
+  "end": 1538.4,
+  "text": "instance, this is a roofing company or"
+ },
+ {
+  "start": 1537.279,
+  "end": 1540.08,
+  "text": "not even a roofing company, a"
+ },
+ {
+  "start": 1538.4,
+  "end": 1541.679,
+  "text": "construction company in general. And it"
+ },
+ {
+  "start": 1540.08,
+  "end": 1543.1999999999998,
+  "text": "just depends on who you are and what"
+ },
+ {
+  "start": 1541.679,
+  "end": 1545.279,
+  "text": "you're doing and what you're trying to"
+ },
+ {
+  "start": 1543.2,
+  "end": 1547.679,
+  "text": "sell. But you can go here and find a lot"
+ },
+ {
+  "start": 1545.279,
+  "end": 1549.76,
+  "text": "of inspiration for styles and online"
+ },
+ {
+  "start": 1547.679,
+  "end": 1551.76,
+  "text": "anywhere honestly. Like these would be"
+ },
+ {
+  "start": 1549.76,
+  "end": 1553.36,
+  "text": "good for Instagram carousels. That's one"
+ },
+ {
+  "start": 1551.76,
+  "end": 1555.2,
+  "text": "way you can find inspiration. Another"
+ },
+ {
+  "start": 1553.36,
+  "end": 1557.039,
+  "text": "way is just trying things out and"
+ },
+ {
+  "start": 1555.2,
+  "end": 1559.52,
+  "text": "telling Claude what you want and then"
+ },
+ {
+  "start": 1557.039,
+  "end": 1561.679,
+  "text": "creating your style templates with that."
+ },
+ {
+  "start": 1559.52,
+  "end": 1563.6,
+  "text": "So, I'm going to add files or photos and"
+ },
+ {
+  "start": 1561.679,
+  "end": 1565.919,
+  "text": "I'm going to go to my assets. I'm going"
+ },
+ {
+  "start": 1563.6,
+  "end": 1567.36,
+  "text": "to delete that cat image on the beach."
+ },
+ {
+  "start": 1565.919,
+  "end": 1568.96,
+  "text": "We don't need that anymore. I'm going to"
+ },
+ {
+  "start": 1567.36,
+  "end": 1571.6,
+  "text": "go to the images of me and I'm going to"
+ },
+ {
+  "start": 1568.96,
+  "end": 1574.32,
+  "text": "open up this image of me looking in the"
+ },
+ {
+  "start": 1571.6,
+  "end": 1576.32,
+  "text": "distance in Croatia by the sea. A real"
+ },
+ {
+  "start": 1574.32,
+  "end": 1578.32,
+  "text": "image of me. And this is nice because it"
+ },
+ {
+  "start": 1576.32,
+  "end": 1580.799,
+  "text": "uses my brand colors like the sky is"
+ },
+ {
+  "start": 1578.32,
+  "end": 1583.6,
+  "text": "blue, my pants are blue, white, blue"
+ },
+ {
+  "start": 1580.799,
+  "end": 1585.44,
+  "text": "sea. These are really my brand colors at"
+ },
+ {
+  "start": 1583.6,
+  "end": 1587.279,
+  "text": "the end of the day. And then I can just"
+ },
+ {
+  "start": 1585.44,
+  "end": 1589.039,
+  "text": "try to create something. Let's say I"
+ },
+ {
+  "start": 1587.279,
+  "end": 1591.36,
+  "text": "want to create an Instagram carousel"
+ },
+ {
+  "start": 1589.039,
+  "end": 1593.36,
+  "text": "with multiple images to swipe. And I"
+ },
+ {
+  "start": 1591.36,
+  "end": 1595.6,
+  "text": "want to be giving away clawed skills to"
+ },
+ {
+  "start": 1593.36,
+  "end": 1597.52,
+  "text": "people on my Instagram as a lead magnet."
+ },
+ {
+  "start": 1595.6,
+  "end": 1599.1999999999998,
+  "text": "Let me try to create a nice cover image"
+ },
+ {
+  "start": 1597.52,
+  "end": 1600.799,
+  "text": "that really stops people as they're"
+ },
+ {
+  "start": 1599.2,
+  "end": 1603.1200000000001,
+  "text": "scrolling down their feed. I can turn"
+ },
+ {
+  "start": 1600.799,
+  "end": 1605.52,
+  "text": "this to Sonnet because I think Sonnet is"
+ },
+ {
+  "start": 1603.12,
+  "end": 1607.039,
+  "text": "really good at the creative thinking and"
+ },
+ {
+  "start": 1605.52,
+  "end": 1608.72,
+  "text": "more of the knowledge work tasks"
+ },
+ {
+  "start": 1607.039,
+  "end": 1610.08,
+  "text": "compared to Opus and Fable. Opus and"
+ },
+ {
+  "start": 1608.72,
+  "end": 1612.24,
+  "text": "Fable are really good at like software"
+ },
+ {
+  "start": 1610.08,
+  "end": 1613.6,
+  "text": "engineering and stuff, but Sonnet has a"
+ },
+ {
+  "start": 1612.24,
+  "end": 1614.88,
+  "text": "little bit more of a creative side to"
+ },
+ {
+  "start": 1613.6,
+  "end": 1617.76,
+  "text": "it. So, I'm going to go with Claude"
+ },
+ {
+  "start": 1614.88,
+  "end": 1620.24,
+  "text": "Sonnet as my model. And I'm going to say"
+ },
+ {
+  "start": 1617.76,
+  "end": 1623.76,
+  "text": "I want to create an editorial styled"
+ },
+ {
+  "start": 1620.24,
+  "end": 1625.84,
+  "text": "Instagram carousel cover using the image"
+ },
+ {
+  "start": 1623.76,
+  "end": 1627.279,
+  "text": "that I've uploaded of myself. It's in"
+ },
+ {
+  "start": 1625.84,
+  "end": 1628.9599999999998,
+  "text": "the folder and it's the one where I'm"
+ },
+ {
+  "start": 1627.279,
+  "end": 1630.4,
+  "text": "looking in the distance by the sea. I"
+ },
+ {
+  "start": 1628.96,
+  "end": 1632.159,
+  "text": "think that's something like what the"
+ },
+ {
+  "start": 1630.4,
+  "end": 1634.5590000000002,
+  "text": "name is called. And what I want to do is"
+ },
+ {
+  "start": 1632.159,
+  "end": 1636.5590000000002,
+  "text": "I want this to be the first photo of an"
+ },
+ {
+  "start": 1634.559,
+  "end": 1638.24,
+  "text": "Instagram carousel. And it's where I'm"
+ },
+ {
+  "start": 1636.559,
+  "end": 1640.6399999999999,
+  "text": "going to be giving away skills that run"
+ },
+ {
+  "start": 1638.24,
+  "end": 1642.48,
+  "text": "my business so I don't have to. And I'm"
+ },
+ {
+  "start": 1640.64,
+  "end": 1645.44,
+  "text": "kind of thinking I want skills in nice"
+ },
+ {
+  "start": 1642.48,
+  "end": 1646.96,
+  "text": "big, tall, and bold letters behind me a"
+ },
+ {
+  "start": 1645.44,
+  "end": 1650.159,
+  "text": "little bit. and behind my head in the"
+ },
+ {
+  "start": 1646.96,
+  "end": 1652.08,
+  "text": "background. And I want the subtext to be"
+ },
+ {
+  "start": 1650.159,
+  "end": 1653.7600000000002,
+  "text": "that runs my business so I don't have"
+ },
+ {
+  "start": 1652.08,
+  "end": 1656.1589999999999,
+  "text": "to. And a little bit more of an accent"
+ },
+ {
+  "start": 1653.76,
+  "end": 1659.52,
+  "text": "font, maybe a serif font that looks"
+ },
+ {
+  "start": 1656.159,
+  "end": 1661.679,
+  "text": "really nice and clean and wavy. And what"
+ },
+ {
+  "start": 1659.52,
+  "end": 1663.76,
+  "text": "I want is like a vignette around this."
+ },
+ {
+  "start": 1661.679,
+  "end": 1665.6000000000001,
+  "text": "And I want it to be a little bit grainy"
+ },
+ {
+  "start": 1663.76,
+  "end": 1667.44,
+  "text": "and bring out the golden colors a little"
+ },
+ {
+  "start": 1665.6,
+  "end": 1670.7199999999998,
+  "text": "bit and just make sure that we stay"
+ },
+ {
+  "start": 1667.44,
+  "end": 1672.72,
+  "text": "consistent and on brand with the grain"
+ },
+ {
+  "start": 1670.72,
+  "end": 1675.039,
+  "text": "with the text color matching my shirt"
+ },
+ {
+  "start": 1672.72,
+  "end": 1676.88,
+  "text": "and make this just really feel like it's"
+ },
+ {
+  "start": 1675.039,
+  "end": 1678.72,
+  "text": "blending into the image and the"
+ },
+ {
+  "start": 1676.88,
+  "end": 1680.3990000000001,
+  "text": "showstopper when people are scrolling on"
+ },
+ {
+  "start": 1678.72,
+  "end": 1682.559,
+  "text": "Instagram. So this is kind of how I go"
+ },
+ {
+  "start": 1680.399,
+  "end": 1684.8799999999999,
+  "text": "about my ideation process. I just try to"
+ },
+ {
+  "start": 1682.559,
+  "end": 1687.12,
+  "text": "create very cool things. And when I have"
+ },
+ {
+  "start": 1684.88,
+  "end": 1689.1200000000001,
+  "text": "a really cool thing that's created, I"
+ },
+ {
+  "start": 1687.12,
+  "end": 1691.039,
+  "text": "take not just like the picture and post"
+ },
+ {
+  "start": 1689.12,
+  "end": 1692.9599999999998,
+  "text": "it once, but I take the template, like"
+ },
+ {
+  "start": 1691.039,
+  "end": 1695.919,
+  "text": "how is the text on the screen? Can I"
+ },
+ {
+  "start": 1692.96,
+  "end": 1697.8400000000001,
+  "text": "implement that same style, the same"
+ },
+ {
+  "start": 1695.919,
+  "end": 1700.3200000000002,
+  "text": "prompt except with a different image in"
+ },
+ {
+  "start": 1697.84,
+  "end": 1701.9189999999999,
+  "text": "a different topic, right? A brand is"
+ },
+ {
+  "start": 1700.32,
+  "end": 1703.84,
+  "text": "really made up of fonts, which you"
+ },
+ {
+  "start": 1701.919,
+  "end": 1707.279,
+  "text": "should keep it really simple, like two"
+ },
+ {
+  "start": 1703.84,
+  "end": 1709.1999999999998,
+  "text": "fonts and two or three colors, and then"
+ },
+ {
+  "start": 1707.279,
+  "end": 1710.72,
+  "text": "just a typical style that you use, the"
+ },
+ {
+  "start": 1709.2,
+  "end": 1712.559,
+  "text": "way that the text sits on the screen."
+ },
+ {
+  "start": 1710.72,
+  "end": 1715.919,
+  "text": "And then what I want to do is I want to"
+ },
+ {
+  "start": 1712.559,
+  "end": 1717.84,
+  "text": "tell Claude I am using FAL and I've"
+ },
+ {
+  "start": 1715.919,
+  "end": 1719.3600000000001,
+  "text": "uploaded my API key to my local"
+ },
+ {
+  "start": 1717.84,
+  "end": 1722.32,
+  "text": "environment. So read the file"
+ },
+ {
+  "start": 1719.36,
+  "end": 1726.1589999999999,
+  "text": "documentation and use the image model"
+ },
+ {
+  "start": 1722.32,
+  "end": 1727.76,
+  "text": "GPT image 2 for this test when you send"
+ },
+ {
+  "start": 1726.159,
+  "end": 1729.8400000000001,
+  "text": "off and create a prompt. So I'm giving"
+ },
+ {
+  "start": 1727.76,
+  "end": 1732.32,
+  "text": "it an image model that I like using for"
+ },
+ {
+  "start": 1729.84,
+  "end": 1735.039,
+  "text": "my ideation because it does text on the"
+ },
+ {
+  "start": 1732.32,
+  "end": 1736.96,
+  "text": "image super good and maintains the image"
+ },
+ {
+  "start": 1735.039,
+  "end": 1739.039,
+  "text": "styling really nice. And so I'm once"
+ },
+ {
+  "start": 1736.96,
+  "end": 1741.2,
+  "text": "again adding context about which tool"
+ },
+ {
+  "start": 1739.039,
+  "end": 1742.799,
+  "text": "I'm using for image generation. And"
+ },
+ {
+  "start": 1741.2,
+  "end": 1745.039,
+  "text": "after I send off this prompt, I'll tell"
+ },
+ {
+  "start": 1742.799,
+  "end": 1747.039,
+  "text": "it to make a nice instruction file so I"
+ },
+ {
+  "start": 1745.039,
+  "end": 1748.559,
+  "text": "don't have to keep saying use foul. But"
+ },
+ {
+  "start": 1747.039,
+  "end": 1751.36,
+  "text": "for now, we're going to send this off."
+ },
+ {
+  "start": 1748.559,
+  "end": 1754.559,
+  "text": "And this is going to allow us to idate"
+ },
+ {
+  "start": 1751.36,
+  "end": 1756.08,
+  "text": "assets and post types for our business."
+ },
+ {
+  "start": 1754.559,
+  "end": 1758.8799999999999,
+  "text": "So it looks like it found the image"
+ },
+ {
+  "start": 1756.08,
+  "end": 1760.96,
+  "text": "model. GPT image 2 is real on foul. Gave"
+ },
+ {
+  "start": 1758.88,
+  "end": 1763.6000000000001,
+  "text": "me the endpoint that it's going to use."
+ },
+ {
+  "start": 1760.96,
+  "end": 1766.48,
+  "text": "And now it's basically using my API key"
+ },
+ {
+  "start": 1763.6,
+  "end": 1768.48,
+  "text": "and foul together to create this. And"
+ },
+ {
+  "start": 1766.48,
+  "end": 1771.1200000000001,
+  "text": "this right here is the reason I'm always"
+ },
+ {
+  "start": 1768.48,
+  "end": 1773.76,
+  "text": "using an AI tool to generate AI images"
+ },
+ {
+  "start": 1771.12,
+  "end": 1776.0,
+  "text": "on the platforms because these AI tools"
+ },
+ {
+  "start": 1773.76,
+  "end": 1779.12,
+  "text": "understand how to craft good prompts"
+ },
+ {
+  "start": 1776.0,
+  "end": 1780.96,
+  "text": "that create good images. So Sonnet 5"
+ },
+ {
+  "start": 1779.12,
+  "end": 1784.08,
+  "text": "just created the entire prompt for us."
+ },
+ {
+  "start": 1780.96,
+  "end": 1786.64,
+  "text": "If you look, it says wrote the GPT image"
+ },
+ {
+  "start": 1784.08,
+  "end": 1789.9189999999999,
+  "text": "to edit prompt. And you can see the"
+ },
+ {
+  "start": 1786.64,
+  "end": 1792.0800000000002,
+  "text": "exact prompt that it used to create"
+ },
+ {
+  "start": 1789.919,
+  "end": 1794.3200000000002,
+  "text": "whatever it's about to create. So you"
+ },
+ {
+  "start": 1792.08,
+  "end": 1796.6399999999999,
+  "text": "can not only look at this and edit it"
+ },
+ {
+  "start": 1794.32,
+  "end": 1798.8799999999999,
+  "text": "and find where certain things went"
+ },
+ {
+  "start": 1796.64,
+  "end": 1800.96,
+  "text": "wrong, but it's just insane that it can"
+ },
+ {
+  "start": 1798.88,
+  "end": 1803.3600000000001,
+  "text": "create such a good prompt for you. Okay."
+ },
+ {
+  "start": 1800.96,
+  "end": 1806.32,
+  "text": "And it generated its first image very"
+ },
+ {
+  "start": 1803.36,
+  "end": 1808.4799999999998,
+  "text": "fast, very easy. Now, it might not be"
+ },
+ {
+  "start": 1806.32,
+  "end": 1810.48,
+  "text": "the best. The vignette is a little bit"
+ },
+ {
+  "start": 1808.48,
+  "end": 1812.08,
+  "text": "too much, I think. And also I would"
+ },
+ {
+  "start": 1810.48,
+  "end": 1814.08,
+  "text": "prefer if that runs my business so I"
+ },
+ {
+  "start": 1812.08,
+  "end": 1815.6789999999999,
+  "text": "don't have to is in front of me maybe at"
+ },
+ {
+  "start": 1814.08,
+  "end": 1818.0,
+  "text": "the bottom of the screen and that skills"
+ },
+ {
+  "start": 1815.679,
+  "end": 1820.0800000000002,
+  "text": "is a little less tall and maybe just a"
+ },
+ {
+  "start": 1818.0,
+  "end": 1821.84,
+  "text": "little thicker. And also maybe we add"
+ },
+ {
+  "start": 1820.08,
+  "end": 1823.36,
+  "text": "that run my business so I don't have to"
+ },
+ {
+  "start": 1821.84,
+  "end": 1825.279,
+  "text": "to make it make a little bit more sense."
+ },
+ {
+  "start": 1823.36,
+  "end": 1827.1999999999998,
+  "text": "But it asked me a question. The subtext"
+ },
+ {
+  "start": 1825.279,
+  "end": 1830.0,
+  "text": "line gets cut off behind your head. How"
+ },
+ {
+  "start": 1827.2,
+  "end": 1832.799,
+  "text": "should I fix it? I'm going to say a"
+ },
+ {
+  "start": 1830.0,
+  "end": 1835.6,
+  "text": "couple of changes that I want. I want"
+ },
+ {
+  "start": 1832.799,
+  "end": 1837.12,
+  "text": "skills to be just a tad bit less tall. I"
+ },
+ {
+  "start": 1835.6,
+  "end": 1839.36,
+  "text": "do like the height, but just a little"
+ },
+ {
+  "start": 1837.12,
+  "end": 1841.84,
+  "text": "bit less tall if possible and maybe a"
+ },
+ {
+  "start": 1839.36,
+  "end": 1844.32,
+  "text": "little bit thicker and put that runs my"
+ },
+ {
+  "start": 1841.84,
+  "end": 1846.8799999999999,
+  "text": "business so I don't have to or that run"
+ },
+ {
+  "start": 1844.32,
+  "end": 1850.0,
+  "text": "my business so I don't have to in front"
+ },
+ {
+  "start": 1846.88,
+  "end": 1851.919,
+  "text": "of me kind of on my waistline or a"
+ },
+ {
+  "start": 1850.0,
+  "end": 1853.679,
+  "text": "little bit above my hands near the"
+ },
+ {
+  "start": 1851.919,
+  "end": 1855.76,
+  "text": "bottom of my image. So, I'm just going"
+ },
+ {
+  "start": 1853.679,
+  "end": 1857.1200000000001,
+  "text": "to make sure have this looking good. And"
+ },
+ {
+  "start": 1855.76,
+  "end": 1858.559,
+  "text": "the goal here is just to ideulate"
+ },
+ {
+  "start": 1857.12,
+  "end": 1861.12,
+  "text": "something until you get a couple of"
+ },
+ {
+  "start": 1858.559,
+  "end": 1862.8799999999999,
+  "text": "ideas or designs that you like. Then I'm"
+ },
+ {
+  "start": 1861.12,
+  "end": 1865.039,
+  "text": "just going to submit that. And let's see"
+ },
+ {
+  "start": 1862.88,
+  "end": 1866.5590000000002,
+  "text": "what it comes back with the next edit."
+ },
+ {
+  "start": 1865.039,
+  "end": 1868.08,
+  "text": "It didn't do too bad of a job though."
+ },
+ {
+  "start": 1866.559,
+  "end": 1869.84,
+  "text": "And I like it because it used an actual"
+ },
+ {
+  "start": 1868.08,
+  "end": 1871.279,
+  "text": "image of me. It edit the quality a"
+ },
+ {
+  "start": 1869.84,
+  "end": 1872.559,
+  "text": "little bit. Made the golden hour pop a"
+ },
+ {
+  "start": 1871.279,
+  "end": 1874.399,
+  "text": "little bit more. And it's really"
+ },
+ {
+  "start": 1872.559,
+  "end": 1878.08,
+  "text": "bringing out my brand colors with the"
+ },
+ {
+  "start": 1874.399,
+  "end": 1880.6399999999999,
+  "text": "white, the blue matching the skills text"
+ },
+ {
+  "start": 1878.08,
+  "end": 1882.799,
+  "text": "with my shirt. Looks super sweet. Okay,"
+ },
+ {
+  "start": 1880.64,
+  "end": 1885.279,
+  "text": "here's the next generation. A little bit"
+ },
+ {
+  "start": 1882.799,
+  "end": 1887.44,
+  "text": "better, but I can't really see skills as"
+ },
+ {
+  "start": 1885.279,
+  "end": 1889.6,
+  "text": "much. And I don't like this font"
+ },
+ {
+  "start": 1887.44,
+  "end": 1891.3600000000001,
+  "text": "entirely. It might be a little bit too"
+ },
+ {
+  "start": 1889.6,
+  "end": 1893.84,
+  "text": "big. So, I'm just going to tell Claude"
+ },
+ {
+  "start": 1891.36,
+  "end": 1895.6789999999999,
+  "text": "exactly that. Now, skills is too far"
+ },
+ {
+  "start": 1893.84,
+  "end": 1897.279,
+  "text": "behind my head. I don't really like the"
+ },
+ {
+  "start": 1895.679,
+  "end": 1898.96,
+  "text": "font. Well, the font isn't bad. I just"
+ },
+ {
+  "start": 1897.279,
+  "end": 1901.2,
+  "text": "feel like that subtext is a little too"
+ },
+ {
+  "start": 1898.96,
+  "end": 1903.44,
+  "text": "big and the image is a little bit too"
+ },
+ {
+  "start": 1901.2,
+  "end": 1905.279,
+  "text": "overedited. Seems like contrast keeps"
+ },
+ {
+  "start": 1903.44,
+  "end": 1907.919,
+  "text": "increasing. I do like the golden hue and"
+ },
+ {
+  "start": 1905.279,
+  "end": 1910.799,
+  "text": "the vignette now, but maybe decrease the"
+ },
+ {
+  "start": 1907.919,
+  "end": 1913.44,
+  "text": "contrast just a tad bit. Move skills up"
+ },
+ {
+  "start": 1910.799,
+  "end": 1915.519,
+  "text": "and make those changes. And now I'm"
+ },
+ {
+  "start": 1913.44,
+  "end": 1917.279,
+  "text": "going to send that off. And it's going"
+ },
+ {
+  "start": 1915.519,
+  "end": 1919.039,
+  "text": "to keep revising this until I get it"
+ },
+ {
+  "start": 1917.279,
+  "end": 1920.799,
+  "text": "exactly how I want it. And I want you to"
+ },
+ {
+  "start": 1919.039,
+  "end": 1923.279,
+  "text": "keep in mind right now we are just"
+ },
+ {
+  "start": 1920.799,
+  "end": 1926.1589999999999,
+  "text": "creating an idea of what we want our"
+ },
+ {
+  "start": 1923.279,
+  "end": 1928.0,
+  "text": "brand to look and feel like. If I had 30"
+ },
+ {
+  "start": 1926.159,
+  "end": 1929.8400000000001,
+  "text": "images on my Instagram that looked like"
+ },
+ {
+  "start": 1928.0,
+  "end": 1931.6,
+  "text": "this where you could slide through and"
+ },
+ {
+  "start": 1929.84,
+  "end": 1933.36,
+  "text": "get all the skills or get all the files"
+ },
+ {
+  "start": 1931.6,
+  "end": 1935.039,
+  "text": "that I'm talking about, I would be happy"
+ },
+ {
+  "start": 1933.36,
+  "end": 1936.6399999999999,
+  "text": "with that. And so we can extract certain"
+ },
+ {
+  "start": 1935.039,
+  "end": 1939.039,
+  "text": "elements from this image that we can"
+ },
+ {
+  "start": 1936.64,
+  "end": 1941.279,
+  "text": "reuse in other posts like the white"
+ },
+ {
+  "start": 1939.039,
+  "end": 1943.679,
+  "text": "color, the blue color, the vignette, the"
+ },
+ {
+  "start": 1941.279,
+  "end": 1945.6,
+  "text": "grain, the fonts. Everything that make a"
+ },
+ {
+  "start": 1943.679,
+  "end": 1947.44,
+  "text": "consistent brand we can extract from"
+ },
+ {
+  "start": 1945.6,
+  "end": 1949.6789999999999,
+  "text": "this image. After some back and forth"
+ },
+ {
+  "start": 1947.44,
+  "end": 1951.519,
+  "text": "with Claude and a few more generations,"
+ },
+ {
+  "start": 1949.679,
+  "end": 1953.6000000000001,
+  "text": "I ended up getting it exactly how I"
+ },
+ {
+  "start": 1951.519,
+  "end": 1955.1200000000001,
+  "text": "wanted. And so, this would be a good"
+ },
+ {
+  "start": 1953.6,
+  "end": 1957.84,
+  "text": "cover image if I was going to give away"
+ },
+ {
+  "start": 1955.12,
+  "end": 1959.76,
+  "text": "some skills and I wanted the carousel."
+ },
+ {
+  "start": 1957.84,
+  "end": 1962.32,
+  "text": "So, now what I can do is I can kind of"
+ },
+ {
+  "start": 1959.76,
+  "end": 1964.0,
+  "text": "build my brand around this. Since I"
+ },
+ {
+  "start": 1962.32,
+  "end": 1965.9189999999999,
+  "text": "already have colors, it's a little bit"
+ },
+ {
+  "start": 1964.0,
+  "end": 1967.279,
+  "text": "easier for me. But you should pick"
+ },
+ {
+  "start": 1965.919,
+  "end": 1968.5590000000002,
+  "text": "colors that complement each other"
+ },
+ {
+  "start": 1967.279,
+  "end": 1971.12,
+  "text": "nicely. So, what I'm going to tell"
+ },
+ {
+  "start": 1968.559,
+  "end": 1973.76,
+  "text": "Claude to do now is, okay, what I want"
+ },
+ {
+  "start": 1971.12,
+  "end": 1975.5189999999998,
+  "text": "you to do is extract this image style."
+ },
+ {
+  "start": 1973.76,
+  "end": 1979.2,
+  "text": "And I want this to be one of the image"
+ },
+ {
+  "start": 1975.519,
+  "end": 1980.799,
+  "text": "styles for my post types. So whatever"
+ },
+ {
+  "start": 1979.2,
+  "end": 1983.039,
+  "text": "colors are being used in here, I want"
+ },
+ {
+  "start": 1980.799,
+  "end": 1985.76,
+  "text": "you to extract it. The style I want you"
+ },
+ {
+  "start": 1983.039,
+  "end": 1988.72,
+  "text": "to extract of what what this is, what"
+ },
+ {
+  "start": 1985.76,
+  "end": 1990.32,
+  "text": "the style is, and just in general the"
+ },
+ {
+  "start": 1988.72,
+  "end": 1992.0,
+  "text": "composition and everything about it."
+ },
+ {
+  "start": 1990.32,
+  "end": 1994.48,
+  "text": "That way, if I'm ever creating Instagram"
+ },
+ {
+  "start": 1992.0,
+  "end": 1996.64,
+  "text": "covers or LinkedIn covers again, I can"
+ },
+ {
+  "start": 1994.48,
+  "end": 1998.64,
+  "text": "reuse it with the same colors and"
+ },
+ {
+  "start": 1996.64,
+  "end": 2001.2,
+  "text": "styling and everything. And then upload"
+ },
+ {
+  "start": 1998.64,
+  "end": 2002.88,
+  "text": "it to an instruction file within my"
+ },
+ {
+  "start": 2001.2,
+  "end": 2004.64,
+  "text": "folder. But don't just put it in the"
+ },
+ {
+  "start": 2002.88,
+  "end": 2006.0800000000002,
+  "text": "general instructions. Make customized"
+ },
+ {
+  "start": 2004.64,
+  "end": 2008.48,
+  "text": "instructions for when I'm creating"
+ },
+ {
+  "start": 2006.08,
+  "end": 2010.96,
+  "text": "carousel covers. And also create a"
+ },
+ {
+  "start": 2008.48,
+  "end": 2013.3600000000001,
+  "text": "general instruction file where it has my"
+ },
+ {
+  "start": 2010.96,
+  "end": 2015.76,
+  "text": "rules for foul in the image model that I"
+ },
+ {
+  "start": 2013.36,
+  "end": 2017.4399999999998,
+  "text": "like to use and how I generate images so"
+ },
+ {
+  "start": 2015.76,
+  "end": 2019.2,
+  "text": "Claude always knows. And so what I did"
+ },
+ {
+  "start": 2017.44,
+  "end": 2021.039,
+  "text": "right there was I just created two"
+ },
+ {
+  "start": 2019.2,
+  "end": 2022.799,
+  "text": "instruction files and I want Claude to"
+ },
+ {
+  "start": 2021.039,
+  "end": 2025.36,
+  "text": "kind of review the process for how it"
+ },
+ {
+  "start": 2022.799,
+  "end": 2027.2,
+  "text": "generated images and create some"
+ },
+ {
+  "start": 2025.36,
+  "end": 2028.6399999999999,
+  "text": "instruction files that it can put within"
+ },
+ {
+  "start": 2027.2,
+  "end": 2030.24,
+  "text": "my folder. I'm going to switch this to"
+ },
+ {
+  "start": 2028.64,
+  "end": 2032.24,
+  "text": "opus, but I wanted to create these"
+ },
+ {
+  "start": 2030.24,
+  "end": 2034.559,
+  "text": "instruction files in my folder so that"
+ },
+ {
+  "start": 2032.24,
+  "end": 2036.0,
+  "text": "it knows how to generate similar content"
+ },
+ {
+  "start": 2034.559,
+  "end": 2038.08,
+  "text": "every single time. That way, I don't"
+ },
+ {
+  "start": 2036.0,
+  "end": 2039.679,
+  "text": "have to prompt it over and over and over"
+ },
+ {
+  "start": 2038.08,
+  "end": 2041.519,
+  "text": "again like you just saw me do. And so,"
+ },
+ {
+  "start": 2039.679,
+  "end": 2043.44,
+  "text": "what it did was it created those two"
+ },
+ {
+  "start": 2041.519,
+  "end": 2045.519,
+  "text": "instruction files. And if I go to my"
+ },
+ {
+  "start": 2043.44,
+  "end": 2048.2400000000002,
+  "text": "finder and I actually look at these"
+ },
+ {
+  "start": 2045.519,
+  "end": 2050.8,
+  "text": "things, as you can see, we have now an"
+ },
+ {
+  "start": 2048.24,
+  "end": 2053.6789999999996,
+  "text": "instructions folder, a claude.md, which"
+ },
+ {
+  "start": 2050.8,
+  "end": 2055.52,
+  "text": "is an instruction file that claime."
+ },
+ {
+  "start": 2053.679,
+  "end": 2057.44,
+  "text": "and it created a folder for us called"
+ },
+ {
+  "start": 2055.52,
+  "end": 2060.159,
+  "text": "image styles and it added its own"
+ },
+ {
+  "start": 2057.44,
+  "end": 2062.079,
+  "text": "references folder. I didn't have to do"
+ },
+ {
+  "start": 2060.159,
+  "end": 2064.48,
+  "text": "any of this. It did it all on its own"
+ },
+ {
+  "start": 2062.079,
+  "end": 2066.3990000000003,
+  "text": "after I told it to create that file. And"
+ },
+ {
+  "start": 2064.48,
+  "end": 2068.72,
+  "text": "so anytime I want to create a carousel"
+ },
+ {
+  "start": 2066.399,
+  "end": 2071.52,
+  "text": "cover, I can tell it to use this style"
+ },
+ {
+  "start": 2068.72,
+  "end": 2072.7999999999997,
+  "text": "guide and it will be able to do so a lot"
+ },
+ {
+  "start": 2071.52,
+  "end": 2074.8,
+  "text": "quicker. And so that's kind of what the"
+ },
+ {
+  "start": 2072.8,
+  "end": 2076.8,
+  "text": "ideation phase is about is deciding on"
+ },
+ {
+  "start": 2074.8,
+  "end": 2078.32,
+  "text": "how many post types do you want. Maybe"
+ },
+ {
+  "start": 2076.8,
+  "end": 2080.2400000000002,
+  "text": "you want like a blank slide where you"
+ },
+ {
+  "start": 2078.32,
+  "end": 2082.48,
+  "text": "can just put information, whatever you"
+ },
+ {
+  "start": 2080.24,
+  "end": 2083.919,
+  "text": "want for videos and images in terms of"
+ },
+ {
+  "start": 2082.48,
+  "end": 2085.359,
+  "text": "colors and styling. And this is the part"
+ },
+ {
+  "start": 2083.919,
+  "end": 2086.96,
+  "text": "where you want to do it. Now I can just"
+ },
+ {
+  "start": 2085.359,
+  "end": 2089.5989999999997,
+  "text": "come into Claude and I can tell it to"
+ },
+ {
+  "start": 2086.96,
+  "end": 2092.2400000000002,
+  "text": "use the golden hour editorial style on"
+ },
+ {
+  "start": 2089.599,
+  "end": 2095.679,
+  "text": "any one of my posts and it will work. So"
+ },
+ {
+  "start": 2092.24,
+  "end": 2097.7599999999998,
+  "text": "I can say use the golden hour editorial"
+ },
+ {
+  "start": 2095.679,
+  "end": 2100.4,
+  "text": "style on the picture of me on the"
+ },
+ {
+  "start": 2097.76,
+  "end": 2103.6800000000003,
+  "text": "balcony. And I want the concept to be"
+ },
+ {
+  "start": 2100.4,
+  "end": 2105.599,
+  "text": "around the one clawed setup that made me"
+ },
+ {
+  "start": 2103.68,
+  "end": 2106.96,
+  "text": "capable of working from anywhere. I'm"
+ },
+ {
+  "start": 2105.599,
+  "end": 2109.3590000000004,
+  "text": "not sure how you would want to word"
+ },
+ {
+  "start": 2106.96,
+  "end": 2111.44,
+  "text": "that. Maybe give me a couple variations."
+ },
+ {
+  "start": 2109.359,
+  "end": 2113.52,
+  "text": "But the idea in the carousel is I want"
+ },
+ {
+  "start": 2111.44,
+  "end": 2115.92,
+  "text": "it to have text on [snorts] the screen"
+ },
+ {
+  "start": 2113.52,
+  "end": 2117.92,
+  "text": "that really stops the person midscroll."
+ },
+ {
+  "start": 2115.92,
+  "end": 2119.92,
+  "text": "And the idea of it is to give away a"
+ },
+ {
+  "start": 2117.92,
+  "end": 2122.4,
+  "text": "clawed setup that allows people to"
+ },
+ {
+  "start": 2119.92,
+  "end": 2124.079,
+  "text": "automate their busy work. So I can say"
+ },
+ {
+  "start": 2122.4,
+  "end": 2125.6800000000003,
+  "text": "something like that. Just kind of ramble"
+ },
+ {
+  "start": 2124.079,
+  "end": 2127.8390000000004,
+  "text": "on. And now that we have that beautiful"
+ },
+ {
+  "start": 2125.68,
+  "end": 2129.7599999999998,
+  "text": "golden hour editorial style, it will use"
+ },
+ {
+  "start": 2127.839,
+  "end": 2131.92,
+  "text": "the same concept in every photo. And"
+ },
+ {
+  "start": 2129.76,
+  "end": 2134.8,
+  "text": "eventually we can automate this and we"
+ },
+ {
+  "start": 2131.92,
+  "end": 2136.56,
+  "text": "can have this post type trigger on"
+ },
+ {
+  "start": 2134.8,
+  "end": 2138.88,
+  "text": "certain events. Maybe when I upload a"
+ },
+ {
+  "start": 2136.56,
+  "end": 2141.119,
+  "text": "YouTube video, it uses the Golden Hour"
+ },
+ {
+  "start": 2138.88,
+  "end": 2144.32,
+  "text": "editorial and creates a carousel cover"
+ },
+ {
+  "start": 2141.119,
+  "end": 2146.56,
+  "text": "for it and an entire social media suite"
+ },
+ {
+  "start": 2144.32,
+  "end": 2148.88,
+  "text": "of posts. And just like that, it found"
+ },
+ {
+  "start": 2146.56,
+  "end": 2152.16,
+  "text": "the image, rotated it for me since it"
+ },
+ {
+  "start": 2148.88,
+  "end": 2154.96,
+  "text": "was sideways, and then it created two"
+ },
+ {
+  "start": 2152.16,
+  "end": 2157.2799999999997,
+  "text": "variations, but it gave me six options"
+ },
+ {
+  "start": 2154.96,
+  "end": 2159.92,
+  "text": "for what I might want to do. And they"
+ },
+ {
+  "start": 2157.28,
+  "end": 2162.0,
+  "text": "look identical to my first initial"
+ },
+ {
+  "start": 2159.92,
+  "end": 2164.079,
+  "text": "golden hour editorial style I created."
+ },
+ {
+  "start": 2162.0,
+  "end": 2165.44,
+  "text": "So that's the idea of ideiation. you're"
+ },
+ {
+  "start": 2164.079,
+  "end": 2168.6400000000003,
+  "text": "just kind of creating these design"
+ },
+ {
+  "start": 2165.44,
+  "end": 2171.119,
+  "text": "templates and styles that you can reuse"
+ },
+ {
+  "start": 2168.64,
+  "end": 2173.92,
+  "text": "in any situation. So, that's what I've"
+ },
+ {
+  "start": 2171.119,
+  "end": 2176.2400000000002,
+  "text": "done here. And since I have Blato"
+ },
+ {
+  "start": 2173.92,
+  "end": 2178.8,
+  "text": "connected, if I wanted to, I could just"
+ },
+ {
+  "start": 2176.24,
+  "end": 2182.3999999999996,
+  "text": "post one of these by saying, uh, post"
+ },
+ {
+  "start": 2178.8,
+  "end": 2183.76,
+  "text": "this or schedule this. That's the easy"
+ },
+ {
+  "start": 2182.4,
+  "end": 2186.88,
+  "text": "thing. And the beautiful thing about"
+ },
+ {
+  "start": 2183.76,
+  "end": 2188.88,
+  "text": "using Blatato is it's one key, one"
+ },
+ {
+  "start": 2186.88,
+  "end": 2190.48,
+  "text": "connection spot for all of your social"
+ },
+ {
+  "start": 2188.88,
+  "end": 2191.76,
+  "text": "media accounts and it just keeps you in"
+ },
+ {
+  "start": 2190.48,
+  "end": 2194.0,
+  "text": "flow state because you don't have to go"
+ },
+ {
+  "start": 2191.76,
+  "end": 2196.0,
+  "text": "find your login, get used to different"
+ },
+ {
+  "start": 2194.0,
+  "end": 2197.359,
+  "text": "platforms. It's just one spot and it"
+ },
+ {
+  "start": 2196.0,
+  "end": 2199.119,
+  "text": "forces you to upload on all of the"
+ },
+ {
+  "start": 2197.359,
+  "end": 2200.48,
+  "text": "platforms which makes you consistent in"
+ },
+ {
+  "start": 2199.119,
+  "end": 2202.0,
+  "text": "the long run. And it's going to become"
+ },
+ {
+  "start": 2200.48,
+  "end": 2203.76,
+  "text": "even more powerful when we get into the"
+ },
+ {
+  "start": 2202.0,
+  "end": 2205.92,
+  "text": "automations a little bit later. But this"
+ },
+ {
+  "start": 2203.76,
+  "end": 2208.2400000000002,
+  "text": "is very cool and you can do this in any"
+ },
+ {
+  "start": 2205.92,
+  "end": 2209.92,
+  "text": "style. This is a very basic style that I"
+ },
+ {
+  "start": 2208.24,
+  "end": 2212.0,
+  "text": "could probably do in Photoshop, but"
+ },
+ {
+  "start": 2209.92,
+  "end": 2213.359,
+  "text": "nonetheless saves me a lot of time. I"
+ },
+ {
+  "start": 2212.0,
+  "end": 2215.44,
+  "text": "can go do other things while these are"
+ },
+ {
+  "start": 2213.359,
+  "end": 2216.64,
+  "text": "generating. I like this one anywhere."
+ },
+ {
+  "start": 2215.44,
+  "end": 2218.56,
+  "text": "Kind of looks like I'm in the middle of"
+ },
+ {
+  "start": 2216.64,
+  "end": 2220.56,
+  "text": "nowhere. And then the clawed setup that"
+ },
+ {
+  "start": 2218.56,
+  "end": 2222.0,
+  "text": "runs my busy work. I'm giving it away. I"
+ },
+ {
+  "start": 2220.56,
+  "end": 2224.32,
+  "text": "can make that bottom text look a little"
+ },
+ {
+  "start": 2222.0,
+  "end": 2226.0,
+  "text": "bit better, honestly. But I love the top"
+ },
+ {
+  "start": 2224.32,
+  "end": 2228.0,
+  "text": "text here. And it just keeps on going."
+ },
+ {
+  "start": 2226.0,
+  "end": 2229.119,
+  "text": "Now it's doing version C for me. And"
+ },
+ {
+  "start": 2228.0,
+  "end": 2231.44,
+  "text": "what we could do is we could have a"
+ },
+ {
+  "start": 2229.119,
+  "end": 2234.0,
+  "text": "secondary agent in here reviewing to see"
+ },
+ {
+  "start": 2231.44,
+  "end": 2236.2400000000002,
+  "text": "which ones are the best. Busy work is a"
+ },
+ {
+  "start": 2234.0,
+  "end": 2237.68,
+  "text": "choice. Here's the clawed setup. That's"
+ },
+ {
+  "start": 2236.24,
+  "end": 2239.5989999999997,
+  "text": "kind of sick as well. I kind of like"
+ },
+ {
+  "start": 2237.68,
+  "end": 2241.52,
+  "text": "that. like how the W goes behind the"
+ },
+ {
+  "start": 2239.599,
+  "end": 2243.04,
+  "text": "tree and the rest of the text kind of"
+ },
+ {
+  "start": 2241.52,
+  "end": 2245.28,
+  "text": "sits on those mountains in the back."
+ },
+ {
+  "start": 2243.04,
+  "end": 2247.119,
+  "text": "Ideation is one of the bigger parts of"
+ },
+ {
+  "start": 2245.28,
+  "end": 2249.28,
+  "text": "this video because everything else"
+ },
+ {
+  "start": 2247.119,
+  "end": 2251.599,
+  "text": "downstream stems from it. Any style that"
+ },
+ {
+  "start": 2249.28,
+  "end": 2254.6400000000003,
+  "text": "you create, any slide, any asset that"
+ },
+ {
+  "start": 2251.599,
+  "end": 2256.1600000000003,
+  "text": "you build can be reused in the future."
+ },
+ {
+  "start": 2254.64,
+  "end": 2259.04,
+  "text": "And that's what really helps the"
+ },
+ {
+  "start": 2256.16,
+  "end": 2261.52,
+  "text": "automation stage is when you can trigger"
+ },
+ {
+  "start": 2259.04,
+  "end": 2263.599,
+  "text": "Claude to awake on a schedule to go"
+ },
+ {
+  "start": 2261.52,
+  "end": 2266.88,
+  "text": "search some news to go look at a YouTube"
+ },
+ {
+  "start": 2263.599,
+  "end": 2269.3590000000004,
+  "text": "video transcript and to create a social"
+ },
+ {
+  "start": 2266.88,
+  "end": 2271.76,
+  "text": "media post or 20 social media posts"
+ },
+ {
+  "start": 2269.359,
+  "end": 2274.0789999999997,
+  "text": "about a single piece of pillar content."
+ },
+ {
+  "start": 2271.76,
+  "end": 2276.7200000000003,
+  "text": "That's really when it starts to become"
+ },
+ {
+  "start": 2274.079,
+  "end": 2278.4,
+  "text": "real. Now, the next part of this is to"
+ },
+ {
+  "start": 2276.72,
+  "end": 2281.04,
+  "text": "shape your voice. So, what I've provided"
+ },
+ {
+  "start": 2278.4,
+  "end": 2282.88,
+  "text": "you beneath this video is a free prompt."
+ },
+ {
+  "start": 2281.04,
+  "end": 2285.2,
+  "text": "It's a free resource with all of the"
+ },
+ {
+  "start": 2282.88,
+  "end": 2287.119,
+  "text": "assets from today's video. You can click"
+ },
+ {
+  "start": 2285.2,
+  "end": 2288.8799999999997,
+  "text": "and get this prompt. And what it does,"
+ },
+ {
+  "start": 2287.119,
+  "end": 2290.88,
+  "text": "it doesn't do anything crazy. It just"
+ },
+ {
+  "start": 2288.88,
+  "end": 2294.1600000000003,
+  "text": "interviews you and it tries to extract"
+ },
+ {
+  "start": 2290.88,
+  "end": 2295.52,
+  "text": "your writing style and your voice. So"
+ },
+ {
+  "start": 2294.16,
+  "end": 2297.839,
+  "text": "over time, you're going to be able to"
+ },
+ {
+  "start": 2295.52,
+  "end": 2299.68,
+  "text": "add to this file. Anytime you see AI use"
+ },
+ {
+  "start": 2297.839,
+  "end": 2302.0789999999997,
+  "text": "a sentence, you can say, \"I don't like"
+ },
+ {
+  "start": 2299.68,
+  "end": 2303.9199999999996,
+  "text": "this sentence. Put it in my voice file"
+ },
+ {
+  "start": 2302.079,
+  "end": 2305.2000000000003,
+  "text": "to never do that again.\" And AI will"
+ },
+ {
+  "start": 2303.92,
+  "end": 2306.48,
+  "text": "always have this document that it can"
+ },
+ {
+  "start": 2305.2,
+  "end": 2308.96,
+  "text": "reference when trying to write social"
+ },
+ {
+  "start": 2306.48,
+  "end": 2310.8,
+  "text": "media posts like you. Now, I get the"
+ },
+ {
+  "start": 2308.96,
+  "end": 2312.96,
+  "text": "luxury of having a YouTube channel where"
+ },
+ {
+  "start": 2310.8,
+  "end": 2315.2000000000003,
+  "text": "I have hundreds of videos where I'm just"
+ },
+ {
+  "start": 2312.96,
+  "end": 2317.76,
+  "text": "speaking like this and I can pull in all"
+ },
+ {
+  "start": 2315.2,
+  "end": 2319.4399999999996,
+  "text": "of those transcripts and say extract my"
+ },
+ {
+  "start": 2317.76,
+  "end": 2321.28,
+  "text": "voice style. So, if you have any blog"
+ },
+ {
+  "start": 2319.44,
+  "end": 2324.7200000000003,
+  "text": "posts that you've personally written,"
+ },
+ {
+  "start": 2321.28,
+  "end": 2326.5600000000004,
+  "text": "any comments, any Facebook posts, any uh"
+ },
+ {
+  "start": 2324.72,
+  "end": 2329.04,
+  "text": "YouTube videos like mine, anything at"
+ },
+ {
+  "start": 2326.56,
+  "end": 2331.68,
+  "text": "all, extract as much as you possibly can"
+ },
+ {
+  "start": 2329.04,
+  "end": 2333.44,
+  "text": "with your natural voice and tell AI that"
+ },
+ {
+  "start": 2331.68,
+  "end": 2334.96,
+  "text": "this is how you speak and to always"
+ },
+ {
+  "start": 2333.44,
+  "end": 2336.48,
+  "text": "double check to make sure your writing"
+ },
+ {
+  "start": 2334.96,
+  "end": 2338.4,
+  "text": "appears like that. So, I'm going to do"
+ },
+ {
+  "start": 2336.48,
+  "end": 2340.16,
+  "text": "this in clawed code. I recommend you do"
+ },
+ {
+  "start": 2338.4,
+  "end": 2341.92,
+  "text": "it as well in your content system"
+ },
+ {
+  "start": 2340.16,
+  "end": 2343.52,
+  "text": "folder. I'm going to paste in that"
+ },
+ {
+  "start": 2341.92,
+  "end": 2345.359,
+  "text": "prompt. You can get it using the free"
+ },
+ {
+  "start": 2343.52,
+  "end": 2346.64,
+  "text": "resource down in the description. And"
+ },
+ {
+  "start": 2345.359,
+  "end": 2348.0,
+  "text": "then I'm just going to send it off."
+ },
+ {
+  "start": 2346.64,
+  "end": 2349.839,
+  "text": "Here's what the prompt says. Interview"
+ },
+ {
+  "start": 2348.0,
+  "end": 2351.359,
+  "text": "me until you can write like me. Ask one"
+ },
+ {
+  "start": 2349.839,
+  "end": 2353.52,
+  "text": "question at a time and wait for my"
+ },
+ {
+  "start": 2351.359,
+  "end": 2354.88,
+  "text": "answer. Eight questions maximum. If the"
+ },
+ {
+  "start": 2353.52,
+  "end": 2356.96,
+  "text": "answer is vague, push back and ask"
+ },
+ {
+  "start": 2354.88,
+  "end": 2358.96,
+  "text": "again. Do not move on politely. And the"
+ },
+ {
+  "start": 2356.96,
+  "end": 2362.2400000000002,
+  "text": "goal of this is to try to get a good"
+ },
+ {
+  "start": 2358.96,
+  "end": 2364.4,
+  "text": "voice file that we can use in the"
+ },
+ {
+  "start": 2362.24,
+  "end": 2366.56,
+  "text": "future. So something I wrote that I'm"
+ },
+ {
+  "start": 2364.4,
+  "end": 2368.56,
+  "text": "happy with. Ask me to paste it in. And I"
+ },
+ {
+  "start": 2366.56,
+  "end": 2370.32,
+  "text": "basically wrote out some criteria for"
+ },
+ {
+  "start": 2368.56,
+  "end": 2372.48,
+  "text": "you to think about when crafting your"
+ },
+ {
+  "start": 2370.32,
+  "end": 2374.48,
+  "text": "voice to truly automate your content."
+ },
+ {
+  "start": 2372.48,
+  "end": 2376.8,
+  "text": "And so I'm going to send this off. And"
+ },
+ {
+  "start": 2374.48,
+  "end": 2379.359,
+  "text": "this prompt should have Claude interview"
+ },
+ {
+  "start": 2376.8,
+  "end": 2381.8390000000004,
+  "text": "you. It already has some rules baked in"
+ },
+ {
+  "start": 2379.359,
+  "end": 2384.0,
+  "text": "like words you never use. Nobody's ever"
+ },
+ {
+  "start": 2381.839,
+  "end": 2387.04,
+  "text": "using Delve, leverage, seamless, unlock,"
+ },
+ {
+  "start": 2384.0,
+  "end": 2389.599,
+  "text": "robust, elevate, game changer, empower,"
+ },
+ {
+  "start": 2387.04,
+  "end": 2391.359,
+  "text": "streamline, tapestry, none of that stuff"
+ },
+ {
+  "start": 2389.599,
+  "end": 2392.7200000000003,
+  "text": "unless you actually do use it. I just"
+ },
+ {
+  "start": 2391.359,
+  "end": 2394.4,
+  "text": "put in that list because most people"
+ },
+ {
+  "start": 2392.72,
+  "end": 2396.72,
+  "text": "don't use these words and AI likes to"
+ },
+ {
+  "start": 2394.4,
+  "end": 2399.76,
+  "text": "use them a lot. AI likes to use these"
+ },
+ {
+  "start": 2396.72,
+  "end": 2401.4399999999996,
+  "text": "type of sentence patterns. No M dashes."
+ },
+ {
+  "start": 2399.76,
+  "end": 2403.2000000000003,
+  "text": "So, just go ahead and answer all of"
+ },
+ {
+  "start": 2401.44,
+  "end": 2404.88,
+  "text": "these questions. I'm going to do so now."
+ },
+ {
+  "start": 2403.2,
+  "end": 2407.5989999999997,
+  "text": "Okay. And just like that, it created my"
+ },
+ {
+  "start": 2404.88,
+  "end": 2409.92,
+  "text": "voice MD and I answered all eight of"
+ },
+ {
+  "start": 2407.599,
+  "end": 2412.079,
+  "text": "those questions. Gave it some stories of"
+ },
+ {
+  "start": 2409.92,
+  "end": 2414.48,
+  "text": "mine. Gave it everything. And now I have"
+ },
+ {
+  "start": 2412.079,
+  "end": 2415.8390000000004,
+  "text": "a file that has my voice. And it asked"
+ },
+ {
+  "start": 2414.48,
+  "end": 2417.2,
+  "text": "me, want me to write two posts against"
+ },
+ {
+  "start": 2415.839,
+  "end": 2419.359,
+  "text": "this file so you can tell me where it's"
+ },
+ {
+  "start": 2417.2,
+  "end": 2423.839,
+  "text": "off? And I would agree doing this. So, I"
+ },
+ {
+  "start": 2419.359,
+  "end": 2428.88,
+  "text": "would say yes, write two posts about it."
+ },
+ {
+  "start": 2423.839,
+  "end": 2433.119,
+  "text": "I can say write them on this content and"
+ },
+ {
+  "start": 2428.88,
+  "end": 2435.599,
+  "text": "optimize them for LinkedIn"
+ },
+ {
+  "start": 2433.119,
+  "end": 2437.839,
+  "text": "for this example."
+ },
+ {
+  "start": 2435.599,
+  "end": 2439.52,
+  "text": "And then I can go get a YouTube video"
+ },
+ {
+  "start": 2437.839,
+  "end": 2441.04,
+  "text": "transcript of mine. I went and got my"
+ },
+ {
+  "start": 2439.52,
+  "end": 2443.52,
+  "text": "YouTube transcript. I'll just paste it"
+ },
+ {
+  "start": 2441.04,
+  "end": 2445.2799999999997,
+  "text": "in there. It's a video about a Claude"
+ },
+ {
+  "start": 2443.52,
+  "end": 2447.68,
+  "text": "setup that helps people save time. And"
+ },
+ {
+  "start": 2445.28,
+  "end": 2449.76,
+  "text": "I'll have Claude use my voice MD and"
+ },
+ {
+  "start": 2447.68,
+  "end": 2451.52,
+  "text": "write posts based on this pillar piece"
+ },
+ {
+  "start": 2449.76,
+  "end": 2452.96,
+  "text": "of content that's on my YouTube. I'm"
+ },
+ {
+  "start": 2451.52,
+  "end": 2454.48,
+  "text": "going to send that off and let's see how"
+ },
+ {
+  "start": 2452.96,
+  "end": 2456.16,
+  "text": "the posts turn out here. You just want"
+ },
+ {
+  "start": 2454.48,
+  "end": 2458.16,
+  "text": "to keep testing and testing and testing"
+ },
+ {
+  "start": 2456.16,
+  "end": 2460.64,
+  "text": "and editing your voice file until it"
+ },
+ {
+  "start": 2458.16,
+  "end": 2462.3999999999996,
+  "text": "comes out exactly in your voice. So, in"
+ },
+ {
+  "start": 2460.64,
+  "end": 2464.16,
+  "text": "my YouTube video, I had a testimonial"
+ },
+ {
+  "start": 2462.4,
+  "end": 2466.2400000000002,
+  "text": "for someone in our community named Brad."
+ },
+ {
+  "start": 2464.16,
+  "end": 2471.2799999999997,
+  "text": "And so, it's pulling that as an example."
+ },
+ {
+  "start": 2466.24,
+  "end": 2474.16,
+  "text": "One line I don't like is not this, this."
+ },
+ {
+  "start": 2471.28,
+  "end": 2476.7200000000003,
+  "text": "Right? So, I'm going to make sure I tell"
+ },
+ {
+  "start": 2474.16,
+  "end": 2478.48,
+  "text": "it that for sure. And then I'm going to"
+ },
+ {
+  "start": 2476.72,
+  "end": 2480.72,
+  "text": "read the rest of this. I'm going to copy"
+ },
+ {
+  "start": 2478.48,
+  "end": 2482.319,
+  "text": "this and say, I hate this type of"
+ },
+ {
+  "start": 2480.72,
+  "end": 2485.2,
+  "text": "framing. Never use this again."
+ },
+ {
+  "start": 2482.319,
+  "end": 2488.079,
+  "text": "Especially with the oneword sentence"
+ },
+ {
+  "start": 2485.2,
+  "end": 2489.359,
+  "text": "that says not this, this. And then I'm"
+ },
+ {
+  "start": 2488.079,
+  "end": 2490.7200000000003,
+  "text": "going to put that right there so it"
+ },
+ {
+  "start": 2489.359,
+  "end": 2491.92,
+  "text": "doesn't do that again. Then I'm just"
+ },
+ {
+  "start": 2490.72,
+  "end": 2493.68,
+  "text": "going to keep reading through these and"
+ },
+ {
+  "start": 2491.92,
+  "end": 2495.76,
+  "text": "find other things. I don't really like"
+ },
+ {
+  "start": 2493.68,
+  "end": 2498.319,
+  "text": "this sentence where it says that's it."
+ },
+ {
+  "start": 2495.76,
+  "end": 2500.6400000000003,
+  "text": "That's the whole thing. It's completely"
+ },
+ {
+  "start": 2498.319,
+  "end": 2502.64,
+  "text": "unnecessary and every AI model does"
+ },
+ {
+  "start": 2500.64,
+  "end": 2505.2,
+  "text": "that. Again, in post two, you said"
+ },
+ {
+  "start": 2502.64,
+  "end": 2507.44,
+  "text": "that's it. That's the list. I do not"
+ },
+ {
+  "start": 2505.2,
+  "end": 2509.5989999999997,
+  "text": "want that. I do not like where you say,"
+ },
+ {
+  "start": 2507.44,
+  "end": 2511.76,
+  "text": "\"Here's the uncomfortable part.\" Every"
+ },
+ {
+  "start": 2509.599,
+  "end": 2513.839,
+  "text": "AI model does that. Make sure you do not"
+ },
+ {
+  "start": 2511.76,
+  "end": 2516.0,
+  "text": "say that again or even have that type of"
+ },
+ {
+  "start": 2513.839,
+  "end": 2518.48,
+  "text": "framing again. Never again use a"
+ },
+ {
+  "start": 2516.0,
+  "end": 2520.88,
+  "text": "sentence like boring beats impressive or"
+ },
+ {
+  "start": 2518.48,
+  "end": 2522.64,
+  "text": "that's the whole move. That is horrible."
+ },
+ {
+  "start": 2520.88,
+  "end": 2524.56,
+  "text": "Don't use any of those sentences ever"
+ },
+ {
+  "start": 2522.64,
+  "end": 2526.24,
+  "text": "again or anything like that. So, I went"
+ },
+ {
+  "start": 2524.56,
+  "end": 2527.68,
+  "text": "through both the posts and these are"
+ },
+ {
+  "start": 2526.24,
+  "end": 2528.9599999999996,
+  "text": "kind of my revisions that I have. And"
+ },
+ {
+  "start": 2527.68,
+  "end": 2531.1189999999997,
+  "text": "that's the point. You kind of want to"
+ },
+ {
+  "start": 2528.96,
+  "end": 2533.2,
+  "text": "shape this voice file into something"
+ },
+ {
+  "start": 2531.119,
+  "end": 2534.56,
+  "text": "that you can actually use. And it"
+ },
+ {
+  "start": 2533.2,
+  "end": 2536.3999999999996,
+  "text": "doesn't just come out perfect the first"
+ },
+ {
+  "start": 2534.56,
+  "end": 2538.4,
+  "text": "time, but it does get a good base. And"
+ },
+ {
+  "start": 2536.4,
+  "end": 2541.28,
+  "text": "now I can say something just in general"
+ },
+ {
+  "start": 2538.4,
+  "end": 2544.64,
+  "text": "to help shape my voice. I can say, I"
+ },
+ {
+  "start": 2541.28,
+  "end": 2546.48,
+  "text": "want you to also during this process of"
+ },
+ {
+  "start": 2544.64,
+  "end": 2549.1189999999997,
+  "text": "creating posts, talk to the audience"
+ },
+ {
+  "start": 2546.48,
+  "end": 2551.839,
+  "text": "more and make it feel a little bit more"
+ },
+ {
+  "start": 2549.119,
+  "end": 2553.359,
+  "text": "personal. So at the part in post number"
+ },
+ {
+  "start": 2551.839,
+  "end": 2555.2799999999997,
+  "text": "two where you said, here's the"
+ },
+ {
+  "start": 2553.359,
+  "end": 2556.72,
+  "text": "uncomfortable part. Most of us spend our"
+ },
+ {
+  "start": 2555.28,
+  "end": 2558.6400000000003,
+  "text": "day in the right column and then wonder"
+ },
+ {
+  "start": 2556.72,
+  "end": 2560.0789999999997,
+  "text": "why business feels like it owns us. You"
+ },
+ {
+  "start": 2558.64,
+  "end": 2562.64,
+  "text": "should have a statement like if you"
+ },
+ {
+  "start": 2560.079,
+  "end": 2564.2400000000002,
+  "text": "spend your day in the right column or"
+ },
+ {
+  "start": 2562.64,
+  "end": 2566.319,
+  "text": "chances are you feel like a slave to"
+ },
+ {
+  "start": 2564.24,
+  "end": 2568.0,
+  "text": "your own business or chances are you"
+ },
+ {
+  "start": 2566.319,
+  "end": 2569.52,
+  "text": "can't get any free time. Just like say"
+ },
+ {
+  "start": 2568.0,
+  "end": 2571.52,
+  "text": "it how it is and make it a little bit"
+ },
+ {
+  "start": 2569.52,
+  "end": 2573.599,
+  "text": "more personal in that regard. And so now"
+ },
+ {
+  "start": 2571.52,
+  "end": 2576.319,
+  "text": "I can send that off and my voice file is"
+ },
+ {
+  "start": 2573.599,
+  "end": 2577.6800000000003,
+  "text": "going to change around. I mean and I"
+ },
+ {
+  "start": 2576.319,
+  "end": 2580.079,
+  "text": "could keep going through here and"
+ },
+ {
+  "start": 2577.68,
+  "end": 2581.839,
+  "text": "editing the revisions it made. It did a"
+ },
+ {
+  "start": 2580.079,
+  "end": 2584.319,
+  "text": "better job this time around, but there"
+ },
+ {
+  "start": 2581.839,
+  "end": 2586.4,
+  "text": "are still some things like right here"
+ },
+ {
+  "start": 2584.319,
+  "end": 2587.839,
+  "text": "that I would want to edit. Real work, no"
+ },
+ {
+  "start": 2586.4,
+  "end": 2589.2000000000003,
+  "text": "dollars attached to it. I mean, I can"
+ },
+ {
+  "start": 2587.839,
+  "end": 2591.119,
+  "text": "throw that one in there real quick. But"
+ },
+ {
+  "start": 2589.2,
+  "end": 2593.2799999999997,
+  "text": "the point is just to shape this until"
+ },
+ {
+  "start": 2591.119,
+  "end": 2595.359,
+  "text": "you get it exactly how you like it. And"
+ },
+ {
+  "start": 2593.28,
+  "end": 2596.8,
+  "text": "the best thing you can do is upload"
+ },
+ {
+  "start": 2595.359,
+  "end": 2598.48,
+  "text": "posts that have already worked well for"
+ },
+ {
+  "start": 2596.8,
+  "end": 2600.88,
+  "text": "you or scripts that have worked well for"
+ },
+ {
+  "start": 2598.48,
+  "end": 2603.359,
+  "text": "you and went viral. The best way that"
+ },
+ {
+  "start": 2600.88,
+  "end": 2605.2000000000003,
+  "text": "Claude works is off past data. So, if"
+ },
+ {
+  "start": 2603.359,
+  "end": 2607.04,
+  "text": "you're having it write something in your"
+ },
+ {
+  "start": 2605.2,
+  "end": 2608.7999999999997,
+  "text": "voice, use your past voice that's"
+ },
+ {
+  "start": 2607.04,
+  "end": 2610.16,
+  "text": "already worked. Now, like I've been"
+ },
+ {
+  "start": 2608.8,
+  "end": 2611.2000000000003,
+  "text": "saying this entire time, you want to"
+ },
+ {
+  "start": 2610.16,
+  "end": 2613.2799999999997,
+  "text": "make sure that you go through and you"
+ },
+ {
+  "start": 2611.2,
+  "end": 2615.4399999999996,
+  "text": "edit your voice. Don't try to capture"
+ },
+ {
+  "start": 2613.28,
+  "end": 2616.48,
+  "text": "every single post type in here. Like,"
+ },
+ {
+  "start": 2615.44,
+  "end": 2617.76,
+  "text": "this is what I want you to do for"
+ },
+ {
+  "start": 2616.48,
+  "end": 2619.92,
+  "text": "LinkedIn. This is what I want you to do"
+ },
+ {
+  "start": 2617.76,
+  "end": 2622.2400000000002,
+  "text": "for Instagram. Save that for a different"
+ },
+ {
+  "start": 2619.92,
+  "end": 2624.319,
+  "text": "file. Your voice is meant to be general"
+ },
+ {
+  "start": 2622.24,
+  "end": 2627.04,
+  "text": "and to give claw general direction on"
+ },
+ {
+  "start": 2624.319,
+  "end": 2629.2799999999997,
+  "text": "who you are, who you serve, what is your"
+ },
+ {
+  "start": 2627.04,
+  "end": 2631.44,
+  "text": "audience, what are some hard constraints"
+ },
+ {
+  "start": 2629.28,
+  "end": 2633.119,
+  "text": "and rules that you absolutely have,"
+ },
+ {
+  "start": 2631.44,
+  "end": 2636.16,
+  "text": "patterns in speech that you never want"
+ },
+ {
+  "start": 2633.119,
+  "end": 2638.6400000000003,
+  "text": "to use across any platform. But the"
+ },
+ {
+  "start": 2636.16,
+  "end": 2640.16,
+  "text": "actual postspecific details like how"
+ },
+ {
+  "start": 2638.64,
+  "end": 2642.48,
+  "text": "long your first line should be and"
+ },
+ {
+  "start": 2640.16,
+  "end": 2644.96,
+  "text": "things like that that should be further"
+ },
+ {
+  "start": 2642.48,
+  "end": 2647.04,
+  "text": "down the pipeline into like a LinkedIn"
+ },
+ {
+  "start": 2644.96,
+  "end": 2649.2,
+  "text": "voice folder or file or something like"
+ },
+ {
+  "start": 2647.04,
+  "end": 2652.079,
+  "text": "that. The next part of this process is"
+ },
+ {
+  "start": 2649.2,
+  "end": 2654.24,
+  "text": "to create a carousel. And so I want to"
+ },
+ {
+  "start": 2652.079,
+  "end": 2656.96,
+  "text": "show you from start to finish how I"
+ },
+ {
+  "start": 2654.24,
+  "end": 2658.9599999999996,
+  "text": "might create a carousel live and create"
+ },
+ {
+  "start": 2656.96,
+  "end": 2662.7200000000003,
+  "text": "all of the slides for it and actually"
+ },
+ {
+  "start": 2658.96,
+  "end": 2664.0,
+  "text": "post it with Blato on Claude Code. So I"
+ },
+ {
+  "start": 2662.72,
+  "end": 2666.0789999999997,
+  "text": "don't have to leave Claude Code for this"
+ },
+ {
+  "start": 2664.0,
+  "end": 2668.0,
+  "text": "entire process. I can just grab my"
+ },
+ {
+  "start": 2666.079,
+  "end": 2670.4,
+  "text": "YouTube video transcript and create a"
+ },
+ {
+  "start": 2668.0,
+  "end": 2671.839,
+  "text": "carousel around it. So, let me do that"
+ },
+ {
+  "start": 2670.4,
+  "end": 2674.2400000000002,
+  "text": "now. So, what I'm going to be doing is"
+ },
+ {
+  "start": 2671.839,
+  "end": 2676.0,
+  "text": "taking this video that I posted on"
+ },
+ {
+  "start": 2674.24,
+  "end": 2677.839,
+  "text": "YouTube 3 days ago. This Claude setup"
+ },
+ {
+  "start": 2676.0,
+  "end": 2679.839,
+  "text": "does weeks of work and hours and I'm"
+ },
+ {
+  "start": 2677.839,
+  "end": 2682.88,
+  "text": "going to be creating a carousel around"
+ },
+ {
+  "start": 2679.839,
+  "end": 2684.4,
+  "text": "it for Instagram and LinkedIn from start"
+ },
+ {
+  "start": 2682.88,
+  "end": 2685.839,
+  "text": "to finish. So, I'm going to go grab my"
+ },
+ {
+  "start": 2684.4,
+  "end": 2687.599,
+  "text": "transcript. Now that I have that"
+ },
+ {
+  "start": 2685.839,
+  "end": 2689.68,
+  "text": "transcript, what I can do is I can paste"
+ },
+ {
+  "start": 2687.599,
+  "end": 2690.8,
+  "text": "it in here and I'm going to go to the"
+ },
+ {
+  "start": 2689.68,
+  "end": 2692.72,
+  "text": "top of this prompt because I want to"
+ },
+ {
+  "start": 2690.8,
+  "end": 2694.5600000000004,
+  "text": "give some instructions to Claude. Before"
+ },
+ {
+  "start": 2692.72,
+  "end": 2696.72,
+  "text": "we start creating any assets, I'm just"
+ },
+ {
+  "start": 2694.56,
+  "end": 2700.16,
+  "text": "going to tell it, \"Hey there, Claude."
+ },
+ {
+  "start": 2696.72,
+  "end": 2704.0789999999997,
+  "text": "What I want you to do is extract a five"
+ },
+ {
+  "start": 2700.16,
+  "end": 2705.839,
+  "text": "to six slide concept. Extract all of the"
+ },
+ {
+  "start": 2704.079,
+  "end": 2708.7200000000003,
+  "text": "beats and what I would need on each"
+ },
+ {
+  "start": 2705.839,
+  "end": 2711.7599999999998,
+  "text": "slide with a CTA on the last slide that"
+ },
+ {
+  "start": 2708.72,
+  "end": 2713.7599999999998,
+  "text": "promotes this video with a comment like"
+ },
+ {
+  "start": 2711.76,
+  "end": 2715.6800000000003,
+  "text": "comment this and I'll send it over.\" But"
+ },
+ {
+  "start": 2713.76,
+  "end": 2718.0,
+  "text": "I want you to create something that goes"
+ },
+ {
+  "start": 2715.68,
+  "end": 2720.16,
+  "text": "over the general concept of this video"
+ },
+ {
+  "start": 2718.0,
+  "end": 2721.76,
+  "text": "that gets people to want to watch it in"
+ },
+ {
+  "start": 2720.16,
+  "end": 2723.359,
+  "text": "their commenting things. And I drop them"
+ },
+ {
+  "start": 2721.76,
+  "end": 2725.3590000000004,
+  "text": "the link. And so basically, if you"
+ },
+ {
+  "start": 2723.359,
+  "end": 2727.5989999999997,
+  "text": "haven't seen it yet, a lot of people do"
+ },
+ {
+  "start": 2725.359,
+  "end": 2730.0789999999997,
+  "text": "these carousels. And on the last slide"
+ },
+ {
+  "start": 2727.599,
+  "end": 2732.8,
+  "text": "of the image, there's a CTA that says"
+ },
+ {
+  "start": 2730.079,
+  "end": 2735.599,
+  "text": "like comment and then they type a word"
+ },
+ {
+  "start": 2732.8,
+  "end": 2737.6800000000003,
+  "text": "like comments claude and I'll send you"
+ },
+ {
+  "start": 2735.599,
+  "end": 2739.44,
+  "text": "over the video, the full course or"
+ },
+ {
+  "start": 2737.68,
+  "end": 2740.8799999999997,
+  "text": "something. And that's how they get"
+ },
+ {
+  "start": 2739.44,
+  "end": 2742.8,
+  "text": "better engagement on their post is"
+ },
+ {
+  "start": 2740.88,
+  "end": 2744.56,
+  "text": "people are commenting and it's like a"
+ },
+ {
+  "start": 2742.8,
+  "end": 2746.7200000000003,
+  "text": "lead in your inbox, people who you know"
+ },
+ {
+  "start": 2744.56,
+  "end": 2748.88,
+  "text": "are interested and you can start"
+ },
+ {
+  "start": 2746.72,
+  "end": 2750.48,
+  "text": "qualifying these leads. So right now"
+ },
+ {
+  "start": 2748.88,
+  "end": 2753.44,
+  "text": "what I'm doing is just creating a five"
+ },
+ {
+  "start": 2750.48,
+  "end": 2756.2400000000002,
+  "text": "to six slide concept and having Claude"
+ },
+ {
+  "start": 2753.44,
+  "end": 2758.96,
+  "text": "extract all of the beats per slide for"
+ },
+ {
+  "start": 2756.24,
+  "end": 2761.359,
+  "text": "this transcript. I'm going to say here's"
+ },
+ {
+  "start": 2758.96,
+  "end": 2764.4,
+  "text": "the transcript that I want to make my"
+ },
+ {
+  "start": 2761.359,
+  "end": 2766.72,
+  "text": "carousel around and then I can send that"
+ },
+ {
+  "start": 2764.4,
+  "end": 2768.4,
+  "text": "off. I'm using Opus 5 Medium right now."
+ },
+ {
+  "start": 2766.72,
+  "end": 2770.64,
+  "text": "And then what it did was it told me what"
+ },
+ {
+  "start": 2768.4,
+  "end": 2772.1600000000003,
+  "text": "should go on each slide. And so it says"
+ },
+ {
+  "start": 2770.64,
+  "end": 2774.0,
+  "text": "hook/cover."
+ },
+ {
+  "start": 2772.16,
+  "end": 2775.359,
+  "text": "You're using clawed like a slot machine."
+ },
+ {
+  "start": 2774.0,
+  "end": 2777.52,
+  "text": "That's why you're still drowning in"
+ },
+ {
+  "start": 2775.359,
+  "end": 2779.04,
+  "text": "work. I really like that. Proof. I don't"
+ },
+ {
+  "start": 2777.52,
+  "end": 2781.44,
+  "text": "really like proof on this. Nobody knows"
+ },
+ {
+  "start": 2779.04,
+  "end": 2783.44,
+  "text": "who Brad is. And they don't really care"
+ },
+ {
+  "start": 2781.44,
+  "end": 2785.04,
+  "text": "yet. But after I give them all the"
+ },
+ {
+  "start": 2783.44,
+  "end": 2787.68,
+  "text": "information, people are going to start"
+ },
+ {
+  "start": 2785.04,
+  "end": 2789.119,
+  "text": "to be like, \"Oh, okay. So this is"
+ },
+ {
+  "start": 2787.68,
+  "end": 2791.1189999999997,
+  "text": "actually working for people.\" So I kind"
+ },
+ {
+  "start": 2789.119,
+  "end": 2792.88,
+  "text": "of want to put proof in the back a"
+ },
+ {
+  "start": 2791.119,
+  "end": 2794.96,
+  "text": "little bit. The reframe, I don't really"
+ },
+ {
+  "start": 2792.88,
+  "end": 2796.48,
+  "text": "like the stop prompting to onboard it."
+ },
+ {
+  "start": 2794.96,
+  "end": 2799.2,
+  "text": "But then we get into the one step you"
+ },
+ {
+  "start": 2796.48,
+  "end": 2801.599,
+  "text": "actually teach and then I actually teach"
+ },
+ {
+  "start": 2799.2,
+  "end": 2804.72,
+  "text": "something right there. The withheld for"
+ },
+ {
+  "start": 2801.599,
+  "end": 2806.7200000000003,
+  "text": "bang and then CTA. And so I went over"
+ },
+ {
+  "start": 2804.72,
+  "end": 2808.48,
+  "text": "all of this in that video. So it's nice"
+ },
+ {
+  "start": 2806.72,
+  "end": 2809.7599999999998,
+  "text": "using a transcript because I can easily"
+ },
+ {
+  "start": 2808.48,
+  "end": 2811.04,
+  "text": "hand that off to Claude and automate"
+ },
+ {
+  "start": 2809.76,
+  "end": 2812.3190000000004,
+  "text": "this later down the line. And I'm"
+ },
+ {
+  "start": 2811.04,
+  "end": 2813.7599999999998,
+  "text": "starting to get some ideas of what I"
+ },
+ {
+  "start": 2812.319,
+  "end": 2815.2,
+  "text": "want to do with the slot machine word"
+ },
+ {
+  "start": 2813.76,
+  "end": 2816.88,
+  "text": "that I think could be cool. But I'm just"
+ },
+ {
+  "start": 2815.2,
+  "end": 2819.7599999999998,
+  "text": "going to tell Claude I don't really want"
+ },
+ {
+  "start": 2816.88,
+  "end": 2821.44,
+  "text": "to do the proof. I don't really think"
+ },
+ {
+  "start": 2819.76,
+  "end": 2823.5200000000004,
+  "text": "that would be good on slide two at"
+ },
+ {
+  "start": 2821.44,
+  "end": 2825.52,
+  "text": "least. and we need to frame it better,"
+ },
+ {
+  "start": 2823.52,
+  "end": 2827.44,
+  "text": "like how Brad is somebody that actually"
+ },
+ {
+  "start": 2825.52,
+  "end": 2829.04,
+  "text": "implemented it. Or maybe we don't do the"
+ },
+ {
+  "start": 2827.44,
+  "end": 2830.2400000000002,
+  "text": "proof right now. I think I showed the"
+ },
+ {
+  "start": 2829.04,
+  "end": 2832.16,
+  "text": "proof in the video and I'm gonna send"
+ },
+ {
+  "start": 2830.24,
+  "end": 2833.839,
+  "text": "people the video. So, let's just get rid"
+ },
+ {
+  "start": 2832.16,
+  "end": 2835.839,
+  "text": "of proof entirely. Actually, I don't"
+ },
+ {
+  "start": 2833.839,
+  "end": 2838.16,
+  "text": "think that's going to be a problem on"
+ },
+ {
+  "start": 2835.839,
+  "end": 2840.64,
+  "text": "Instagram. People are generally pretty"
+ },
+ {
+  "start": 2838.16,
+  "end": 2842.0789999999997,
+  "text": "quick to click and if they like it and"
+ },
+ {
+  "start": 2840.64,
+  "end": 2843.44,
+  "text": "they're interested or peaked in"
+ },
+ {
+  "start": 2842.079,
+  "end": 2844.8,
+  "text": "interest, it's just going to validate"
+ },
+ {
+  "start": 2843.44,
+  "end": 2846.319,
+  "text": "them even more when they click on the"
+ },
+ {
+  "start": 2844.8,
+  "end": 2848.6400000000003,
+  "text": "video. So, then it came up with five"
+ },
+ {
+  "start": 2846.319,
+  "end": 2850.079,
+  "text": "slides. Everything else stayed the same."
+ },
+ {
+  "start": 2848.64,
+  "end": 2852.16,
+  "text": "So, what I can do right now is I can"
+ },
+ {
+  "start": 2850.079,
+  "end": 2853.6800000000003,
+  "text": "generate slide one. I'll say, \"Yeah,"
+ },
+ {
+  "start": 2852.16,
+  "end": 2858.16,
+  "text": "build the slide one cover.\" And then"
+ },
+ {
+  "start": 2853.68,
+  "end": 2860.16,
+  "text": "I'll tell it to use the ocean coffee"
+ },
+ {
+  "start": 2858.16,
+  "end": 2864.0789999999997,
+  "text": "balcony scene. And then I'll have to"
+ },
+ {
+  "start": 2860.16,
+  "end": 2869.839,
+  "text": "say, \"You might have to get creative"
+ },
+ {
+  "start": 2864.079,
+  "end": 2872.079,
+  "text": "with the words on the image since it's a"
+ },
+ {
+  "start": 2869.839,
+  "end": 2873.599,
+  "text": "longer display text because it is."
+ },
+ {
+  "start": 2872.079,
+  "end": 2875.119,
+  "text": "Instead of just like two words, it's"
+ },
+ {
+  "start": 2873.599,
+  "end": 2876.56,
+  "text": "like seven words.\" So, I'm interested to"
+ },
+ {
+  "start": 2875.119,
+  "end": 2878.56,
+  "text": "see how it's going to handle that. Maybe"
+ },
+ {
+  "start": 2876.56,
+  "end": 2880.319,
+  "text": "it'll require a new style to be created,"
+ },
+ {
+  "start": 2878.56,
+  "end": 2882.64,
+  "text": "but that's all right. All right. It came"
+ },
+ {
+  "start": 2880.319,
+  "end": 2884.56,
+  "text": "out with generation number one and I got"
+ },
+ {
+  "start": 2882.64,
+  "end": 2886.64,
+  "text": "to say that looks pretty sick. You're"
+ },
+ {
+  "start": 2884.56,
+  "end": 2888.48,
+  "text": "using clawed like a slot machine. That's"
+ },
+ {
+  "start": 2886.64,
+  "end": 2891.1189999999997,
+  "text": "why you're still drowning in work. It"
+ },
+ {
+  "start": 2888.48,
+  "end": 2893.2,
+  "text": "may do with the style the best that it"
+ },
+ {
+  "start": 2891.119,
+  "end": 2895.92,
+  "text": "could. Now, we were having some issues"
+ },
+ {
+  "start": 2893.2,
+  "end": 2899.359,
+  "text": "with the word slot machine since it"
+ },
+ {
+  "start": 2895.92,
+  "end": 2901.119,
+  "text": "flagged it as a gambling post on foul"
+ },
+ {
+  "start": 2899.359,
+  "end": 2902.96,
+  "text": "unfortunately, but we ended up getting"
+ },
+ {
+  "start": 2901.119,
+  "end": 2906.079,
+  "text": "it to work and Claude worked through"
+ },
+ {
+  "start": 2902.96,
+  "end": 2908.48,
+  "text": "that issue itself, which was very cool."
+ },
+ {
+  "start": 2906.079,
+  "end": 2910.1600000000003,
+  "text": "But I mean, the cigar and mouth, the"
+ },
+ {
+  "start": 2908.48,
+  "end": 2911.92,
+  "text": "coffee in hand, the laptop and hand. I"
+ },
+ {
+  "start": 2910.16,
+  "end": 2914.5589999999997,
+  "text": "can't even use my laptop in this"
+ },
+ {
+  "start": 2911.92,
+  "end": 2916.64,
+  "text": "situation. This has got to stop people."
+ },
+ {
+  "start": 2914.559,
+  "end": 2919.76,
+  "text": "And it has that slot machine vibe. Like,"
+ },
+ {
+  "start": 2916.64,
+  "end": 2922.16,
+  "text": "I'm just a clawed code vibe coding"
+ },
+ {
+  "start": 2919.76,
+  "end": 2923.8390000000004,
+  "text": "addict. I could get greedy here and try"
+ },
+ {
+  "start": 2922.16,
+  "end": 2925.68,
+  "text": "changing the post to make the cigar have"
+ },
+ {
+  "start": 2923.839,
+  "end": 2927.839,
+  "text": "a little bit of smoke come out of it."
+ },
+ {
+  "start": 2925.68,
+  "end": 2929.44,
+  "text": "The cigar is still there as expected."
+ },
+ {
+  "start": 2927.839,
+  "end": 2932.24,
+  "text": "That's hilarious. And so, I'm going to"
+ },
+ {
+  "start": 2929.44,
+  "end": 2933.92,
+  "text": "keep this. I think for a V1, a first"
+ },
+ {
+  "start": 2932.24,
+  "end": 2936.0,
+  "text": "generation, I think it did pretty good"
+ },
+ {
+  "start": 2933.92,
+  "end": 2938.0,
+  "text": "and held our style very nice. used our"
+ },
+ {
+  "start": 2936.0,
+  "end": 2939.68,
+  "text": "colors, used everything. So, let's keep"
+ },
+ {
+  "start": 2938.0,
+  "end": 2941.28,
+  "text": "that and let's move on. This isn't bad."
+ },
+ {
+  "start": 2939.68,
+  "end": 2942.7999999999997,
+  "text": "I'm going to try to generate a few more"
+ },
+ {
+  "start": 2941.28,
+  "end": 2944.96,
+  "text": "and if I can't get it looking a little"
+ },
+ {
+  "start": 2942.8,
+  "end": 2946.7200000000003,
+  "text": "bit better, then I'm going to move on."
+ },
+ {
+  "start": 2944.96,
+  "end": 2948.319,
+  "text": "But, I'll be back once I generate my"
+ },
+ {
+  "start": 2946.72,
+  "end": 2949.839,
+  "text": "cover exactly how I like it. So, I"
+ },
+ {
+  "start": 2948.319,
+  "end": 2951.359,
+  "text": "generated two more variations and I"
+ },
+ {
+  "start": 2949.839,
+  "end": 2953.2799999999997,
+  "text": "think I definitely found the one that"
+ },
+ {
+  "start": 2951.359,
+  "end": 2955.2,
+  "text": "I'm going with. This one looks pretty"
+ },
+ {
+  "start": 2953.28,
+  "end": 2958.4,
+  "text": "sweet. You're using clawed. I made the"
+ },
+ {
+  "start": 2955.2,
+  "end": 2960.319,
+  "text": "clawed word have the logo in it as well,"
+ },
+ {
+  "start": 2958.4,
+  "end": 2962.2400000000002,
+  "text": "like a slot machine. I decked out the"
+ },
+ {
+  "start": 2960.319,
+  "end": 2964.16,
+  "text": "slot machine word like an actual slot"
+ },
+ {
+  "start": 2962.24,
+  "end": 2966.24,
+  "text": "machine. added some poker chips to the"
+ },
+ {
+  "start": 2964.16,
+  "end": 2968.24,
+  "text": "table down there. Just the little"
+ },
+ {
+  "start": 2966.24,
+  "end": 2969.7599999999998,
+  "text": "details that make this post stand out."
+ },
+ {
+  "start": 2968.24,
+  "end": 2971.2799999999997,
+  "text": "And I think this cover is ready to go."
+ },
+ {
+  "start": 2969.76,
+  "end": 2973.6800000000003,
+  "text": "In my opinion, the cover is most"
+ },
+ {
+  "start": 2971.28,
+  "end": 2975.599,
+  "text": "important part. The longer that you can"
+ },
+ {
+  "start": 2973.68,
+  "end": 2977.04,
+  "text": "maintain somebody's attention is what"
+ },
+ {
+  "start": 2975.599,
+  "end": 2979.6800000000003,
+  "text": "matters most. Now, of course, if you"
+ },
+ {
+  "start": 2977.04,
+  "end": 2980.96,
+  "text": "have just some average pictures, you can"
+ },
+ {
+  "start": 2979.68,
+  "end": 2983.359,
+  "text": "use those, too. You don't have to get"
+ },
+ {
+  "start": 2980.96,
+  "end": 2984.64,
+  "text": "decked out like this and get crazy. If I"
+ },
+ {
+  "start": 2983.359,
+  "end": 2987.119,
+  "text": "wanted to, I could have just grabbed"
+ },
+ {
+  "start": 2984.64,
+  "end": 2988.7999999999997,
+  "text": "that initial picture and just started"
+ },
+ {
+  "start": 2987.119,
+  "end": 2990.8,
+  "text": "uploading a post about it and scheduling"
+ },
+ {
+  "start": 2988.8,
+  "end": 2992.8,
+  "text": "it out automatically. But I am going to"
+ },
+ {
+  "start": 2990.8,
+  "end": 2995.28,
+  "text": "go with V3 here. and then create the"
+ },
+ {
+  "start": 2992.8,
+  "end": 2999.3590000000004,
+  "text": "rest of the slides. So, I'm going to say"
+ },
+ {
+  "start": 2995.28,
+  "end": 3002.079,
+  "text": "V3 is definitely the winner here. I love"
+ },
+ {
+  "start": 2999.359,
+  "end": 3004.4,
+  "text": "V3 and that's the one we're going to"
+ },
+ {
+  "start": 3002.079,
+  "end": 3006.4,
+  "text": "use. What type of designs do you think"
+ },
+ {
+  "start": 3004.4,
+  "end": 3007.76,
+  "text": "we should use for the next slides? I"
+ },
+ {
+  "start": 3006.4,
+  "end": 3010.1600000000003,
+  "text": "don't really think we need to use images"
+ },
+ {
+  "start": 3007.76,
+  "end": 3013.119,
+  "text": "of myself, but maybe just we carry some"
+ },
+ {
+  "start": 3010.16,
+  "end": 3017.04,
+  "text": "of the styling elements from my"
+ },
+ {
+  "start": 3013.119,
+  "end": 3019.2000000000003,
+  "text": "editorial golden hour vibe and we bake"
+ },
+ {
+  "start": 3017.04,
+  "end": 3021.2,
+  "text": "them into the next slides when I'm"
+ },
+ {
+  "start": 3019.2,
+  "end": 3024.64,
+  "text": "sharing actual information. These slides"
+ },
+ {
+  "start": 3021.2,
+  "end": 3027.2799999999997,
+  "text": "need to be clear and just on brand using"
+ },
+ {
+  "start": 3024.64,
+  "end": 3029.839,
+  "text": "my color palette and my styling that I"
+ },
+ {
+  "start": 3027.28,
+  "end": 3033.0400000000004,
+  "text": "currently am running with. So now I'm"
+ },
+ {
+  "start": 3029.839,
+  "end": 3034.319,
+  "text": "going to create the next slides. And the"
+ },
+ {
+  "start": 3033.04,
+  "end": 3035.599,
+  "text": "reason I'm doing this carousel once"
+ },
+ {
+  "start": 3034.319,
+  "end": 3038.5589999999997,
+  "text": "again is because this is one of the more"
+ },
+ {
+  "start": 3035.599,
+  "end": 3041.52,
+  "text": "dynamic things that you can use AI image"
+ },
+ {
+  "start": 3038.559,
+  "end": 3043.599,
+  "text": "models with clawed and blat allinone. So"
+ },
+ {
+  "start": 3041.52,
+  "end": 3045.359,
+  "text": "it's not recommending that I waste AI"
+ },
+ {
+  "start": 3043.599,
+  "end": 3047.119,
+  "text": "credits. It's saying that it doesn't"
+ },
+ {
+  "start": 3045.359,
+  "end": 3050.0789999999997,
+  "text": "think that we should build the interior"
+ },
+ {
+  "start": 3047.119,
+  "end": 3051.76,
+  "text": "slides through foul because it's not as"
+ },
+ {
+  "start": 3050.079,
+  "end": 3053.52,
+  "text": "necessary. We don't have as many"
+ },
+ {
+  "start": 3051.76,
+  "end": 3056.2400000000002,
+  "text": "elements that we need to add like the"
+ },
+ {
+  "start": 3053.52,
+  "end": 3057.68,
+  "text": "smoke, the poker chips, the clawed logo"
+ },
+ {
+  "start": 3056.24,
+  "end": 3060.3999999999996,
+  "text": "baked in. So, it's saying that it can"
+ },
+ {
+  "start": 3057.68,
+  "end": 3062.319,
+  "text": "just generate these with HTML and render"
+ },
+ {
+  "start": 3060.4,
+  "end": 3064.88,
+  "text": "them. So, we can definitely give that a"
+ },
+ {
+  "start": 3062.319,
+  "end": 3066.88,
+  "text": "shot first. I'm going to hit tab and"
+ },
+ {
+  "start": 3064.88,
+  "end": 3069.599,
+  "text": "send that off. I'm saying yeah, build"
+ },
+ {
+  "start": 3066.88,
+  "end": 3071.599,
+  "text": "slides 2 through 5 as HTML and save the"
+ },
+ {
+  "start": 3069.599,
+  "end": 3073.3590000000004,
+  "text": "style doc. And we'll see how it does. If"
+ },
+ {
+  "start": 3071.599,
+  "end": 3076.2400000000002,
+  "text": "it doesn't do good with HTML, we can go"
+ },
+ {
+  "start": 3073.359,
+  "end": 3078.48,
+  "text": "back to our AI image workflow, but it"
+ },
+ {
+  "start": 3076.24,
+  "end": 3080.16,
+  "text": "can just create these with pure code,"
+ },
+ {
+  "start": 3078.48,
+  "end": 3082.64,
+  "text": "and it says that it's going to be able"
+ },
+ {
+  "start": 3080.16,
+  "end": 3084.24,
+  "text": "to make them look just as good. So,"
+ },
+ {
+  "start": 3082.64,
+  "end": 3086.96,
+  "text": "we'll see. We'll test it out. All right."
+ },
+ {
+  "start": 3084.24,
+  "end": 3089.2,
+  "text": "It created the initial draft out of"
+ },
+ {
+  "start": 3086.96,
+  "end": 3092.16,
+  "text": "HTML. So, this is a lot cheaper because"
+ },
+ {
+  "start": 3089.2,
+  "end": 3094.64,
+  "text": "it's not using foul. And so, it depends"
+ },
+ {
+  "start": 3092.16,
+  "end": 3096.3999999999996,
+  "text": "on what you want to do. If you just are"
+ },
+ {
+  "start": 3094.64,
+  "end": 3098.0,
+  "text": "information-based and you just want to"
+ },
+ {
+  "start": 3096.4,
+  "end": 3099.599,
+  "text": "make a good carousole out of your"
+ },
+ {
+  "start": 3098.0,
+  "end": 3101.359,
+  "text": "YouTube video or whatever you're making"
+ },
+ {
+  "start": 3099.599,
+  "end": 3102.96,
+  "text": "out of your blog post or somebody else's"
+ },
+ {
+  "start": 3101.359,
+  "end": 3105.839,
+  "text": "YouTube video for that matter, this"
+ },
+ {
+  "start": 3102.96,
+  "end": 3108.88,
+  "text": "isn't really a bad thing to do, right?"
+ },
+ {
+  "start": 3105.839,
+  "end": 3111.52,
+  "text": "It looks pretty nice. It would work. But"
+ },
+ {
+  "start": 3108.88,
+  "end": 3114.4,
+  "text": "I'm thinking right now after coming from"
+ },
+ {
+  "start": 3111.52,
+  "end": 3116.319,
+  "text": "something like this, would my next slide"
+ },
+ {
+  "start": 3114.4,
+  "end": 3119.04,
+  "text": "really be that attractive if it was"
+ },
+ {
+  "start": 3116.319,
+  "end": 3120.64,
+  "text": "this? This looks like a corpory weird"
+ },
+ {
+  "start": 3119.04,
+  "end": 3122.8,
+  "text": "business slideshow that you'd fall"
+ },
+ {
+  "start": 3120.64,
+  "end": 3124.96,
+  "text": "asleep during. this looks like the type"
+ },
+ {
+  "start": 3122.8,
+  "end": 3126.6400000000003,
+  "text": "of energy that you want. And so I think"
+ },
+ {
+  "start": 3124.96,
+  "end": 3128.559,
+  "text": "I've got to make my other slides match"
+ },
+ {
+  "start": 3126.64,
+  "end": 3130.319,
+  "text": "it a little bit more and generate some"
+ },
+ {
+  "start": 3128.559,
+  "end": 3132.6400000000003,
+  "text": "image backgrounds with foul at the"
+ },
+ {
+  "start": 3130.319,
+  "end": 3134.5589999999997,
+  "text": "minimum that I can put text on. So I'm"
+ },
+ {
+  "start": 3132.64,
+  "end": 3136.24,
+  "text": "going to say I think I want to do this"
+ },
+ {
+  "start": 3134.559,
+  "end": 3138.559,
+  "text": "with foul, but I want to do it"
+ },
+ {
+  "start": 3136.24,
+  "end": 3142.0,
+  "text": "efficiently. And I think we can use GPT"
+ },
+ {
+  "start": 3138.559,
+  "end": 3143.44,
+  "text": "image 2 with text or at least generate a"
+ },
+ {
+  "start": 3142.0,
+  "end": 3146.079,
+  "text": "beautiful background and then you put"
+ },
+ {
+  "start": 3143.44,
+  "end": 3149.52,
+  "text": "the text on it, but I want to keep it"
+ },
+ {
+  "start": 3146.079,
+  "end": 3152.4,
+  "text": "consistent with how the text is in my"
+ },
+ {
+  "start": 3149.52,
+  "end": 3154.24,
+  "text": "editorial style. So, I think we're going"
+ },
+ {
+  "start": 3152.4,
+  "end": 3156.559,
+  "text": "to need to use FAL for this. Do you mind"
+ },
+ {
+  "start": 3154.24,
+  "end": 3158.64,
+  "text": "generating four examples? The content is"
+ },
+ {
+  "start": 3156.559,
+  "end": 3160.079,
+  "text": "good, but make sure you read my voice MD"
+ },
+ {
+  "start": 3158.64,
+  "end": 3161.839,
+  "text": "and make sure that you follow all of"
+ },
+ {
+  "start": 3160.079,
+  "end": 3163.599,
+  "text": "those rules when creating the content on"
+ },
+ {
+  "start": 3161.839,
+  "end": 3166.0,
+  "text": "the slides as well. And then I can send"
+ },
+ {
+  "start": 3163.599,
+  "end": 3168.079,
+  "text": "that off and let's see how that goes."
+ },
+ {
+  "start": 3166.0,
+  "end": 3171.28,
+  "text": "Okay. And what I did was I had a few"
+ },
+ {
+  "start": 3168.079,
+  "end": 3173.3590000000004,
+  "text": "more design prompts and I just made it"
+ },
+ {
+  "start": 3171.28,
+  "end": 3175.119,
+  "text": "overall transition better. I wasn't"
+ },
+ {
+  "start": 3173.359,
+  "end": 3177.2799999999997,
+  "text": "really liking this because there was no"
+ },
+ {
+  "start": 3175.119,
+  "end": 3179.359,
+  "text": "transition. And so I told Claude not"
+ },
+ {
+  "start": 3177.28,
+  "end": 3181.44,
+  "text": "only to use my voice docs, but I told it"
+ },
+ {
+  "start": 3179.359,
+  "end": 3182.7999999999997,
+  "text": "to transition a little bit better. And"
+ },
+ {
+  "start": 3181.44,
+  "end": 3184.559,
+  "text": "what it did was it came up with this"
+ },
+ {
+  "start": 3182.8,
+  "end": 3186.96,
+  "text": "idea to make the slot machine poker"
+ },
+ {
+  "start": 3184.559,
+  "end": 3189.599,
+  "text": "chips fly over, which I really like. And"
+ },
+ {
+  "start": 3186.96,
+  "end": 3191.359,
+  "text": "so I don't have to implement the poker"
+ },
+ {
+  "start": 3189.599,
+  "end": 3193.52,
+  "text": "chips in every image. That's not the"
+ },
+ {
+  "start": 3191.359,
+  "end": 3195.68,
+  "text": "point. What I'm doing right now is I'm"
+ },
+ {
+  "start": 3193.52,
+  "end": 3197.28,
+  "text": "creating a thought process for Claude so"
+ },
+ {
+  "start": 3195.68,
+  "end": 3199.68,
+  "text": "that when I want to automate this in the"
+ },
+ {
+  "start": 3197.28,
+  "end": 3202.1600000000003,
+  "text": "future, it understands, okay, we need to"
+ },
+ {
+  "start": 3199.68,
+  "end": 3205.359,
+  "text": "transition between the cover slide,"
+ },
+ {
+  "start": 3202.16,
+  "end": 3207.52,
+  "text": "which is up here, and slide number two."
+ },
+ {
+  "start": 3205.359,
+  "end": 3210.96,
+  "text": "And right now, Claude is just picking up"
+ },
+ {
+  "start": 3207.52,
+  "end": 3212.16,
+  "text": "styling tips and pieces that it would"
+ },
+ {
+  "start": 3210.96,
+  "end": 3214.0,
+  "text": "have never had if I didn't do this"
+ },
+ {
+  "start": 3212.16,
+  "end": 3215.839,
+  "text": "manually. The point is to do it manually"
+ },
+ {
+  "start": 3214.0,
+  "end": 3217.119,
+  "text": "for a little bit. So, good to the point"
+ },
+ {
+  "start": 3215.839,
+  "end": 3218.72,
+  "text": "where you can automate your system"
+ },
+ {
+  "start": 3217.119,
+  "end": 3220.319,
+  "text": "because you understand exactly how it"
+ },
+ {
+  "start": 3218.72,
+  "end": 3222.24,
+  "text": "works. And you don't need to do these"
+ },
+ {
+  "start": 3220.319,
+  "end": 3224.88,
+  "text": "fancy carousels like I've been saying,"
+ },
+ {
+  "start": 3222.24,
+  "end": 3227.359,
+  "text": "but you can do very simple posts of you"
+ },
+ {
+  "start": 3224.88,
+  "end": 3229.28,
+  "text": "raw images with text for the"
+ },
+ {
+  "start": 3227.359,
+  "end": 3231.44,
+  "text": "descriptions. And so, what I'm going to"
+ },
+ {
+  "start": 3229.28,
+  "end": 3233.599,
+  "text": "do now is I'm going to post this. And"
+ },
+ {
+  "start": 3231.44,
+  "end": 3236.319,
+  "text": "so, I'm going to use Bat in order to do"
+ },
+ {
+  "start": 3233.599,
+  "end": 3238.7200000000003,
+  "text": "so. I'm going to say, let's put all of"
+ },
+ {
+  "start": 3236.319,
+  "end": 3240.8,
+  "text": "these together with the cover image. And"
+ },
+ {
+  "start": 3238.72,
+  "end": 3242.64,
+  "text": "then I'm going to send that off real"
+ },
+ {
+  "start": 3240.8,
+  "end": 3244.2400000000002,
+  "text": "quick just so I can see how that looks."
+ },
+ {
+  "start": 3242.64,
+  "end": 3247.68,
+  "text": "And then I'm going to go to Blatado"
+ },
+ {
+  "start": 3244.24,
+  "end": 3249.7599999999998,
+  "text": "because what Blatado has is this page"
+ },
+ {
+  "start": 3247.68,
+  "end": 3251.7599999999998,
+  "text": "over here called media requirements. I'm"
+ },
+ {
+  "start": 3249.76,
+  "end": 3253.76,
+  "text": "in the API dashboard and my blat"
+ },
+ {
+  "start": 3251.76,
+  "end": 3256.1600000000003,
+  "text": "dashboard and they have this entire"
+ },
+ {
+  "start": 3253.76,
+  "end": 3258.3190000000004,
+  "text": "media requirements document that you can"
+ },
+ {
+  "start": 3256.16,
+  "end": 3261.1189999999997,
+  "text": "hand to claude that gives what supported"
+ },
+ {
+  "start": 3258.319,
+  "end": 3264.72,
+  "text": "formats there is, what the images must"
+ },
+ {
+  "start": 3261.119,
+  "end": 3266.88,
+  "text": "be, the resolution, frame count, pixels,"
+ },
+ {
+  "start": 3264.72,
+  "end": 3268.9599999999996,
+  "text": "everything you need in order to post"
+ },
+ {
+  "start": 3266.88,
+  "end": 3272.4,
+  "text": "properly on the platform. And so I'm"
+ },
+ {
+  "start": 3268.96,
+  "end": 3274.64,
+  "text": "going to use this as context for my AI"
+ },
+ {
+  "start": 3272.4,
+  "end": 3277.359,
+  "text": "agent so that it can understand and make"
+ },
+ {
+  "start": 3274.64,
+  "end": 3278.96,
+  "text": "rules around posting with Blatado and on"
+ },
+ {
+  "start": 3277.359,
+  "end": 3281.2799999999997,
+  "text": "these platforms in general. So, I'm"
+ },
+ {
+  "start": 3278.96,
+  "end": 3283.44,
+  "text": "going to copy this page. I've got that"
+ },
+ {
+  "start": 3281.28,
+  "end": 3286.1600000000003,
+  "text": "entire page copied. Now, I'm going to go"
+ },
+ {
+  "start": 3283.44,
+  "end": 3288.0,
+  "text": "back to Claude. This is what the entire"
+ },
+ {
+  "start": 3286.16,
+  "end": 3290.8799999999997,
+  "text": "carousel will look like. I think it"
+ },
+ {
+  "start": 3288.0,
+  "end": 3292.319,
+  "text": "looks pretty sweet. And we can start"
+ },
+ {
+  "start": 3290.88,
+  "end": 3294.88,
+  "text": "automating this now that we have a good"
+ },
+ {
+  "start": 3292.319,
+  "end": 3297.92,
+  "text": "little style going on here. And so first"
+ },
+ {
+  "start": 3294.88,
+  "end": 3300.079,
+  "text": "what I'm going to say is, okay, now that"
+ },
+ {
+  "start": 3297.92,
+  "end": 3302.559,
+  "text": "we have this carousel generated, what"
+ },
+ {
+  "start": 3300.079,
+  "end": 3304.2400000000002,
+  "text": "would you say a good process or a"
+ },
+ {
+  "start": 3302.559,
+  "end": 3305.52,
+  "text": "thought process for you would be if I"
+ },
+ {
+  "start": 3304.24,
+  "end": 3308.0,
+  "text": "wanted to automate this in the future"
+ },
+ {
+  "start": 3305.52,
+  "end": 3310.72,
+  "text": "and just pass in a video transcript? And"
+ },
+ {
+  "start": 3308.0,
+  "end": 3313.2,
+  "text": "you use one of my images at your choice"
+ },
+ {
+  "start": 3310.72,
+  "end": 3314.7999999999997,
+  "text": "and you create the step-by-step process."
+ },
+ {
+  "start": 3313.2,
+  "end": 3317.1189999999997,
+  "text": "You create all the images and then you"
+ },
+ {
+  "start": 3314.8,
+  "end": 3318.96,
+  "text": "review it yourself. Uh based on"
+ },
+ {
+  "start": 3317.119,
+  "end": 3320.88,
+  "text": "everything you've learned in this chat,"
+ },
+ {
+  "start": 3318.96,
+  "end": 3323.68,
+  "text": "is there some sort of process that you"
+ },
+ {
+  "start": 3320.88,
+  "end": 3326.319,
+  "text": "could extract from this that you think"
+ },
+ {
+  "start": 3323.68,
+  "end": 3328.7999999999997,
+  "text": "would be worthy of creating something"
+ },
+ {
+  "start": 3326.319,
+  "end": 3330.64,
+  "text": "like this the first try with review"
+ },
+ {
+  "start": 3328.8,
+  "end": 3333.44,
+  "text": "agents? First, I want to say that before"
+ },
+ {
+  "start": 3330.64,
+  "end": 3335.359,
+  "text": "I post this because I think that's very"
+ },
+ {
+  "start": 3333.44,
+  "end": 3337.76,
+  "text": "important is extracting the thought"
+ },
+ {
+  "start": 3335.359,
+  "end": 3339.68,
+  "text": "process out of Claude before just"
+ },
+ {
+  "start": 3337.76,
+  "end": 3341.6800000000003,
+  "text": "posting this because now I could have it"
+ },
+ {
+  "start": 3339.68,
+  "end": 3345.359,
+  "text": "go through and create all of these"
+ },
+ {
+  "start": 3341.68,
+  "end": 3346.96,
+  "text": "carousels for all 100 plus of my YouTube"
+ },
+ {
+  "start": 3345.359,
+  "end": 3349.359,
+  "text": "videos and this would definitely"
+ },
+ {
+  "start": 3346.96,
+  "end": 3350.799,
+  "text": "generate me a lot of leads. And it says"
+ },
+ {
+  "start": 3349.359,
+  "end": 3352.48,
+  "text": "yes, the most useful thing I can give"
+ },
+ {
+  "start": 3350.799,
+  "end": 3354.48,
+  "text": "you is that almost nothing went that"
+ },
+ {
+  "start": 3352.48,
+  "end": 3356.16,
+  "text": "went wrong today was a taste problem. It"
+ },
+ {
+  "start": 3354.48,
+  "end": 3358.16,
+  "text": "was mechanical. That should decide where"
+ },
+ {
+  "start": 3356.16,
+  "end": 3359.839,
+  "text": "you spend agents versus where you spend"
+ },
+ {
+  "start": 3358.16,
+  "end": 3361.7599999999998,
+  "text": "code. And then it gave me everything"
+ },
+ {
+  "start": 3359.839,
+  "end": 3363.2,
+  "text": "that broke and what it was caught by,"
+ },
+ {
+  "start": 3361.76,
+  "end": 3364.88,
+  "text": "which is pretty crazy. A bunch of stuff"
+ },
+ {
+  "start": 3363.2,
+  "end": 3366.5589999999997,
+  "text": "I didn't even realize it's happening in"
+ },
+ {
+  "start": 3364.88,
+  "end": 3368.48,
+  "text": "the background. And then it says, \"Only"
+ },
+ {
+  "start": 3366.559,
+  "end": 3370.96,
+  "text": "the last two need a model. Everything"
+ },
+ {
+  "start": 3368.48,
+  "end": 3373.04,
+  "text": "above them is code. Generate this. Then"
+ },
+ {
+  "start": 3370.96,
+  "end": 3375.599,
+  "text": "ask an agent if it looks good.\" And then"
+ },
+ {
+  "start": 3373.04,
+  "end": 3377.44,
+  "text": "it extracted the entire pipeline."
+ },
+ {
+  "start": 3375.599,
+  "end": 3379.52,
+  "text": "Concept, voice, gate, photo, pick,"
+ },
+ {
+  "start": 3377.44,
+  "end": 3381.359,
+  "text": "cover, and everything we just did. It"
+ },
+ {
+  "start": 3379.52,
+  "end": 3383.7599999999998,
+  "text": "created a process around that, which is"
+ },
+ {
+  "start": 3381.359,
+  "end": 3385.5989999999997,
+  "text": "very cool. And we can actually use this"
+ },
+ {
+  "start": 3383.76,
+  "end": 3388.96,
+  "text": "later to automate it so that all we have"
+ },
+ {
+  "start": 3385.599,
+  "end": 3390.799,
+  "text": "to say is slash something and it gets to"
+ },
+ {
+  "start": 3388.96,
+  "end": 3392.559,
+  "text": "it. But first, let me post this. I want"
+ },
+ {
+  "start": 3390.799,
+  "end": 3394.24,
+  "text": "to show you how you can use blat post"
+ },
+ {
+  "start": 3392.559,
+  "end": 3395.599,
+  "text": "this. I'm going to say before we get"
+ },
+ {
+  "start": 3394.24,
+  "end": 3398.0789999999997,
+  "text": "into that, what I want you to do is I"
+ },
+ {
+  "start": 3395.599,
+  "end": 3399.6800000000003,
+  "text": "want you to read all of this information"
+ },
+ {
+  "start": 3398.079,
+  "end": 3401.44,
+  "text": "and I want you to understand the posting"
+ },
+ {
+  "start": 3399.68,
+  "end": 3402.8799999999997,
+  "text": "requirements. I want to upload this to"
+ },
+ {
+  "start": 3401.44,
+  "end": 3405.599,
+  "text": "LinkedIn. So, we might need to convert"
+ },
+ {
+  "start": 3402.88,
+  "end": 3407.44,
+  "text": "some things and we might need to reshape"
+ },
+ {
+  "start": 3405.599,
+  "end": 3409.119,
+  "text": "it because I also want to upload it to"
+ },
+ {
+  "start": 3407.44,
+  "end": 3411.119,
+  "text": "Instagram. So, I want you to read the"
+ },
+ {
+  "start": 3409.119,
+  "end": 3413.92,
+  "text": "requirements document and also I want"
+ },
+ {
+  "start": 3411.119,
+  "end": 3416.0,
+  "text": "you to draft up a body text that we can"
+ },
+ {
+  "start": 3413.92,
+  "end": 3417.52,
+  "text": "use that goes along with this carousel"
+ },
+ {
+  "start": 3416.0,
+  "end": 3419.599,
+  "text": "that can be very simple. We don't have"
+ },
+ {
+  "start": 3417.52,
+  "end": 3422.0,
+  "text": "to explain much in there, but we will"
+ },
+ {
+  "start": 3419.599,
+  "end": 3423.76,
+  "text": "need something in the body for Instagram"
+ },
+ {
+  "start": 3422.0,
+  "end": 3425.52,
+  "text": "and might as well do it on LinkedIn as"
+ },
+ {
+  "start": 3423.76,
+  "end": 3427.28,
+  "text": "well. So, I'm going to say that and then"
+ },
+ {
+  "start": 3425.52,
+  "end": 3429.359,
+  "text": "I'm going to paste in that entire"
+ },
+ {
+  "start": 3427.28,
+  "end": 3431.76,
+  "text": "documentation that I did earlier for all"
+ },
+ {
+  "start": 3429.359,
+  "end": 3435.119,
+  "text": "the media requirements from courtesy of"
+ },
+ {
+  "start": 3431.76,
+  "end": 3436.7200000000003,
+  "text": "Blotado and then I will send this off."
+ },
+ {
+  "start": 3435.119,
+  "end": 3438.4,
+  "text": "And there's a lot of information here."
+ },
+ {
+  "start": 3436.72,
+  "end": 3440.24,
+  "text": "really glad that we can have Claude work"
+ },
+ {
+  "start": 3438.4,
+  "end": 3442.48,
+  "text": "with Blatado and just figure out all of"
+ },
+ {
+  "start": 3440.24,
+  "end": 3444.72,
+  "text": "the posting for us. It makes things so"
+ },
+ {
+  "start": 3442.48,
+  "end": 3447.839,
+  "text": "much easier. All right, so it prepared"
+ },
+ {
+  "start": 3444.72,
+  "end": 3450.8799999999997,
+  "text": "everything for us. It prepared the post,"
+ },
+ {
+  "start": 3447.839,
+  "end": 3453.68,
+  "text": "all the images in PNG format, and it"
+ },
+ {
+  "start": 3450.88,
+  "end": 3455.839,
+  "text": "created a PDF format for LinkedIn"
+ },
+ {
+  "start": 3453.68,
+  "end": 3458.799,
+  "text": "because that's what it requires. It gave"
+ },
+ {
+  "start": 3455.839,
+  "end": 3460.4,
+  "text": "me all of the text down here, which is"
+ },
+ {
+  "start": 3458.799,
+  "end": 3462.16,
+  "text": "very cool for both. And it actually"
+ },
+ {
+  "start": 3460.4,
+  "end": 3464.7200000000003,
+  "text": "looks really good. It followed my voice"
+ },
+ {
+  "start": 3462.16,
+  "end": 3466.16,
+  "text": "guide. No m dashes anywhere. says, \"Most"
+ },
+ {
+  "start": 3464.72,
+  "end": 3468.5589999999997,
+  "text": "business owners use Cloud like a slot"
+ },
+ {
+  "start": 3466.16,
+  "end": 3471.04,
+  "text": "machine and it continues to go on.\" So,"
+ },
+ {
+  "start": 3468.559,
+  "end": 3474.3190000000004,
+  "text": "this is a really good post and I'm super"
+ },
+ {
+  "start": 3471.04,
+  "end": 3476.24,
+  "text": "excited because so crazy what AI can do"
+ },
+ {
+  "start": 3474.319,
+  "end": 3477.599,
+  "text": "now in post for you and I'm even more"
+ },
+ {
+  "start": 3476.24,
+  "end": 3479.68,
+  "text": "excited to automate it a little bit"
+ },
+ {
+  "start": 3477.599,
+  "end": 3482.1600000000003,
+  "text": "later. So, what I'm going to do is I'm"
+ },
+ {
+  "start": 3479.68,
+  "end": 3485.04,
+  "text": "going to say, \"Okay, what I want you to"
+ },
+ {
+  "start": 3482.16,
+  "end": 3488.48,
+  "text": "do now is to schedule these for tomorrow"
+ },
+ {
+  "start": 3485.04,
+  "end": 3492.5589999999997,
+  "text": "at 10:00 a.m. on both my AI Foundation's"
+ },
+ {
+  "start": 3488.48,
+  "end": 3495.119,
+  "text": "Instagram and my Drake Srirach LinkedIn"
+ },
+ {
+  "start": 3492.559,
+  "end": 3496.88,
+  "text": "using the proper formats and putting"
+ },
+ {
+  "start": 3495.119,
+  "end": 3498.88,
+  "text": "this caption in there. And so, I can"
+ },
+ {
+  "start": 3496.88,
+  "end": 3500.7200000000003,
+  "text": "send that off. And now it's going to go"
+ },
+ {
+  "start": 3498.88,
+  "end": 3502.079,
+  "text": "and schedule everything for me. I don't"
+ },
+ {
+  "start": 3500.72,
+  "end": 3503.5989999999997,
+  "text": "have to touch the platforms. I don't"
+ },
+ {
+  "start": 3502.079,
+  "end": 3505.28,
+  "text": "have to look. Claude is just going to"
+ },
+ {
+  "start": 3503.599,
+  "end": 3508.0,
+  "text": "handle all of that for me, which is"
+ },
+ {
+  "start": 3505.28,
+  "end": 3510.48,
+  "text": "amazing.\" And just like that, it said it"
+ },
+ {
+  "start": 3508.0,
+  "end": 3513.28,
+  "text": "posted everything for us. I did have to"
+ },
+ {
+  "start": 3510.48,
+  "end": 3514.88,
+  "text": "remind it that my blat key is in my"
+ },
+ {
+  "start": 3513.28,
+  "end": 3516.2400000000002,
+  "text": "local environment since I didn't add"
+ },
+ {
+  "start": 3514.88,
+  "end": 3518.4,
+  "text": "that to the memory yet or the"
+ },
+ {
+  "start": 3516.24,
+  "end": 3520.5589999999997,
+  "text": "instruction file, but it found it, found"
+ },
+ {
+  "start": 3518.4,
+  "end": 3522.079,
+  "text": "all of my accounts and posted"
+ },
+ {
+  "start": 3520.559,
+  "end": 3524.799,
+  "text": "everything. So, let's go check our"
+ },
+ {
+  "start": 3522.079,
+  "end": 3526.2400000000002,
+  "text": "Blatado dashboard. Here I am in Blatado"
+ },
+ {
+  "start": 3524.799,
+  "end": 3528.319,
+  "text": "and you can see that these are queued up"
+ },
+ {
+  "start": 3526.24,
+  "end": 3530.0789999999997,
+  "text": "and ready to go. Let me go over here to"
+ },
+ {
+  "start": 3528.319,
+  "end": 3531.92,
+  "text": "my calendar and you're going to be able"
+ },
+ {
+  "start": 3530.079,
+  "end": 3534.1600000000003,
+  "text": "to see all of your scheduled posts that"
+ },
+ {
+  "start": 3531.92,
+  "end": 3535.92,
+  "text": "you have and kind of preview them in a"
+ },
+ {
+  "start": 3534.16,
+  "end": 3538.24,
+  "text": "nice format. So, just like that, our"
+ },
+ {
+  "start": 3535.92,
+  "end": 3540.7200000000003,
+  "text": "carousel is ready to go. And this is"
+ },
+ {
+  "start": 3538.24,
+  "end": 3542.72,
+  "text": "going to be so cool. This looks amazing"
+ },
+ {
+  "start": 3540.72,
+  "end": 3544.8799999999997,
+  "text": "already. So, now let's discuss the"
+ },
+ {
+  "start": 3542.72,
+  "end": 3547.1189999999997,
+  "text": "elephant in the room. How do you"
+ },
+ {
+  "start": 3544.88,
+  "end": 3549.52,
+  "text": "automate this? Well, the good news is"
+ },
+ {
+  "start": 3547.119,
+  "end": 3551.76,
+  "text": "we've already done a lot of the leg work"
+ },
+ {
+  "start": 3549.52,
+  "end": 3553.599,
+  "text": "up front. We've gotten some assets."
+ },
+ {
+  "start": 3551.76,
+  "end": 3555.92,
+  "text": "We've gotten some image types. And that"
+ },
+ {
+  "start": 3553.599,
+  "end": 3557.119,
+  "text": "is the key when it comes to automation."
+ },
+ {
+  "start": 3555.92,
+  "end": 3559.04,
+  "text": "And if you want to automate something"
+ },
+ {
+  "start": 3557.119,
+  "end": 3560.799,
+  "text": "and set it up on a schedule and trust it"
+ },
+ {
+  "start": 3559.04,
+  "end": 3562.88,
+  "text": "to the point where all you have to do is"
+ },
+ {
+  "start": 3560.799,
+  "end": 3564.079,
+  "text": "take a quick glance and have it be okay,"
+ },
+ {
+  "start": 3562.88,
+  "end": 3565.52,
+  "text": "then you need to make sure that you're"
+ },
+ {
+  "start": 3564.079,
+  "end": 3567.8390000000004,
+  "text": "doing a little bit of manual work up"
+ },
+ {
+  "start": 3565.52,
+  "end": 3569.68,
+  "text": "front to acquire the style that you"
+ },
+ {
+  "start": 3567.839,
+  "end": 3572.5589999999997,
+  "text": "truly want. Many of you might not even"
+ },
+ {
+  "start": 3569.68,
+  "end": 3574.799,
+  "text": "have a style or something fancy like I'm"
+ },
+ {
+  "start": 3572.559,
+  "end": 3577.2000000000003,
+  "text": "doing. A lot of you might just want to"
+ },
+ {
+  "start": 3574.799,
+  "end": 3579.68,
+  "text": "take content from YouTube, transcribe"
+ },
+ {
+  "start": 3577.2,
+  "end": 3581.52,
+  "text": "it, schedule a post, or take content"
+ },
+ {
+  "start": 3579.68,
+  "end": 3583.68,
+  "text": "from your blog or your course"
+ },
+ {
+  "start": 3581.52,
+  "end": 3585.839,
+  "text": "transcripts, whatever it may be, and"
+ },
+ {
+  "start": 3583.68,
+  "end": 3588.48,
+  "text": "turn it into text posts. that's fine too"
+ },
+ {
+  "start": 3585.839,
+  "end": 3590.0789999999997,
+  "text": "with some raw real images. But what I'm"
+ },
+ {
+  "start": 3588.48,
+  "end": 3593.119,
+  "text": "going to show you now is how I might"
+ },
+ {
+  "start": 3590.079,
+  "end": 3594.7200000000003,
+  "text": "automate this Instagram carousel so that"
+ },
+ {
+  "start": 3593.119,
+  "end": 3596.48,
+  "text": "all I have to do is type in a slash"
+ },
+ {
+  "start": 3594.72,
+  "end": 3598.48,
+  "text": "command and it works. So what I'm going"
+ },
+ {
+  "start": 3596.48,
+  "end": 3601.2,
+  "text": "to do is I'm going to stay in this same"
+ },
+ {
+  "start": 3598.48,
+  "end": 3602.64,
+  "text": "chat thread where we created success."
+ },
+ {
+  "start": 3601.2,
+  "end": 3604.24,
+  "text": "You don't really have to, but I"
+ },
+ {
+  "start": 3602.64,
+  "end": 3606.319,
+  "text": "recommend it because it's maintaining"
+ },
+ {
+  "start": 3604.24,
+  "end": 3609.359,
+  "text": "all of that context. And I'm going to"
+ },
+ {
+  "start": 3606.319,
+  "end": 3611.2799999999997,
+  "text": "say, \"Hey there, Claude. I want you to"
+ },
+ {
+  "start": 3609.359,
+  "end": 3613.52,
+  "text": "take this entire process that we just"
+ },
+ {
+  "start": 3611.28,
+  "end": 3616.2400000000002,
+  "text": "completed and I want you to create a"
+ },
+ {
+  "start": 3613.52,
+  "end": 3619.7599999999998,
+  "text": "skill around it so that all I have to do"
+ },
+ {
+  "start": 3616.24,
+  "end": 3622.799,
+  "text": "is upload a YouTube video URL and then"
+ },
+ {
+  "start": 3619.76,
+  "end": 3625.44,
+  "text": "you use Vid IQ in order to scrape the"
+ },
+ {
+  "start": 3622.799,
+  "end": 3627.599,
+  "text": "transcript and you go through that exact"
+ },
+ {
+  "start": 3625.44,
+  "end": 3629.839,
+  "text": "same process like you just did. You use"
+ },
+ {
+  "start": 3627.599,
+  "end": 3632.0,
+  "text": "my voice guide. You create an amazing"
+ },
+ {
+  "start": 3629.839,
+  "end": 3633.92,
+  "text": "cover image. You can generate multiple"
+ },
+ {
+  "start": 3632.0,
+  "end": 3635.76,
+  "text": "variations of the cover and then pick"
+ },
+ {
+  "start": 3633.92,
+  "end": 3638.16,
+  "text": "which one you think looks best based on"
+ },
+ {
+  "start": 3635.76,
+  "end": 3640.4,
+  "text": "the one that I picked today. and then"
+ },
+ {
+  "start": 3638.16,
+  "end": 3642.5589999999997,
+  "text": "create the other slides that go with it."
+ },
+ {
+  "start": 3640.4,
+  "end": 3645.599,
+  "text": "Do the scheduling. I want everything to"
+ },
+ {
+  "start": 3642.559,
+  "end": 3648.2400000000002,
+  "text": "be completed in this skill. And I want"
+ },
+ {
+  "start": 3645.599,
+  "end": 3650.319,
+  "text": "this as automated as possible. So tell"
+ },
+ {
+  "start": 3648.24,
+  "end": 3652.16,
+  "text": "me your process for going through this"
+ },
+ {
+  "start": 3650.319,
+  "end": 3653.7599999999998,
+  "text": "because when I come in and I type"
+ },
+ {
+  "start": 3652.16,
+  "end": 3656.24,
+  "text": "slashrepurpose,"
+ },
+ {
+  "start": 3653.76,
+  "end": 3657.92,
+  "text": "I want this skill to run and create a"
+ },
+ {
+  "start": 3656.24,
+  "end": 3661.359,
+  "text": "carousel. Actually, let's call it"
+ },
+ {
+  "start": 3657.92,
+  "end": 3662.7200000000003,
+  "text": "something like slashcarous creator or"
+ },
+ {
+  "start": 3661.359,
+  "end": 3665.04,
+  "text": "something like that. And I could get"
+ },
+ {
+  "start": 3662.72,
+  "end": 3667.52,
+  "text": "even more specific. I could say like"
+ },
+ {
+  "start": 3665.04,
+  "end": 3669.92,
+  "text": "slashg golden hour carousol or something"
+ },
+ {
+  "start": 3667.52,
+  "end": 3671.92,
+  "text": "like that to reference a specific style."
+ },
+ {
+  "start": 3669.92,
+  "end": 3674.0,
+  "text": "But the point is is you want to create a"
+ },
+ {
+  "start": 3671.92,
+  "end": 3676.079,
+  "text": "skill file around this. A skill is an"
+ },
+ {
+  "start": 3674.0,
+  "end": 3678.799,
+  "text": "automation and claude or a routine that"
+ },
+ {
+  "start": 3676.079,
+  "end": 3681.8390000000004,
+  "text": "you can run that does all the leg work"
+ },
+ {
+  "start": 3678.799,
+  "end": 3683.28,
+  "text": "for you that scrapes the transcript. And"
+ },
+ {
+  "start": 3681.839,
+  "end": 3684.72,
+  "text": "I'm going to use Vid IQ, which is"
+ },
+ {
+  "start": 3683.28,
+  "end": 3686.48,
+  "text": "another tool that I've been using for"
+ },
+ {
+  "start": 3684.72,
+  "end": 3688.3999999999996,
+  "text": "like four or five years for YouTube"
+ },
+ {
+  "start": 3686.48,
+  "end": 3690.88,
+  "text": "growth. Even longer, like six or seven"
+ },
+ {
+  "start": 3688.4,
+  "end": 3693.119,
+  "text": "years. Yeah, I said six, seven. There we"
+ },
+ {
+  "start": 3690.88,
+  "end": 3695.28,
+  "text": "go. What we're going to do is send this"
+ },
+ {
+  "start": 3693.119,
+  "end": 3697.52,
+  "text": "thing off. Okay. And just like that,"
+ },
+ {
+  "start": 3695.28,
+  "end": 3699.76,
+  "text": "with one prompt, in about 10 minutes, it"
+ },
+ {
+  "start": 3697.52,
+  "end": 3704.0,
+  "text": "created the entire skill for us. So, it"
+ },
+ {
+  "start": 3699.76,
+  "end": 3706.079,
+  "text": "says built and tested/carous-creator"
+ },
+ {
+  "start": 3704.0,
+  "end": 3708.24,
+  "text": "is live. And like I said, I could make"
+ },
+ {
+  "start": 3706.079,
+  "end": 3710.96,
+  "text": "these super niched down to specific"
+ },
+ {
+  "start": 3708.24,
+  "end": 3713.7599999999998,
+  "text": "carousel types. But here's the flow."
+ },
+ {
+  "start": 3710.96,
+  "end": 3715.839,
+  "text": "Transcript, concept, voice lint, photo,"
+ },
+ {
+  "start": 3713.76,
+  "end": 3719.119,
+  "text": "cover, plates, render, selfcheck,"
+ },
+ {
+  "start": 3715.839,
+  "end": 3721.599,
+  "text": "review, schedule. Okay? And so, build"
+ },
+ {
+  "start": 3719.119,
+  "end": 3723.119,
+  "text": "this around your process. You might not"
+ },
+ {
+  "start": 3721.599,
+  "end": 3724.7200000000003,
+  "text": "have a YouTube video that you want to"
+ },
+ {
+  "start": 3723.119,
+  "end": 3727.76,
+  "text": "start it with. You might just want to"
+ },
+ {
+  "start": 3724.72,
+  "end": 3729.68,
+  "text": "come in here and type one word, not"
+ },
+ {
+  "start": 3727.76,
+  "end": 3731.76,
+  "text": "actually one word, but any word that you"
+ },
+ {
+  "start": 3729.68,
+  "end": 3734.0,
+  "text": "might have in your industry and build a"
+ },
+ {
+  "start": 3731.76,
+  "end": 3735.599,
+  "text": "process around that. Think about this."
+ },
+ {
+  "start": 3734.0,
+  "end": 3738.16,
+  "text": "Anything in that folder that you want to"
+ },
+ {
+  "start": 3735.599,
+  "end": 3739.76,
+  "text": "use as context or a trigger, maybe"
+ },
+ {
+  "start": 3738.16,
+  "end": 3741.68,
+  "text": "there's a certain time, a certain blog"
+ },
+ {
+  "start": 3739.76,
+  "end": 3743.92,
+  "text": "post you want to watch or scrape,"
+ },
+ {
+  "start": 3741.68,
+  "end": 3745.2,
+  "text": "anything at all, just tell it what you"
+ },
+ {
+  "start": 3743.92,
+  "end": 3747.599,
+  "text": "want and it will build out that"
+ },
+ {
+  "start": 3745.2,
+  "end": 3749.2799999999997,
+  "text": "automation for you. And so, I'm going to"
+ },
+ {
+  "start": 3747.599,
+  "end": 3751.119,
+  "text": "try this out. I'm not expecting it to be"
+ },
+ {
+  "start": 3749.28,
+  "end": 3752.7200000000003,
+  "text": "perfect, but similar to that process of"
+ },
+ {
+  "start": 3751.119,
+  "end": 3754.7200000000003,
+  "text": "creating carousels. You just want to"
+ },
+ {
+  "start": 3752.72,
+  "end": 3757.359,
+  "text": "tell it where it failed and then build"
+ },
+ {
+  "start": 3754.72,
+  "end": 3760.0,
+  "text": "upon that. So, I'm going to copy this"
+ },
+ {
+  "start": 3757.359,
+  "end": 3762.64,
+  "text": "slashcarous and then YouTube URL. I'm"
+ },
+ {
+  "start": 3760.0,
+  "end": 3764.4,
+  "text": "going to open up a new chat and then I'm"
+ },
+ {
+  "start": 3762.64,
+  "end": 3765.5989999999997,
+  "text": "going to just paste that in. Actually,"
+ },
+ {
+  "start": 3764.4,
+  "end": 3768.319,
+  "text": "you know what I'm going to do? I'm going"
+ },
+ {
+  "start": 3765.599,
+  "end": 3770.6400000000003,
+  "text": "to type it in slashcarous creator. And"
+ },
+ {
+  "start": 3768.319,
+  "end": 3772.079,
+  "text": "now it pops up with a big description,"
+ },
+ {
+  "start": 3770.64,
+  "end": 3774.24,
+  "text": "which is beautiful. It's going to turn"
+ },
+ {
+  "start": 3772.079,
+  "end": 3776.4,
+  "text": "blue once I click it. And now I can just"
+ },
+ {
+  "start": 3774.24,
+  "end": 3777.9199999999996,
+  "text": "paste in a YouTube video URL. That"
+ },
+ {
+  "start": 3776.4,
+  "end": 3779.6800000000003,
+  "text": "simple. And so maybe I'll do this one,"
+ },
+ {
+  "start": 3777.92,
+  "end": 3781.92,
+  "text": "the Claude Skills Framework, automate"
+ },
+ {
+  "start": 3779.68,
+  "end": 3783.44,
+  "text": "anything in 30 minutes, four steps. I'll"
+ },
+ {
+  "start": 3781.92,
+  "end": 3787.28,
+  "text": "click this. And then what I'm going to"
+ },
+ {
+  "start": 3783.44,
+  "end": 3790.2400000000002,
+  "text": "do is grab this YouTube video URL. Just"
+ },
+ {
+  "start": 3787.28,
+  "end": 3793.599,
+  "text": "like that. And then I'm going to go back"
+ },
+ {
+  "start": 3790.24,
+  "end": 3795.68,
+  "text": "to Claude and paste it in. And so now it"
+ },
+ {
+  "start": 3793.599,
+  "end": 3797.92,
+  "text": "should create a carousel for me using"
+ },
+ {
+  "start": 3795.68,
+  "end": 3800.0789999999997,
+  "text": "our style, the thing that we've been"
+ },
+ {
+  "start": 3797.92,
+  "end": 3802.319,
+  "text": "creating this entire video. So I'm going"
+ },
+ {
+  "start": 3800.079,
+  "end": 3804.559,
+  "text": "to send that off. And now it's going to"
+ },
+ {
+  "start": 3802.319,
+  "end": 3806.88,
+  "text": "run through that entire process. So, I"
+ },
+ {
+  "start": 3804.559,
+  "end": 3808.799,
+  "text": "can sit back, I can go get a coffee, I"
+ },
+ {
+  "start": 3806.88,
+  "end": 3810.88,
+  "text": "can go do whatever I want. I could even"
+ },
+ {
+  "start": 3808.799,
+  "end": 3814.48,
+  "text": "put this skill that we just created,"
+ },
+ {
+  "start": 3810.88,
+  "end": 3818.079,
+  "text": "this automation to run on a schedule so"
+ },
+ {
+  "start": 3814.48,
+  "end": 3820.079,
+  "text": "that at every time of a certain day or"
+ },
+ {
+  "start": 3818.079,
+  "end": 3821.8390000000004,
+  "text": "maybe three or four times a week, it's"
+ },
+ {
+  "start": 3820.079,
+  "end": 3823.3590000000004,
+  "text": "checking my YouTube channel for me to"
+ },
+ {
+  "start": 3821.839,
+  "end": 3825.68,
+  "text": "see if I have any new posts to create"
+ },
+ {
+  "start": 3823.359,
+  "end": 3828.24,
+  "text": "carousels around. So, I could easily do"
+ },
+ {
+  "start": 3825.68,
+  "end": 3829.359,
+  "text": "that, no problem. There are so many"
+ },
+ {
+  "start": 3828.24,
+  "end": 3830.72,
+  "text": "possibilities when it comes to"
+ },
+ {
+  "start": 3829.359,
+  "end": 3832.0789999999997,
+  "text": "automation with Claude, but I'm"
+ },
+ {
+  "start": 3830.72,
+  "end": 3834.319,
+  "text": "interested to see how this turns out on"
+ },
+ {
+  "start": 3832.079,
+  "end": 3837.3590000000004,
+  "text": "the first go. Okay. And it just finished"
+ },
+ {
+  "start": 3834.319,
+  "end": 3839.119,
+  "text": "from the one prompt that I used and all"
+ },
+ {
+  "start": 3837.359,
+  "end": 3841.52,
+  "text": "of that work we did up front. It"
+ },
+ {
+  "start": 3839.119,
+  "end": 3842.96,
+  "text": "generated a decent post. Now, there are"
+ },
+ {
+  "start": 3841.52,
+  "end": 3845.359,
+  "text": "things that we could change. We could"
+ },
+ {
+  "start": 3842.96,
+  "end": 3848.4,
+  "text": "iterate, but for the most part, it kept"
+ },
+ {
+  "start": 3845.359,
+  "end": 3850.4,
+  "text": "our exact style that we created. It did"
+ },
+ {
+  "start": 3848.4,
+  "end": 3851.92,
+  "text": "reuse this image that well, actually, I"
+ },
+ {
+  "start": 3850.4,
+  "end": 3854.1600000000003,
+  "text": "didn't use this in a post yet, so that's"
+ },
+ {
+  "start": 3851.92,
+  "end": 3855.76,
+  "text": "fine. But you're giving Claude work that"
+ },
+ {
+  "start": 3854.16,
+  "end": 3858.5589999999997,
+  "text": "shouldn't exist. You skipped step one,"
+ },
+ {
+  "start": 3855.76,
+  "end": 3860.079,
+  "text": "so nothing you build sticks. And then it"
+ },
+ {
+  "start": 3858.559,
+  "end": 3861.8390000000004,
+  "text": "gets into the stuff I talked about in"
+ },
+ {
+  "start": 3860.079,
+  "end": 3864.7200000000003,
+  "text": "the YouTube video that I uploaded. took"
+ },
+ {
+  "start": 3861.839,
+  "end": 3866.88,
+  "text": "it pulled in my transcript. It got"
+ },
+ {
+  "start": 3864.72,
+  "end": 3870.0,
+  "text": "everything I needed and created this"
+ },
+ {
+  "start": 3866.88,
+  "end": 3872.1600000000003,
+  "text": "entire slideshow. And honestly, for a"
+ },
+ {
+  "start": 3870.0,
+  "end": 3874.559,
+  "text": "first draft, first time running the"
+ },
+ {
+  "start": 3872.16,
+  "end": 3876.0789999999997,
+  "text": "skill, it's pretty solid. And so that's"
+ },
+ {
+  "start": 3874.559,
+  "end": 3877.599,
+  "text": "what automated work looks like. You"
+ },
+ {
+  "start": 3876.079,
+  "end": 3880.2400000000002,
+  "text": "could run that on a schedule, like I"
+ },
+ {
+  "start": 3877.599,
+  "end": 3882.559,
+  "text": "said, but this entire thing got"
+ },
+ {
+  "start": 3880.24,
+  "end": 3883.7599999999998,
+  "text": "generated from that one command. And"
+ },
+ {
+  "start": 3882.559,
+  "end": 3885.599,
+  "text": "right down here, you're going to notice"
+ },
+ {
+  "start": 3883.76,
+  "end": 3888.079,
+  "text": "it says nothing gets posted until you"
+ },
+ {
+  "start": 3885.599,
+  "end": 3890.319,
+  "text": "say go. We could easily, and that's the"
+ },
+ {
+  "start": 3888.079,
+  "end": 3891.6800000000003,
+  "text": "point of blat you want to add that into"
+ },
+ {
+  "start": 3890.319,
+  "end": 3894.24,
+  "text": "the skill. So that is something I"
+ },
+ {
+  "start": 3891.68,
+  "end": 3896.48,
+  "text": "definitely have to add is to check my"
+ },
+ {
+  "start": 3894.24,
+  "end": 3897.7599999999998,
+  "text": "blat schedule. I can even say that I"
+ },
+ {
+  "start": 3896.48,
+  "end": 3899.2,
+  "text": "want you to schedule it for a different"
+ },
+ {
+  "start": 3897.76,
+  "end": 3901.599,
+  "text": "time because I already have posts going"
+ },
+ {
+  "start": 3899.2,
+  "end": 3904.0,
+  "text": "out. But add that to the skill where you"
+ },
+ {
+  "start": 3901.599,
+  "end": 3906.0,
+  "text": "check my blat schedule and think of a"
+ },
+ {
+  "start": 3904.0,
+  "end": 3908.0,
+  "text": "good time to post these based on my"
+ },
+ {
+  "start": 3906.0,
+  "end": 3909.119,
+  "text": "previous post. You can do that. And so"
+ },
+ {
+  "start": 3908.0,
+  "end": 3910.64,
+  "text": "that's something I want to add to the"
+ },
+ {
+  "start": 3909.119,
+  "end": 3912.079,
+  "text": "end of the skill. And it's something"
+ },
+ {
+  "start": 3910.64,
+  "end": 3914.0789999999997,
+  "text": "that you can do once you get a little"
+ },
+ {
+  "start": 3912.079,
+  "end": 3915.52,
+  "text": "bit more confident as well that your"
+ },
+ {
+  "start": 3914.079,
+  "end": 3917.6800000000003,
+  "text": "workflow is actually going to work. You"
+ },
+ {
+  "start": 3915.52,
+  "end": 3919.44,
+  "text": "can say, \"Okay, I'm going to add the"
+ },
+ {
+  "start": 3917.68,
+  "end": 3921.7599999999998,
+  "text": "scheduler to the back half of this"
+ },
+ {
+  "start": 3919.44,
+  "end": 3923.44,
+  "text": "automation now.\" But if you also want,"
+ },
+ {
+  "start": 3921.76,
+  "end": 3926.079,
+  "text": "you could just come in here and run the"
+ },
+ {
+  "start": 3923.44,
+  "end": 3928.16,
+  "text": "one command, and Blatato is youruler for"
+ },
+ {
+  "start": 3926.079,
+  "end": 3929.92,
+  "text": "all of your social media. You have one"
+ },
+ {
+  "start": 3928.16,
+  "end": 3932.0789999999997,
+  "text": "key that you need, which is beautiful."
+ },
+ {
+  "start": 3929.92,
+  "end": 3933.76,
+  "text": "I'm going to send that off. And so, this"
+ },
+ {
+  "start": 3932.079,
+  "end": 3937.599,
+  "text": "is going to do a couple of things. At"
+ },
+ {
+  "start": 3933.76,
+  "end": 3941.039,
+  "text": "the end of this, where it creates my"
+ },
+ {
+  "start": 3937.599,
+  "end": 3942.799,
+  "text": "slideshow, it's looking for what posts"
+ },
+ {
+  "start": 3941.039,
+  "end": 3944.7200000000003,
+  "text": "that I have in the pipeline at the end"
+ },
+ {
+  "start": 3942.799,
+  "end": 3946.24,
+  "text": "of the automation now. and then it"
+ },
+ {
+  "start": 3944.72,
+  "end": 3947.7599999999998,
+  "text": "schedules it out for a time that it"
+ },
+ {
+  "start": 3946.24,
+  "end": 3950.0789999999997,
+  "text": "thinks best. And you can set specific"
+ },
+ {
+  "start": 3947.76,
+  "end": 3951.3590000000004,
+  "text": "rules for that as well. So, I'm just"
+ },
+ {
+  "start": 3950.079,
+  "end": 3953.76,
+  "text": "going to continue editing this"
+ },
+ {
+  "start": 3951.359,
+  "end": 3955.92,
+  "text": "automation and scheduling out this"
+ },
+ {
+  "start": 3953.76,
+  "end": 3957.6800000000003,
+  "text": "carousel. Now, now keep in mind there"
+ },
+ {
+  "start": 3955.92,
+  "end": 3959.839,
+  "text": "are hundreds of different ways to"
+ },
+ {
+  "start": 3957.68,
+  "end": 3962.24,
+  "text": "schedule posts on social media, but"
+ },
+ {
+  "start": 3959.839,
+  "end": 3964.799,
+  "text": "three things are for sure. You should"
+ },
+ {
+  "start": 3962.24,
+  "end": 3967.359,
+  "text": "use Claude, you should use FAL, and you"
+ },
+ {
+  "start": 3964.799,
+  "end": 3970.079,
+  "text": "should definitely use Blatado. All of"
+ },
+ {
+  "start": 3967.359,
+  "end": 3972.0789999999997,
+  "text": "those tools make your content system so"
+ },
+ {
+  "start": 3970.079,
+  "end": 3974.48,
+  "text": "much easier to run. And the Claude"
+ },
+ {
+  "start": 3972.079,
+  "end": 3977.2000000000003,
+  "text": "rabbit hole goes so deep. You can set up"
+ },
+ {
+  "start": 3974.48,
+  "end": 3979.119,
+  "text": "routines, custom automations, connect it"
+ },
+ {
+  "start": 3977.2,
+  "end": 3981.5989999999997,
+  "text": "to certain applications that you custom"
+ },
+ {
+  "start": 3979.119,
+  "end": 3983.52,
+  "text": "build. It's an insane tool. So, I highly"
+ },
+ {
+  "start": 3981.599,
+  "end": 3985.3590000000004,
+  "text": "recommend you use the stack that I was"
+ },
+ {
+  "start": 3983.52,
+  "end": 3987.119,
+  "text": "using today. But with that being said,"
+ },
+ {
+  "start": 3985.359,
+  "end": 3988.96,
+  "text": "that's all I have for this video. If you"
+ },
+ {
+  "start": 3987.119,
+  "end": 3991.119,
+  "text": "enjoyed, please drop a like and"
+ },
+ {
+  "start": 3988.96,
+  "end": 3993.2,
+  "text": "subscribe. I would highly appreciate it."
+ },
+ {
+  "start": 3991.119,
+  "end": 3995.76,
+  "text": "And with that being said, I'll see you"
+ },
+ {
+  "start": 3993.2,
+  "end": 3995.7599999999998,
+  "text": "in the next"
+ }
+]

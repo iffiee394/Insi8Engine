@@ -1,0 +1,77 @@
+{% extends "_base.html.j2" %}
+{# QUESTION — the patient's own question set large in the practice's voice, with
+   the answer beneath. Deliberately quiet: no split fields, no numerals, heavy
+   reliance on type scale. Use when the topic is anxiety-adjacent and a loud
+   layout would read as flippant - which the "dignified manner" rule cares about. #}
+
+{% block styles %}
+  .canvas{padding:96px 82px 78px}
+  .quote-mark{
+    font-family:var(--display);font-weight:800;font-size:150px;line-height:.55;
+    color:var(--accent);opacity:.22;height:74px;
+  }
+  .asked{
+    font-family:var(--body);font-style:italic;font-weight:400;
+    font-size:72px;line-height:1.16;color:var(--ink);text-wrap:balance;
+    letter-spacing:-.012em;
+  }
+  .answer-label{
+    font-family:var(--mono);font-size:22px;font-weight:600;letter-spacing:.2em;
+    text-transform:uppercase;color:var(--accent);
+    display:flex;align-items:center;gap:16px;
+  }
+  .answer-label:after{content:"";flex:1;height:2px;background:var(--rule)}
+  .canvas.hook{background:var(--paper-alt)}
+  .canvas.hook .asked{font-size:82px}
+  .canvas.body .headline{font-size:62px}
+  .canvas.cta{background:var(--accent-deep)}
+  .canvas.cta .headline{color:#fff;font-size:72px}
+  .canvas.cta .body-copy{color:var(--accent-wash)}
+  .canvas.cta .kicker{color:var(--highlight)}
+  .canvas.cta .ident,.canvas.cta .logo{color:var(--accent-wash);opacity:.9}
+  .canvas.cta .answer-label{color:var(--highlight)}
+  .canvas.cta .answer-label:after{background:rgba(255,255,255,.22)}
+  .ident-card{border-top:3px solid var(--highlight);padding-top:24px;
+              display:flex;flex-direction:column;gap:10px}
+{% endblock %}
+
+{% block content %}
+  {% if slide.role == 'hook' %}
+    <div class="center" style="gap:40px">
+      <div>
+        <div class="quote-mark">&ldquo;</div>
+        <div class="asked">{{ slide.headline }}</div>
+      </div>
+      <div class="bottom-band" style="gap:24px">
+        <div class="answer-label">{{ slide.kicker|default('We get asked this a lot') }}</div>
+        <p class="body-copy">{{ slide.body }}</p>
+      </div>
+    </div>
+
+  {% elif slide.role == 'cta' %}
+    <div class="center" style="gap:28px">
+      <div class="answer-label">{{ slide.kicker|default('Save this') }}</div>
+      <h2 class="headline">{{ slide.headline }}</h2>
+      <p class="body-copy">{{ slide.body }}</p>
+    </div>
+    <div class="ident-card">
+      <div class="logo">{{ brand.logo_text|default(client.name) }}</div>
+      <div class="ident">{{ identification }}</div>
+    </div>
+
+  {% else %}
+    <div class="top-band">
+      <div class="answer-label">{{ slide.kicker|default('The short answer') }}</div>
+    </div>
+    <div class="center" style="gap:32px">
+      <h2 class="headline">{{ slide.headline }}</h2>
+      <p class="body-copy">{{ slide.body }}</p>
+    </div>
+    {% if slide.claims %}
+      <div class="cite">
+        {% for c in slide.claims %}{% if c.source_url %}Source: {{ c.source_url }}{% if not loop.last %}<br>{% endif %}{% endif %}{% endfor %}
+      </div>
+    {% endif %}
+    <div style="height:40px"></div>
+  {% endif %}
+{% endblock %}
