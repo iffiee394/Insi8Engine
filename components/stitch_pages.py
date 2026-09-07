@@ -24,6 +24,7 @@ import streamlit as st
 import streamlit.components.v1 as components
 
 import db
+import dbcache
 from usage_tracker import get_last_run, get_lifetime, parse_usage
 
 
@@ -1585,14 +1586,22 @@ def render_library_page(
     selected_id: str | None,
     active_tab: str = "library",
     ingest_notice: str = "",
+    embed_all_details: bool = False,
 ) -> None:
+    """Render the library.
+
+    `embed_all_details` pre-renders every video's pane into the page, which the
+    static export needs so it stays browsable with no server behind it. The
+    live app leaves it off and fetches panes on demand — see the note below.
+    Callers passing it must supply full (non-light) rows.
+    """
     selected = next((v for v in videos if v["video_id"] == selected_id), None) if selected_id else None
     if selected is None and videos:
         selected = videos[0]
     selected_id = selected["video_id"] if selected else None
     # `videos` may be light rows (no structured_insights/research_data), so pull
     # the complete record for the one video whose detail pane we actually draw.
-    selected_full = db.get_video(selected_id) if selected_id else None
+    selected_full = dbcache.get_video(selected_id) if selected_id else None
     if selected_full is None:
         selected_full = selected
 
@@ -1670,7 +1679,10 @@ def render_library_page(
     # Only the open video is embedded; picking another asks the server for it
     # (see pickVideo's fallback). Pre-rendering all of them meant fetching every
     # video's full JSON up front and shipping a multi-megabyte page.
-    details = {selected_id: _detail_pane(selected_full)} if selected_full else {}
+    if embed_all_details:
+        details = {v["video_id"]: _detail_pane(v) for v in videos}
+    else:
+        details = {selected_id: _detail_pane(selected_full)} if selected_full else {}
     scripts = (
         f"<script>const _page = {json.dumps(active_tab if active_tab in ('library', 'queue') else 'library')};</script>"
         + _library_js(details, selected_id)

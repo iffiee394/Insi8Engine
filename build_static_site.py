@@ -96,7 +96,11 @@ def main() -> int:
     sp._NAV = _STATIC_NAV        # type: ignore[assignment]
 
     current["name"] = "library"
-    sp.render_library_page(videos, selected_id=None, active_tab="library")
+    # Full rows + every pane embedded: the published page has no server to ask
+    # for a video that was not pre-rendered.
+    sp.render_library_page(
+        db.list_videos(), selected_id=None, active_tab="library", embed_all_details=True
+    )
 
     current["name"] = "queue"
     sp.render_queue_page(videos)

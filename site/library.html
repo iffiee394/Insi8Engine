@@ -690,7 +690,7 @@ let _folder = 'video';
 /* ── detail switching (no server round-trip) ─────────────────── */
 function pickVideo(vid) {
   const html = _D[vid];
-  if (html == null) return;
+  if (html == null) { selectVideo(vid); return; }
   document.getElementById('detail').innerHTML = html;
   document.querySelectorAll('.vrow').forEach(function (el) {
     el.classList.toggle('on', el.dataset.vid === vid);

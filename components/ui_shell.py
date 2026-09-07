@@ -8,6 +8,7 @@ import streamlit as st
 
 import config
 import db
+import dbcache
 from background_jobs import is_worker_running, start_process_one_background
 from components.stitch_pages import (
     render_library_page,
@@ -34,6 +35,7 @@ def _read_query_params() -> None:
 
     if params.get("action") == "ingest":
         result = ingest_pasted_url(params.get("url", ""), params.get("folder", "video"))
+        dbcache.invalidate()
         st.query_params.clear()
         if result.ok and result.video_id:
             st.session_state.selected_id = result.video_id
@@ -55,6 +57,7 @@ def _read_query_params() -> None:
         st.query_params.clear()
         if vid:
             db.upsert_video(vid, status=db.STATUS_PENDING, error_message="")
+            dbcache.invalidate()
             ok, msg = start_process_one_background(vid)
             st.session_state.selected_id = vid
             st.toast(msg)
@@ -86,6 +89,7 @@ def _read_query_params() -> None:
         if "personalize" in params:
             profile["personalize_extractions"] = params["personalize"] == "1"
         db.set_profile(profile)
+        dbcache.invalidate()
         # Clear the action param so it doesn't re-fire on next rerun
         st.query_params.clear()
         st.toast("Settings saved")
@@ -108,7 +112,8 @@ def render_app(ctx: dict) -> None:
 
     # Light rows: the list/queue views never touch the big JSON columns, and
     # pulling them for all videos cost ~3MB and several seconds per render.
-    all_videos = db.list_videos(light=True)
+    # Cached, so a rerun costs no round-trip (see dbcache for invalidation).
+    all_videos = dbcache.list_videos_light()
     if st.session_state.selected_id is None and all_videos:
         st.session_state.selected_id = all_videos[0]["video_id"]
 
@@ -123,6 +128,9 @@ def render_app(ctx: dict) -> None:
             st.session_state.was_worker_running = True
         elif st.session_state.was_worker_running:
             st.session_state.was_worker_running = False
+            # The worker wrote to the database from another process; drop the
+            # cached reads so the finished video shows up on this rerun.
+            dbcache.invalidate()
             st.rerun()
 
     _queue_tick()
@@ -132,7 +140,7 @@ def render_app(ctx: dict) -> None:
         render_settings_page()
 
     elif page == "playlists":
-        playlists = db.list_playlists()
+        playlists = dbcache.list_playlists()
         render_playlists_page(playlists, all_videos)
 
     elif page == "queue":
