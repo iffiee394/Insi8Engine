@@ -73,10 +73,14 @@ def _copy_embeddings(conn) -> int:
         updates = ", ".join(
             f"{c} = EXCLUDED.{c}" for c in cols if c not in ("video_id", "chunk_index")
         )
+        # SQLite stores packed floats; Postgres wants a pgvector literal.
+        values = tuple(
+            db.encode_embedding(row[c]) if c == "embedding" else row[c] for c in cols
+        )
         conn.execute(
             f"INSERT INTO embeddings ({collist}) VALUES ({marks}) "
             f"ON CONFLICT (video_id, chunk_index) DO UPDATE SET {updates}",
-            tuple(row[c] for c in cols),
+            values,
         )
         written += 1
     return written

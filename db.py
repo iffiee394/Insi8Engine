@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import sqlite3
+import struct
 from datetime import datetime, timezone
 from typing import Any
 
@@ -127,8 +128,15 @@ def init_db() -> None:
             )
             """
         )
-        auto_pk = "BIGSERIAL PRIMARY KEY" if dbconn.is_postgres() else "INTEGER PRIMARY KEY AUTOINCREMENT"
-        blob_type = "BYTEA" if dbconn.is_postgres() else "BLOB"
+        if dbconn.is_postgres():
+            # pgvector turns similarity search into an indexed query instead of
+            # pulling every row over the wire to score in Python.
+            conn.execute("CREATE EXTENSION IF NOT EXISTS vector")
+            auto_pk = "BIGSERIAL PRIMARY KEY"
+            blob_type = f"vector({config.EMBEDDING_OUTPUT_DIM})"
+        else:
+            auto_pk = "INTEGER PRIMARY KEY AUTOINCREMENT"
+            blob_type = "BLOB"
         conn.execute(
             f"""
             CREATE TABLE IF NOT EXISTS embeddings (
@@ -144,6 +152,12 @@ def init_db() -> None:
             )
             """
         )
+        if dbconn.is_postgres():
+            # HNSW + cosine matches how search.py ranks results.
+            conn.execute(
+                "CREATE INDEX IF NOT EXISTS embeddings_vec_idx "
+                "ON embeddings USING hnsw (embedding vector_cosine_ops)"
+            )
         conn.commit()
 
     _migrate_env_playlists()
@@ -581,6 +595,54 @@ def delete_embeddings(video_id: str) -> None:
         conn.commit()
 
 
+def encode_embedding(values: Any) -> Any:
+    """Serialise one embedding for the active backend.
+
+    Callers hand over a plain list of floats. SQLite keeps the packed-float
+    BLOB the existing rows already use; Postgres gets a pgvector literal.
+    """
+    if isinstance(values, (bytes, bytearray, memoryview)):
+        # Already packed (legacy caller / SQLite round-trip).
+        if not dbconn.is_postgres():
+            return values
+        raw = bytes(values)
+        values = list(struct.unpack(f"{len(raw) // 4}f", raw))
+    floats = [float(v) for v in values]
+    if dbconn.is_postgres():
+        return "[" + ",".join(repr(f) for f in floats) + "]"
+    return struct.pack(f"{len(floats)}f", *floats)
+
+
+def decode_embedding(stored: Any) -> list[float]:
+    """Inverse of encode_embedding, for the in-Python scoring path."""
+    if isinstance(stored, str):
+        return [float(x) for x in stored.strip("[]").split(",") if x.strip()]
+    raw = bytes(stored)
+    return list(struct.unpack(f"{len(raw) // 4}f", raw))
+
+
+def search_embeddings(query_vector: list[float], top_k: int = 10) -> list[dict[str, Any]] | None:
+    """Rank chunks by cosine similarity inside the database.
+
+    Postgres only — returns None on SQLite so the caller keeps its numpy path.
+    """
+    if not dbconn.is_postgres():
+        return None
+    literal = encode_embedding(query_vector)
+    with _connect() as conn:
+        rows = conn.execute(
+            """
+            SELECT video_id, chunk_text, chunk_title, timestamp_seconds,
+                   1 - (embedding <=> ?::vector) AS score
+            FROM embeddings
+            ORDER BY embedding <=> ?::vector
+            LIMIT ?
+            """,
+            (literal, literal, top_k),
+        ).fetchall()
+        return [dict(row) for row in rows]
+
+
 def store_embeddings(video_id: str, chunks: list[dict]) -> None:
     delete_embeddings(video_id)
     with _connect() as conn:
@@ -597,7 +659,7 @@ def store_embeddings(video_id: str, chunks: list[dict]) -> None:
                     chunk["chunk_text"],
                     chunk.get("chunk_title", ""),
                     chunk.get("timestamp_seconds"),
-                    chunk["embedding"],
+                    encode_embedding(chunk["embedding"]),
                 ),
             )
         conn.commit()

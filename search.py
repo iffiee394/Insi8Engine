@@ -128,7 +128,9 @@ def generate_embeddings_for_video(video_id: str, structured_insights: dict) -> l
             logger.warning("[search] Embedding count mismatch for %s", video_id)
             return []
         for chunk, emb in zip(chunks, vectors):
-            chunk["embedding"] = struct.pack(f"{len(emb)}f", *emb)
+            # db.store_embeddings serialises this per backend (packed floats on
+            # SQLite, a pgvector literal on Postgres).
+            chunk["embedding"] = list(emb)
         db.store_embeddings(video_id, chunks)
         logger.info("[search] Stored %d embeddings for %s", len(chunks), video_id)
         return chunks
@@ -151,6 +153,21 @@ def search_insights(query: str, top_k: int = 10) -> list[dict]:
         logger.warning("[search] Query embedding failed: %s", exc)
         return []
 
+    # Postgres/pgvector ranks with an HNSW index server-side; SQLite falls
+    # through to scoring every row here.
+    hits = db.search_embeddings([float(x) for x in query_emb], top_k)
+    if hits is not None:
+        return [
+            {
+                "video_id": h["video_id"],
+                "chunk_title": h.get("chunk_title", ""),
+                "chunk_text": h.get("chunk_text", ""),
+                "timestamp_seconds": h.get("timestamp_seconds"),
+                "score": float(h.get("score") or 0.0),
+            }
+            for h in hits
+        ]
+
     all_rows = db.get_all_embeddings()
     if not all_rows:
         return []
@@ -158,9 +175,7 @@ def search_insights(query: str, top_k: int = 10) -> list[dict]:
     results: list[dict] = []
     q_norm = np.linalg.norm(query_emb) + 1e-8
     for row in all_rows:
-        emb_bytes = row["embedding"]
-        n_floats = len(emb_bytes) // 4
-        stored_emb = np.array(struct.unpack(f"{n_floats}f", emb_bytes), dtype=np.float32)
+        stored_emb = np.array(db.decode_embedding(row["embedding"]), dtype=np.float32)
         if stored_emb.size != query_emb.size:
             continue
         s_norm = np.linalg.norm(stored_emb) + 1e-8
