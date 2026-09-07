@@ -1477,7 +1477,7 @@ let _folder = 'video';
 /* ── detail switching (no server round-trip) ─────────────────── */
 function pickVideo(vid) {
   const html = _D[vid];
-  if (html == null) return;
+  if (html == null) { selectVideo(vid); return; }
   document.getElementById('detail').innerHTML = html;
   document.querySelectorAll('.vrow').forEach(function (el) {
     el.classList.toggle('on', el.dataset.vid === vid);
@@ -1590,6 +1590,11 @@ def render_library_page(
     if selected is None and videos:
         selected = videos[0]
     selected_id = selected["video_id"] if selected else None
+    # `videos` may be light rows (no structured_insights/research_data), so pull
+    # the complete record for the one video whose detail pane we actually draw.
+    selected_full = db.get_video(selected_id) if selected_id else None
+    if selected_full is None:
+        selected_full = selected
 
     active = [v for v in videos if v.get("status") in _ACTIVE_STATUSES]
     done = [v for v in videos if v.get("status") == db.STATUS_DONE]
@@ -1658,11 +1663,14 @@ def render_library_page(
         '<div class="no-results" id="noresults" hidden>No videos match those filters.</div>'
         "</div></aside>"
         f'<div id="detail" style="flex:1;display:flex;min-width:0">'
-        f'{_detail_pane(selected) if selected else _empty_detail()}</div>'
+        f'{_detail_pane(selected_full) if selected_full else _empty_detail()}</div>'
         "</div></div></div>" + _ADD_MODAL
     )
 
-    details = {v["video_id"]: _detail_pane(v) for v in videos}
+    # Only the open video is embedded; picking another asks the server for it
+    # (see pickVideo's fallback). Pre-rendering all of them meant fetching every
+    # video's full JSON up front and shipping a multi-megabyte page.
+    details = {selected_id: _detail_pane(selected_full)} if selected_full else {}
     scripts = (
         f"<script>const _page = {json.dumps(active_tab if active_tab in ('library', 'queue') else 'library')};</script>"
         + _library_js(details, selected_id)

@@ -83,7 +83,20 @@ def _migrate_knowledge_base_to_profile() -> None:
         set_profile(profile)
 
 
-def init_db() -> None:
+_SCHEMA_READY = False
+
+
+def init_db(*, force: bool = False) -> None:
+    """Create/patch the schema. Runs once per process unless forced.
+
+    Every statement here is IF NOT EXISTS, so repeat calls were harmless on a
+    local SQLite file. Against hosted Postgres the same calls cost ~1.5s of
+    round-trips, and the queue-tick fragment invokes this every 3 seconds via
+    is_worker_running() — so the guard matters.
+    """
+    global _SCHEMA_READY
+    if _SCHEMA_READY and not force:
+        return
     with _connect() as conn:
         conn.execute(
             """
@@ -165,6 +178,8 @@ def init_db() -> None:
     if not KB_PATH.exists():
         KB_PATH.write_text("", encoding="utf-8")
     _migrate_knowledge_base_to_profile()
+
+    _SCHEMA_READY = True
 
 
 def get_profile() -> dict:
@@ -559,13 +574,25 @@ def upsert_video(
         conn.commit()
 
 
+# Everything the library/queue rows render from. The excluded columns
+# (structured_insights, research_data, key_points, usage_data, summary,
+# transcript-ish blobs) are ~3MB across the library and are only needed once a
+# single video is opened.
+LIGHT_VIDEO_COLUMNS = (
+    "video_id, title, url, status, channel_name, playlist_type, playlist_id, "
+    "added_at, processed_at, error_message, transcript_source, user_agenda"
+)
+
+
 def list_videos(
     playlist_type: str | None = None,
     *,
     status: str | None = None,
+    light: bool = False,
 ) -> list[dict[str, Any]]:
+    """List videos. `light=True` omits the large JSON columns."""
     with _connect() as conn:
-        query = "SELECT * FROM videos"
+        query = f"SELECT {LIGHT_VIDEO_COLUMNS} FROM videos" if light else "SELECT * FROM videos"
         params: list[str] = []
         clauses = []
         if playlist_type:

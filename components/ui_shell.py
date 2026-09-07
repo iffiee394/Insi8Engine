@@ -106,7 +106,9 @@ def render_app(ctx: dict) -> None:
         if key not in st.session_state:
             st.session_state[key] = val
 
-    all_videos = db.list_videos()
+    # Light rows: the list/queue views never touch the big JSON columns, and
+    # pulling them for all videos cost ~3MB and several seconds per render.
+    all_videos = db.list_videos(light=True)
     if st.session_state.selected_id is None and all_videos:
         st.session_state.selected_id = all_videos[0]["video_id"]
 
