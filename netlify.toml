@@ -1,0 +1,23 @@
+# Netlify serves the prebuilt static snapshot in site/.
+#
+# Netlify cannot run the Streamlit app itself (it needs a persistent Python
+# server and a websocket connection). What ships here is a read-only export
+# of the Library / Queue / Playlists views, regenerated with:
+#
+#     python build_static_site.py
+#
+# Commit the refreshed site/ directory to publish an updated snapshot.
+
+[build]
+  publish = "site"
+  command = ""
+
+[[redirects]]
+  from = "/"
+  to = "/library.html"
+  status = 200
+
+[[headers]]
+  for = "/*.html"
+  [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"
