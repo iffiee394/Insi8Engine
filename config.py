@@ -79,6 +79,25 @@ POLL_INTERVAL_MINUTES = int(os.getenv("POLL_INTERVAL_MINUTES", "15"))
 #           included. Supplied via .env locally / st.secrets on Cloud.
 DATABASE_URL = os.getenv("DATABASE_URL", "").strip()
 
+# Convenience for Supabase: supply only SUPABASE_DB_PASSWORD and the URI is
+# assembled from the (non-secret) host/user/port below. The password is
+# percent-encoded here, so characters like @ : / # ? are safe to use raw in
+# .env — hand-writing them into a URI would silently corrupt it.
+SUPABASE_DB_HOST = os.getenv("SUPABASE_DB_HOST", "").strip()
+SUPABASE_DB_USER = os.getenv("SUPABASE_DB_USER", "").strip()
+SUPABASE_DB_PORT = os.getenv("SUPABASE_DB_PORT", "5432").strip()
+SUPABASE_DB_NAME = os.getenv("SUPABASE_DB_NAME", "postgres").strip()
+SUPABASE_DB_PASSWORD = os.getenv("SUPABASE_DB_PASSWORD", "").strip()
+
+if not DATABASE_URL and SUPABASE_DB_PASSWORD and SUPABASE_DB_HOST and SUPABASE_DB_USER:
+    from urllib.parse import quote
+
+    DATABASE_URL = (
+        f"postgresql://{quote(SUPABASE_DB_USER, safe='')}:"
+        f"{quote(SUPABASE_DB_PASSWORD, safe='')}@"
+        f"{SUPABASE_DB_HOST}:{SUPABASE_DB_PORT}/{SUPABASE_DB_NAME}"
+    )
+
 # ── Embeddings ──
 # text-embedding-004 was removed from Gemini API v1beta (404).
 # gemini-embedding-001 is the current text-only model:
