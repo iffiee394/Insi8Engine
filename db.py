@@ -8,6 +8,7 @@ from datetime import datetime, timezone
 from typing import Any
 
 import config
+import dbconn
 
 DB_PATH = config.DB_PATH
 KB_PATH = config.KB_PATH
@@ -38,15 +39,19 @@ DEFAULT_PLAYLIST_PROFILE = {
 }
 
 
-def _connect() -> sqlite3.Connection:
-    DB_PATH.parent.mkdir(parents=True, exist_ok=True)
-    conn = sqlite3.connect(DB_PATH)
-    conn.row_factory = sqlite3.Row
-    return conn
+def _connect():
+    """SQLite locally, Postgres when DATABASE_URL is set (see dbconn)."""
+    return dbconn.connect()
 
 
-def _ensure_columns(conn: sqlite3.Connection) -> None:
-    rows = conn.execute("PRAGMA table_info(videos)").fetchall()
+def _ensure_columns(conn) -> None:
+    if dbconn.is_postgres():
+        rows = conn.execute(
+            "SELECT column_name AS name FROM information_schema.columns "
+            "WHERE table_name = 'videos'"
+        ).fetchall()
+    else:
+        rows = conn.execute("PRAGMA table_info(videos)").fetchall()
     existing = {row["name"] for row in rows}
     migrations = {
         "playlist_type": f"ALTER TABLE videos ADD COLUMN playlist_type TEXT NOT NULL DEFAULT '{PLAYLIST_GENERAL}'",
@@ -122,16 +127,18 @@ def init_db() -> None:
             )
             """
         )
+        auto_pk = "BIGSERIAL PRIMARY KEY" if dbconn.is_postgres() else "INTEGER PRIMARY KEY AUTOINCREMENT"
+        blob_type = "BYTEA" if dbconn.is_postgres() else "BLOB"
         conn.execute(
-            """
+            f"""
             CREATE TABLE IF NOT EXISTS embeddings (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                id {auto_pk},
                 video_id TEXT NOT NULL,
                 chunk_index INTEGER NOT NULL,
                 chunk_text TEXT NOT NULL,
                 chunk_title TEXT,
                 timestamp_seconds INTEGER,
-                embedding BLOB NOT NULL,
+                embedding {blob_type} NOT NULL,
                 FOREIGN KEY (video_id) REFERENCES videos(video_id),
                 UNIQUE(video_id, chunk_index)
             )

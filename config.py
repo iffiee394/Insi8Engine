@@ -72,6 +72,13 @@ BATCH_POLL_SEC = int(os.getenv("BATCH_POLL_SEC", "30"))
 BATCH_TIMEOUT_SEC = int(os.getenv("BATCH_TIMEOUT_SEC", "86400"))
 POLL_INTERVAL_MINUTES = int(os.getenv("POLL_INTERVAL_MINUTES", "15"))
 
+# ── Database ──
+# Empty  -> local SQLite at DATA_DIR/insights.db (default for local dev).
+# Set    -> Postgres (e.g. Supabase). Use the *session pooler* URI; the direct
+#           connection is IPv6-only and fails on most hosts, Streamlit Cloud
+#           included. Supplied via .env locally / st.secrets on Cloud.
+DATABASE_URL = os.getenv("DATABASE_URL", "").strip()
+
 # ── Embeddings ──
 # text-embedding-004 was removed from Gemini API v1beta (404).
 # gemini-embedding-001 is the current text-only model:
