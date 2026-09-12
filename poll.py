@@ -96,6 +96,16 @@ def process_one(video_id: str, *, manual_regenerate: bool = False) -> int:
                 usage_data=usage_json,
                 channel_name=channel,
             )
+        if not manual_regenerate:
+            try:
+                from search import index_saved_auto_insights
+
+                indexed = index_saved_auto_insights(video_id)
+                if not indexed:
+                    db.record_index_error(video_id, "auto index not written after extraction")
+            except Exception as exc:
+                logger.warning("[poll] Indexing failed after save: %s", exc)
+                db.record_index_error(video_id, str(exc)[:300])
         logger.info("[poll] Done: %s", video["title"])
         return 0
     except Exception as exc:

@@ -66,6 +66,15 @@ def _save_result(video: dict, result: dict, *, usage_data: dict | None = None) -
     )
     if usage_data:
         add_to_lifetime(usage_data)
+    try:
+        from search import index_saved_auto_insights
+
+        indexed = index_saved_auto_insights(video["video_id"])
+        if not indexed:
+            db.record_index_error(video["video_id"], "auto index not written after batch save")
+    except Exception as exc:
+        logger.warning("[batch] Indexing failed after save: %s", exc)
+        db.record_index_error(video["video_id"], str(exc)[:300])
 
 
 def run_batch(*, max_videos: int | None = None) -> dict:

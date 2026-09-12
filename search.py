@@ -2,10 +2,12 @@
 
 from __future__ import annotations
 
+import hashlib
 import json
+import math
 import re
-import struct
 import time
+from dataclasses import dataclass, field
 from typing import Any
 
 import numpy as np
@@ -96,100 +98,332 @@ def _embed_texts(texts: list[str], *, task_type: str = _TASK_DOCUMENT) -> list[l
     return out
 
 
+def normalize_insight_text(ins: dict) -> str:
+    topic = str(ins.get("topic") or ins.get("title") or "").strip()
+    content = str(ins.get("content") or "").strip()
+    points = ins.get("points") or []
+    if not content:
+        content = " ".join(str(p).strip() for p in points if str(p).strip())
+    return f"{topic}: {content}".strip(": ").strip()
+
+
+def insights_to_chunks(structured_insights: dict) -> tuple[list[dict[str, Any]], str | None]:
+    """Convert structured insights into nonempty deterministic chunks."""
+    if not isinstance(structured_insights, dict):
+        return [], "malformed_insights"
+    insights = structured_insights.get("insights")
+    if not insights:
+        return [], "no_insights"
+    if not isinstance(insights, list):
+        return [], "malformed_insights"
+    chunks: list[dict[str, Any]] = []
+    for ins in insights:
+        if not isinstance(ins, dict):
+            continue
+        text = normalize_insight_text(ins)
+        if not text:
+            continue
+        topic = str(ins.get("topic") or ins.get("title") or "").strip()
+        chunks.append(
+            {
+                "chunk_index": len(chunks),
+                "chunk_text": text,
+                "chunk_title": topic,
+                "timestamp_seconds": ins.get("timestamp_seconds"),
+            }
+        )
+    if not chunks:
+        return [], "empty_chunks"
+    return chunks, None
+
+
+def source_hash_for_chunks(chunks: list[dict[str, Any]]) -> str:
+    payload = [
+        (
+            c.get("chunk_title") or "",
+            c.get("chunk_text") or "",
+            c.get("timestamp_seconds"),
+        )
+        for c in chunks
+    ]
+    blob = json.dumps(payload, ensure_ascii=False, sort_keys=True)
+    return hashlib.sha256(blob.encode("utf-8")).hexdigest()
+
+
+def validate_vectors(
+    vectors: list[list[float]],
+    *,
+    expected_count: int,
+    expected_dim: int,
+) -> None:
+    if len(vectors) != expected_count:
+        raise ValueError(f"vector count {len(vectors)} != {expected_count}")
+    for i, vec in enumerate(vectors):
+        if len(vec) != expected_dim:
+            raise ValueError(f"vector {i} dim {len(vec)} != {expected_dim}")
+        if any(not math.isfinite(float(x)) for x in vec):
+            raise ValueError(f"vector {i} has non-finite values")
+        norm = math.sqrt(sum(float(x) * float(x) for x in vec))
+        if norm <= 0:
+            raise ValueError(f"vector {i} has zero norm")
+
+
+@dataclass
+class SearchHit:
+    source_id: str
+    video_id: str
+    video_title: str
+    channel: str
+    chunk_title: str
+    chunk_text: str
+    timestamp_seconds: int | float | None
+    insight_variant: str
+    source_kind: str
+    generation: int | None
+    source_hash: str
+    score: float
+
+
+@dataclass
+class SearchResponse:
+    status: str
+    hits: list[SearchHit] = field(default_factory=list)
+    coverage: dict[str, Any] = field(default_factory=dict)
+    warnings: list[str] = field(default_factory=list)
+    retrieval: str = "semantic"
+
+
+def _hit_from_row(row: dict[str, Any], score: float) -> SearchHit:
+    video_id = str(row.get("video_id") or "")
+    chunk_index = row.get("chunk_index", 0)
+    return SearchHit(
+        source_id=f"insight:{video_id}:{chunk_index}",
+        video_id=video_id,
+        video_title=str(row.get("video_title") or ""),
+        channel=str(row.get("channel_name") or ""),
+        chunk_title=str(row.get("chunk_title") or ""),
+        chunk_text=str(row.get("chunk_text") or ""),
+        timestamp_seconds=row.get("timestamp_seconds"),
+        insight_variant="auto",
+        source_kind="insight",
+        generation=row.get("generation"),
+        source_hash=str(row.get("source_hash") or ""),
+        score=float(score),
+    )
+
+
 def generate_embeddings_for_video(video_id: str, structured_insights: dict) -> list[dict]:
-    """Generate and store embeddings for each insight chunk (non-fatal)."""
+    """Generate all replacement vectors, then atomically replace the auto index."""
+    chunks, reason = insights_to_chunks(structured_insights)
+    if not chunks:
+        logger.info("[search] Skip index for %s (%s)", video_id, reason)
+        return []
     if not config.GEMINI_API_KEY:
         return []
 
-    insights = structured_insights.get("insights", [])
-    if not insights:
-        return []
-
-    db.delete_embeddings(video_id)
-    chunks: list[dict[str, Any]] = []
-    for i, ins in enumerate(insights):
-        topic = ins.get("topic") or ins.get("title") or ""
-        points = ins.get("points") or []
-        content = ins.get("content") or ""
-        body = content if content else " ".join(str(p) for p in points)
-        text = f"{topic}: {body}".strip(": ")
-        chunks.append({
-            "video_id": video_id,
-            "chunk_index": i,
-            "chunk_text": text,
-            "chunk_title": topic,
-            "timestamp_seconds": ins.get("timestamp_seconds"),
-        })
-
     texts = [c["chunk_text"] for c in chunks]
+    source_hash = source_hash_for_chunks(chunks)
     try:
         vectors = _embed_texts(texts, task_type=_TASK_DOCUMENT)
-        if len(vectors) != len(chunks):
-            logger.warning("[search] Embedding count mismatch for %s", video_id)
-            return []
+        validate_vectors(
+            vectors,
+            expected_count=len(chunks),
+            expected_dim=config.EMBEDDING_OUTPUT_DIM,
+        )
         for chunk, emb in zip(chunks, vectors):
-            # db.store_embeddings serialises this per backend (packed floats on
-            # SQLite, a pgvector literal on Postgres).
-            chunk["embedding"] = list(emb)
-        db.store_embeddings(video_id, chunks)
+            chunk["embedding"] = [float(x) for x in emb]
+            chunk["video_id"] = video_id
+        db.replace_auto_index(
+            video_id,
+            chunks,
+            model=config.EMBEDDING_MODEL,
+            source_hash=source_hash,
+            vector_dim=config.EMBEDDING_OUTPUT_DIM,
+        )
         logger.info("[search] Stored %d embeddings for %s", len(chunks), video_id)
         return chunks
+    except db.IndexConflict as exc:
+        logger.warning("[search] %s", exc)
+        return []
     except Exception as exc:
         logger.warning("[search] Embedding generation failed: %s", exc)
         return []
 
 
-def search_insights(query: str, top_k: int = 10) -> list[dict]:
-    """Search across all video insights. Returns ranked results."""
-    if not config.GEMINI_API_KEY or not query.strip():
+def index_saved_auto_insights(video_id: str) -> list[dict]:
+    """Index the structured insights already saved on the video row."""
+    video = db.get_video(video_id)
+    if not video:
         return []
+    structured = db.parse_structured_insights(video.get("structured_insights", "{}"))
+    return generate_embeddings_for_video(video_id, structured)
+
+
+def _score_sqlite_rows(
+    query_emb: np.ndarray,
+    rows: list[dict[str, Any]],
+    top_k: int,
+) -> list[SearchHit]:
+    results: list[SearchHit] = []
+    q_norm = np.linalg.norm(query_emb) + 1e-8
+    for row in rows:
+        try:
+            stored_emb = np.array(db.decode_embedding(row["embedding"]), dtype=np.float32)
+        except Exception:
+            continue
+        if stored_emb.size != query_emb.size:
+            continue
+        if not np.isfinite(stored_emb).all():
+            continue
+        s_norm = float(np.linalg.norm(stored_emb))
+        if s_norm <= 0:
+            continue
+        similarity = float(np.dot(query_emb, stored_emb) / (q_norm * s_norm))
+        results.append(_hit_from_row(row, similarity))
+    results.sort(key=lambda x: x.score, reverse=True)
+    return results[:top_k]
+
+
+def _lexical_hits(
+    query: str,
+    top_k: int,
+    *,
+    playlist_id: str | None,
+    playlist_type: str | None,
+    video_id: str | None,
+) -> list[SearchHit]:
+    rows = db.lexical_search_embeddings(
+        query,
+        top_k,
+        playlist_id=playlist_id,
+        playlist_type=playlist_type,
+        video_id=video_id,
+    )
+    hits = []
+    q = query.strip().lower()
+    for row in rows:
+        text = f"{row.get('chunk_title', '')} {row.get('chunk_text', '')}".lower()
+        score = 1.0 if q and q in text else 0.2
+        hits.append(_hit_from_row(row, score))
+    return hits
+
+
+def search_insights_response(
+    query: str,
+    top_k: int = 10,
+    *,
+    playlist_id: str | None = None,
+    playlist_type: str | None = None,
+    video_id: str | None = None,
+) -> SearchResponse:
+    """Shared retrieval contract for the Search page and chat."""
+    coverage = {
+        "playlist_id": playlist_id or "",
+        "playlist_type": playlist_type or "",
+        "video_id": video_id or "",
+        "top_k": top_k,
+    }
+    if not query.strip():
+        return SearchResponse(status="empty", coverage=coverage, warnings=["empty query"])
+
+    if not config.GEMINI_API_KEY:
+        hits = _lexical_hits(
+            query, top_k,
+            playlist_id=playlist_id, playlist_type=playlist_type, video_id=video_id,
+        )
+        if hits:
+            return SearchResponse(
+                status="degraded",
+                hits=hits,
+                coverage=coverage,
+                warnings=["Gemini key missing — lexical fallback"],
+                retrieval="lexical",
+            )
+        return SearchResponse(
+            status="error",
+            coverage=coverage,
+            warnings=["Gemini key missing and no lexical matches"],
+            retrieval="lexical",
+        )
 
     try:
         vectors = _embed_texts([query.strip()], task_type=_TASK_QUERY)
         if not vectors:
-            return []
+            raise RuntimeError("empty query embedding")
+        validate_vectors(
+            vectors,
+            expected_count=1,
+            expected_dim=config.EMBEDDING_OUTPUT_DIM,
+        )
         query_emb = np.array(vectors[0], dtype=np.float32)
     except Exception as exc:
-        logger.warning("[search] Query embedding failed: %s", exc)
-        return []
+        msg = str(exc)
+        kind = "quota" if ("429" in msg or "RESOURCE_EXHAUSTED" in msg) else "provider"
+        hits = _lexical_hits(
+            query, top_k,
+            playlist_id=playlist_id, playlist_type=playlist_type, video_id=video_id,
+        )
+        if hits:
+            return SearchResponse(
+                status="degraded",
+                hits=hits,
+                coverage=coverage,
+                warnings=[f"{kind} embedding failure — lexical fallback"],
+                retrieval="lexical",
+            )
+        return SearchResponse(
+            status="error",
+            coverage=coverage,
+            warnings=[f"{kind} embedding failure and no lexical matches"],
+            retrieval="semantic",
+        )
 
-    # Postgres/pgvector ranks with an HNSW index server-side; SQLite falls
-    # through to scoring every row here.
-    hits = db.search_embeddings([float(x) for x in query_emb], top_k)
-    if hits is not None:
-        return [
-            {
-                "video_id": h["video_id"],
-                "chunk_title": h.get("chunk_title", ""),
-                "chunk_text": h.get("chunk_text", ""),
-                "timestamp_seconds": h.get("timestamp_seconds"),
-                "score": float(h.get("score") or 0.0),
-            }
-            for h in hits
-        ]
+    scoped = db.count_scoped_embeddings(
+        playlist_id=playlist_id, playlist_type=playlist_type, video_id=video_id
+    )
+    coverage["scoped_embeddings"] = scoped
+    use_exact = scoped <= 2000
 
-    all_rows = db.get_all_embeddings()
-    if not all_rows:
-        return []
+    hits: list[SearchHit] = []
+    if use_exact:
+        rows = db.get_all_embeddings(
+            playlist_id=playlist_id, playlist_type=playlist_type, video_id=video_id
+        )
+        hits = _score_sqlite_rows(query_emb, rows, top_k)
+    else:
+        ranked = db.search_embeddings(
+            [float(x) for x in query_emb],
+            top_k,
+            playlist_id=playlist_id,
+            playlist_type=playlist_type,
+            video_id=video_id,
+        )
+        if ranked is None:
+            rows = db.get_all_embeddings(
+                playlist_id=playlist_id, playlist_type=playlist_type, video_id=video_id
+            )
+            hits = _score_sqlite_rows(query_emb, rows, top_k)
+        else:
+            hits = [_hit_from_row(h, float(h.get("score") or 0.0)) for h in ranked]
 
-    results: list[dict] = []
-    q_norm = np.linalg.norm(query_emb) + 1e-8
-    for row in all_rows:
-        stored_emb = np.array(db.decode_embedding(row["embedding"]), dtype=np.float32)
-        if stored_emb.size != query_emb.size:
-            continue
-        s_norm = np.linalg.norm(stored_emb) + 1e-8
-        similarity = float(np.dot(query_emb, stored_emb) / (q_norm * s_norm))
-        results.append({
-            "video_id": row["video_id"],
-            "chunk_title": row.get("chunk_title", ""),
-            "chunk_text": row.get("chunk_text", ""),
-            "timestamp_seconds": row.get("timestamp_seconds"),
-            "score": similarity,
-        })
+    if hits:
+        return SearchResponse(status="ok", hits=hits, coverage=coverage, retrieval="semantic")
+    return SearchResponse(status="empty", hits=[], coverage=coverage, retrieval="semantic")
 
-    results.sort(key=lambda x: x["score"], reverse=True)
-    return results[:top_k]
+
+def search_insights(query: str, top_k: int = 10) -> list[dict]:
+    """Compatibility wrapper used by older callers."""
+    response = search_insights_response(query, top_k)
+    return [
+        {
+            "video_id": h.video_id,
+            "chunk_title": h.chunk_title,
+            "chunk_text": h.chunk_text,
+            "timestamp_seconds": h.timestamp_seconds,
+            "score": h.score,
+        }
+        for h in response.hits
+    ]
 
 
 def reindex_all_embeddings(*, only_missing: bool = False) -> dict[str, int]:

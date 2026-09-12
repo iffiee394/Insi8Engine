@@ -1,5 +1,11 @@
 # Documentation index
 
+## Current personal knowledge system build
+
+Start with [Specs plan](../specs%20plan.md) for the September 12, 2026 plan to ship search, saved knowledge, and cited chat quickly. Use the [implementation handoff](knowledge-system/IMPLEMENTATION_HANDOFF.md), [build status](knowledge-system/BUILD_STATUS.md), and [acceptance checklist](knowledge-system/ACCEPTANCE.md) together.
+
+The plans and completion labels below are historical. Some backend features are implemented but disconnected from the current interface; they do not establish current end-to-end readiness.
+
 | Document | Purpose |
 |----------|---------|
 | [../PROJECT_GUIDE.md](../PROJECT_GUIDE.md) | Full reference — architecture, features, pricing, troubleshooting (current V4 state) |

@@ -35,6 +35,14 @@ def _format_timestamp_label(seconds: float) -> str:
 
 
 def _fetch_caption_segments(video_id: str) -> list[tuple[float, str]] | None:
+    """Compatibility wrapper: (start, text) pairs."""
+    detailed = _fetch_caption_segment_dicts(video_id)
+    if not detailed:
+        return None
+    return [(float(s["start"]), s["text"]) for s in detailed]
+
+
+def _fetch_caption_segment_dicts(video_id: str) -> list[dict] | None:
     try:
         api = YouTubeTranscriptApi()
         transcript = None
@@ -48,56 +56,124 @@ def _fetch_caption_segments(video_id: str) -> list[tuple[float, str]] | None:
                 transcript_list = api.list(video_id)
                 transcript = next(iter(transcript_list)).fetch()
 
-        segments: list[tuple[float, str]] = []
+        segments: list[dict] = []
         for seg in transcript:
             text = getattr(seg, "text", None)
             if not text:
                 continue
             start = float(getattr(seg, "start", 0) or 0)
-            segments.append((start, text.strip()))
+            duration = getattr(seg, "duration", None)
+            end = None
+            if duration is not None:
+                try:
+                    dur = float(duration)
+                    if dur > 0:
+                        end = start + dur
+                except (TypeError, ValueError):
+                    end = None
+            segments.append({"start": start, "end": end, "text": text.strip()})
         return segments or None
     except Exception:
         return None
 
 
-def fetch_transcript_data(video_id: str) -> dict:
+def _persist_transcript(video_id: str, data: dict) -> None:
+    try:
+        import knowledge_store
+
+        knowledge_store.upsert_transcript(
+            video_id,
+            plain_text=data.get("text") or "",
+            timed_segments=data.get("segments") or [],
+            source=data.get("source") or "",
+            language=data.get("language") or "",
+            timing_quality=data.get("timing_quality") or "unknown",
+        )
+    except Exception as exc:
+        logger.warning("[pipeline] Transcript persist failed: %s", exc)
+
+
+def fetch_transcript_data(video_id: str, *, persist: bool = True, refresh: bool = False) -> dict:
     """Return transcript text, source, timed text, and approximate duration."""
-    segments = _fetch_caption_segments(video_id)
+    if persist and not refresh:
+        try:
+            import knowledge_store
+
+            stored = knowledge_store.get_transcript(video_id)
+            if stored and (stored.get("plain_text") or "").strip():
+                segments = []
+                try:
+                    segments = json.loads(stored.get("timed_segments_json") or "[]")
+                except json.JSONDecodeError:
+                    segments = []
+                return {
+                    "text": stored["plain_text"],
+                    "source": stored.get("source") or "",
+                    "timed_text": stored["plain_text"],
+                    "duration_seconds": 0,
+                    "segments": segments,
+                    "timing_quality": stored.get("timing_quality") or "unknown",
+                    "from_store": True,
+                }
+        except Exception:
+            pass
+
+    segments = _fetch_caption_segment_dicts(video_id)
     if segments:
-        plain = " ".join(t for _, t in segments).strip()
+        plain = " ".join(s["text"] for s in segments).strip()
         if len(plain) > 100:
-            timed = "\n".join(f"[{_format_timestamp_label(s)}] {t}" for s, t in segments)
-            last_start = segments[-1][0]
+            timed = "\n".join(
+                f"[{_format_timestamp_label(s['start'])}] {s['text']}" for s in segments
+            )
+            last_start = segments[-1]["start"]
             duration = int(last_start) + 60
-            return {
+            data = {
                 "text": plain,
                 "source": "youtube_captions",
                 "timed_text": timed,
                 "duration_seconds": duration,
+                "segments": segments,
+                "timing_quality": "exact",
+                "from_store": False,
             }
+            if persist:
+                _persist_transcript(video_id, data)
+            return data
 
     if config.GEMINI_API_KEY:
         try:
             text = _transcribe_with_gemini(video_id)
             if text and len(text.strip()) > 100:
-                return {
+                data = {
                     "text": text.strip(),
                     "source": "gemini_audio",
                     "timed_text": text.strip(),
                     "duration_seconds": 0,
+                    "segments": [],
+                    "timing_quality": "unknown",
+                    "from_store": False,
                 }
+                if persist:
+                    _persist_transcript(video_id, data)
+                return data
         except Exception:
             pass
 
     from transcriber import transcribe_youtube_audio
 
     text, source = transcribe_youtube_audio(video_id)
-    return {
+    data = {
         "text": text,
         "source": source,
         "timed_text": text,
         "duration_seconds": 0,
+        "segments": [],
+        "timing_quality": "unknown",
+        "from_store": False,
     }
+    if persist and (text or "").strip():
+        _persist_transcript(video_id, data)
+    return data
 
 
 def get_transcript(video_id: str) -> tuple[str, str]:
@@ -720,13 +796,6 @@ def _finalize_video_result(
     auto_agenda: str,
     channel_name: str,
 ) -> dict:
-    try:
-        from search import generate_embeddings_for_video
-
-        generate_embeddings_for_video(video_id, structured)
-    except Exception as exc:
-        logger.warning("[pipeline] Embedding generation failed (non-fatal): %s", exc)
-
     return {
         "summary": structured.get("summary") or result.get("summary", ""),
         "key_points": _build_flat_key_points(result),

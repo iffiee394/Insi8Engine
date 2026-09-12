@@ -11,6 +11,19 @@ from typing import Any
 import config
 import dbconn
 
+def _db_path():
+    return config.DB_PATH
+
+
+def _kb_path():
+    return config.KB_PATH
+
+
+def _profile_path():
+    return config.PROFILE_PATH
+
+
+# Compatibility aliases — tests may redirect config.DB_PATH.
 DB_PATH = config.DB_PATH
 KB_PATH = config.KB_PATH
 PROFILE_PATH = config.PROFILE_PATH
@@ -72,15 +85,20 @@ def _ensure_columns(conn) -> None:
 
 
 def _migrate_knowledge_base_to_profile() -> None:
-    if PROFILE_PATH.exists():
+    """Legacy file import. Durable import is knowledge_store.import_profile_once."""
+    if _profile_path().exists():
         return
     known = ""
-    if KB_PATH.exists():
-        known = KB_PATH.read_text(encoding="utf-8").strip()
+    if _kb_path().exists():
+        known = _kb_path().read_text(encoding="utf-8").strip()
     if known:
         profile = dict(DEFAULT_PROFILE)
         profile["known_topics"] = known
-        set_profile(profile)
+        _profile_path().parent.mkdir(parents=True, exist_ok=True)
+        _profile_path().write_text(
+            json.dumps(profile, indent=2, ensure_ascii=False),
+            encoding="utf-8",
+        )
 
 
 _SCHEMA_READY = False
@@ -171,37 +189,53 @@ def init_db(*, force: bool = False) -> None:
                 "CREATE INDEX IF NOT EXISTS embeddings_vec_idx "
                 "ON embeddings USING hnsw (embedding vector_cosine_ops)"
             )
+        from migrations import run_migrations
+
+        run_migrations(conn)
         conn.commit()
 
     _migrate_env_playlists()
-
-    if not KB_PATH.exists():
-        KB_PATH.write_text("", encoding="utf-8")
     _migrate_knowledge_base_to_profile()
+    try:
+        import knowledge_store
+
+        knowledge_store.import_profile_once(default_profile=DEFAULT_PROFILE)
+    except Exception:
+        pass
 
     _SCHEMA_READY = True
 
 
 def get_profile() -> dict:
-    """Load the user profile from data/profile.json."""
-    if PROFILE_PATH.exists():
+    """Load the durable profile; fall back to the local JSON file."""
+    try:
+        import knowledge_store
+
+        row = knowledge_store.get_personal_settings()
+        if row:
+            parsed = knowledge_store.parse_profile_json(
+                row.get("profile_json"), DEFAULT_PROFILE
+            )
+            if parsed:
+                return parsed
+    except Exception:
+        pass
+    path = _profile_path()
+    if path.exists():
         try:
-            return json.loads(PROFILE_PATH.read_text(encoding="utf-8"))
+            return json.loads(path.read_text(encoding="utf-8"))
         except json.JSONDecodeError:
             return dict(DEFAULT_PROFILE)
     return dict(DEFAULT_PROFILE)
 
 
 def set_profile(profile: dict) -> None:
-    """Save the user profile to data/profile.json."""
-    PROFILE_PATH.parent.mkdir(parents=True, exist_ok=True)
+    """Save the profile to the database. The original JSON file is left intact."""
     merged = dict(DEFAULT_PROFILE)
     merged.update(profile)
-    PROFILE_PATH.write_text(
-        json.dumps(merged, indent=2, ensure_ascii=False),
-        encoding="utf-8",
-    )
-    set_knowledge_base(merged.get("known_topics", ""))
+    import knowledge_store
+
+    knowledge_store.set_personal_settings(merged)
 
 
 def get_profile_prompt(*, playlist_id: str | None = None) -> str:
@@ -373,21 +407,16 @@ def get_knowledge_base() -> str:
     profile = get_profile()
     if profile.get("known_topics", "").strip():
         return profile["known_topics"].strip()
-    if KB_PATH.exists():
-        return KB_PATH.read_text(encoding="utf-8").strip()
+    path = _kb_path()
+    if path.exists():
+        return path.read_text(encoding="utf-8").strip()
     return ""
 
 
 def set_knowledge_base(text: str) -> None:
-    KB_PATH.parent.mkdir(parents=True, exist_ok=True)
-    KB_PATH.write_text(text.strip(), encoding="utf-8")
     profile = get_profile()
     profile["known_topics"] = text.strip()
-    PROFILE_PATH.parent.mkdir(parents=True, exist_ok=True)
-    PROFILE_PATH.write_text(
-        json.dumps(profile, indent=2, ensure_ascii=False),
-        encoding="utf-8",
-    )
+    set_profile(profile)
 
 
 def set_meta(key: str, value: str) -> None:
@@ -648,36 +677,203 @@ def decode_embedding(stored: Any) -> list[float]:
     return list(struct.unpack(f"{len(raw) // 4}f", raw))
 
 
-def search_embeddings(query_vector: list[float], top_k: int = 10) -> list[dict[str, Any]] | None:
+def _embedding_scope_sql(
+    *,
+    playlist_id: str | None = None,
+    playlist_type: str | None = None,
+    video_id: str | None = None,
+) -> tuple[str, list[Any]]:
+    clauses = ["1=1"]
+    params: list[Any] = []
+    if video_id:
+        clauses.append("e.video_id = ?")
+        params.append(video_id)
+    if playlist_id:
+        clauses.append("v.playlist_id = ?")
+        params.append(playlist_id)
+    if playlist_type:
+        clauses.append("v.playlist_type = ?")
+        params.append(playlist_type)
+    return " AND ".join(clauses), params
+
+
+def count_scoped_embeddings(
+    *,
+    playlist_id: str | None = None,
+    playlist_type: str | None = None,
+    video_id: str | None = None,
+) -> int:
+    where, params = _embedding_scope_sql(
+        playlist_id=playlist_id, playlist_type=playlist_type, video_id=video_id
+    )
+    with _connect() as conn:
+        row = conn.execute(
+            f"""
+            SELECT COUNT(*) AS n
+            FROM embeddings e
+            JOIN videos v ON v.video_id = e.video_id
+            WHERE {where}
+            """,
+            params,
+        ).fetchone()
+        return int(row["n"] if row else 0)
+
+
+def search_embeddings(
+    query_vector: list[float],
+    top_k: int = 10,
+    *,
+    playlist_id: str | None = None,
+    playlist_type: str | None = None,
+    video_id: str | None = None,
+) -> list[dict[str, Any]] | None:
     """Rank chunks by cosine similarity inside the database.
 
     Postgres only — returns None on SQLite so the caller keeps its numpy path.
+    Scope filters are applied before LIMIT.
     """
     if not dbconn.is_postgres():
         return None
     literal = encode_embedding(query_vector)
+    where, params = _embedding_scope_sql(
+        playlist_id=playlist_id, playlist_type=playlist_type, video_id=video_id
+    )
     with _connect() as conn:
         rows = conn.execute(
-            """
-            SELECT video_id, chunk_text, chunk_title, timestamp_seconds,
-                   1 - (embedding <=> ?::vector) AS score
-            FROM embeddings
-            ORDER BY embedding <=> ?::vector
+            f"""
+            SELECT e.video_id, e.chunk_index, e.chunk_text, e.chunk_title,
+                   e.timestamp_seconds, v.title AS video_title, v.channel_name,
+                   v.playlist_id, v.playlist_type,
+                   1 - (e.embedding <=> ?::vector) AS score
+            FROM embeddings e
+            JOIN videos v ON v.video_id = e.video_id
+            WHERE {where}
+            ORDER BY e.embedding <=> ?::vector
             LIMIT ?
             """,
-            (literal, literal, top_k),
+            [literal, *params, literal, top_k],
         ).fetchall()
         return [dict(row) for row in rows]
 
 
-def store_embeddings(video_id: str, chunks: list[dict]) -> None:
-    delete_embeddings(video_id)
+def lexical_search_embeddings(
+    query: str,
+    top_k: int = 10,
+    *,
+    playlist_id: str | None = None,
+    playlist_type: str | None = None,
+    video_id: str | None = None,
+) -> list[dict[str, Any]]:
+    """Parameterized substring search over saved insight chunk text."""
+    needle = f"%{query.strip()}%"
+    where, params = _embedding_scope_sql(
+        playlist_id=playlist_id, playlist_type=playlist_type, video_id=video_id
+    )
+    sql = f"""
+        SELECT e.video_id, e.chunk_index, e.chunk_text, e.chunk_title,
+               e.timestamp_seconds, v.title AS video_title, v.channel_name,
+               v.playlist_id, v.playlist_type
+        FROM embeddings e
+        JOIN videos v ON v.video_id = e.video_id
+        WHERE {where}
+          AND (e.chunk_text LIKE ? OR e.chunk_title LIKE ?)
+        LIMIT ?
+    """
     with _connect() as conn:
+        rows = conn.execute(sql, [*params, needle, needle, top_k]).fetchall()
+        return [dict(row) for row in rows]
+
+
+def store_embeddings(video_id: str, chunks: list[dict]) -> None:
+    """Compatibility wrapper — atomic replace of the auto index."""
+    replace_auto_index(
+        video_id,
+        chunks,
+        model=chunks[0].get("model", "") if chunks else "",
+        source_hash=chunks[0].get("source_hash", "") if chunks else "",
+        vector_dim=0,
+    )
+
+
+class IndexConflict(RuntimeError):
+    """A newer index generation already exists for this video."""
+
+
+def get_index_state(video_id: str, variant: str = "auto") -> dict[str, Any] | None:
+    with _connect() as conn:
+        row = conn.execute(
+            "SELECT * FROM index_state WHERE video_id = ? AND variant = ?",
+            (video_id, variant),
+        ).fetchone()
+        return dict(row) if row else None
+
+
+def record_index_error(video_id: str, error: str, variant: str = "auto") -> None:
+    now = datetime.now(timezone.utc).isoformat()
+    with _connect() as conn:
+        existing = conn.execute(
+            "SELECT generation FROM index_state WHERE video_id = ? AND variant = ?",
+            (video_id, variant),
+        ).fetchone()
+        if existing:
+            conn.execute(
+                "UPDATE index_state SET last_error = ?, status = CASE "
+                "WHEN status = 'current' THEN status ELSE 'error' END "
+                "WHERE video_id = ? AND variant = ?",
+                (error[:500], video_id, variant),
+            )
+        else:
+            conn.execute(
+                """
+                INSERT INTO index_state (
+                    video_id, variant, model, vector_dim, source_hash,
+                    expected_chunks, stored_chunks, status, last_success_at,
+                    last_error, generation
+                ) VALUES (?, ?, '', 0, '', 0, 0, 'error', '', ?, 0)
+                """,
+                (video_id, variant, error[:500]),
+            )
+        conn.commit()
+
+
+def replace_auto_index(
+    video_id: str,
+    chunks: list[dict],
+    *,
+    model: str,
+    source_hash: str,
+    vector_dim: int,
+    expected_generation: int | None = None,
+) -> int:
+    """Delete + insert auto embeddings and index_state in one transaction."""
+    if not chunks:
+        raise ValueError("replace_auto_index requires a complete chunk list")
+    now = datetime.now(timezone.utc).isoformat()
+    with _connect() as conn:
+        if dbconn.is_postgres():
+            conn.execute(
+                "SELECT video_id FROM videos WHERE video_id = ? FOR UPDATE",
+                (video_id,),
+            )
+        state = conn.execute(
+            "SELECT generation, source_hash FROM index_state "
+            "WHERE video_id = ? AND variant = 'auto'",
+            (video_id,),
+        ).fetchone()
+        current_gen = int(state["generation"]) if state else 0
+        if expected_generation is not None and current_gen != expected_generation:
+            raise IndexConflict(
+                f"stale promotion rejected for {video_id}: "
+                f"expected {expected_generation}, have {current_gen}"
+            )
+        new_gen = current_gen + 1
+        conn.execute("DELETE FROM embeddings WHERE video_id = ?", (video_id,))
         for chunk in chunks:
             conn.execute(
                 """
                 INSERT INTO embeddings
-                    (video_id, chunk_index, chunk_text, chunk_title, timestamp_seconds, embedding)
+                    (video_id, chunk_index, chunk_text, chunk_title,
+                     timestamp_seconds, embedding)
                 VALUES (?, ?, ?, ?, ?, ?)
                 """,
                 (
@@ -689,12 +885,58 @@ def store_embeddings(video_id: str, chunks: list[dict]) -> None:
                     encode_embedding(chunk["embedding"]),
                 ),
             )
+        conn.execute(
+            """
+            INSERT INTO index_state (
+                video_id, variant, model, vector_dim, source_hash,
+                expected_chunks, stored_chunks, status, last_success_at,
+                last_error, generation
+            ) VALUES (?, 'auto', ?, ?, ?, ?, ?, 'current', ?, '', ?)
+            ON CONFLICT(video_id, variant) DO UPDATE SET
+                model = excluded.model,
+                vector_dim = excluded.vector_dim,
+                source_hash = excluded.source_hash,
+                expected_chunks = excluded.expected_chunks,
+                stored_chunks = excluded.stored_chunks,
+                status = excluded.status,
+                last_success_at = excluded.last_success_at,
+                last_error = '',
+                generation = excluded.generation
+            """,
+            (
+                video_id,
+                model,
+                vector_dim,
+                source_hash,
+                len(chunks),
+                len(chunks),
+                now,
+                new_gen,
+            ),
+        )
         conn.commit()
+    return new_gen
 
 
-def get_all_embeddings() -> list[dict[str, Any]]:
+def get_all_embeddings(
+    *,
+    playlist_id: str | None = None,
+    playlist_type: str | None = None,
+    video_id: str | None = None,
+) -> list[dict[str, Any]]:
+    where, params = _embedding_scope_sql(
+        playlist_id=playlist_id, playlist_type=playlist_type, video_id=video_id
+    )
     with _connect() as conn:
         rows = conn.execute(
-            "SELECT video_id, chunk_text, chunk_title, timestamp_seconds, embedding FROM embeddings"
+            f"""
+            SELECT e.video_id, e.chunk_index, e.chunk_text, e.chunk_title,
+                   e.timestamp_seconds, e.embedding, v.title AS video_title,
+                   v.channel_name, v.playlist_id, v.playlist_type
+            FROM embeddings e
+            JOIN videos v ON v.video_id = e.video_id
+            WHERE {where}
+            """,
+            params,
         ).fetchall()
         return [dict(row) for row in rows]

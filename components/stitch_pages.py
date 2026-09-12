@@ -478,6 +478,19 @@ _CSS += """
   width: 4px; height: 4px; border-radius: 50%; background: var(--t4);
 }
 .ins.pri .ins-pts li::before { background: var(--acc-2); }
+/* Reading view: reveal an insight when chosen, keep the outline quiet. */
+details.ins, details.ins.pri { background:transparent; border:0; border-bottom:1px solid var(--line);
+  border-radius:0; box-shadow:none; padding:16px 0; margin:0; }
+details.ins > summary { cursor:pointer; list-style:none; margin:0; align-items:center; }
+details.ins > summary::-webkit-details-marker { display:none; }
+details.ins > summary::after { content:'+'; color:var(--t2); font-size:18px; margin-left:8px; }
+details.ins[open] > summary::after { content:'−'; }
+details.ins > summary:focus-visible, .reading-meta > summary:focus-visible {
+  outline:2px solid var(--acc-t); outline-offset:4px; }
+details.ins[open] > summary { margin-bottom:14px; }
+details.ins .ins-pts { padding-left:18px; }
+.reading-meta { margin:24px 0 8px; color:var(--t2); font-size:12px; }
+.reading-meta > summary { cursor:pointer; padding:8px 0; }
 .tags { display: flex; flex-wrap: wrap; gap: 5px; margin: 11px 0 0 30px; }
 .tag {
   font-size: 10px; font-weight: 600; letter-spacing: .05em; text-transform: uppercase;
@@ -850,6 +863,9 @@ def _icon(name: str, cls: str = "") -> str:
 
 _RAIL_ITEMS = (
     ("library", "video_library", "Library"),
+    ("search", "search", "Search"),
+    ("saved", "bookmark", "Saved"),
+    ("chat", "forum", "Chat"),
     ("queue", "pending_actions", "Queue"),
     ("playlists", "folder_open", "Playlists"),
     ("settings", "tune", "Settings"),
@@ -866,7 +882,8 @@ def _rail(active: str) -> str:
         )
     return (
         '<nav class="rail">'
-        '<div class="mark">IE</div>'
+        '<button class="mark" aria-label="Home" title="Home" onclick="goPage(\'home\')" '
+        'style="cursor:pointer;border:0">IE</button>'
         f"{items}"
         '<div class="rail-sp"></div>'
         '</nav>'
@@ -965,7 +982,7 @@ def _video_row(video: dict, selected: bool) -> str:
         '<span class="vmeta">'
         f'<span class="vtitle">{title}</span>'
         f'<span class="vsub"><span class="ch">{channel}</span></span>'
-        f'<span class="vsub">{_status_badge(status)}</span>'
+        + (f'<span class="vsub">{_status_badge(status)}</span>' if status != db.STATUS_DONE else '') +
         "</span></button>"
     )
 
@@ -1014,11 +1031,11 @@ def _insight_card(idx: int, cluster: dict, video_id: str) -> str:
     tags_html = f'<div class="tags">{tags}</div>' if tags else ""
 
     return (
-        f'<article class="ins{" pri" if priority else ""}">'
-        f'<div class="ins-h"><span class="ins-n">{idx:02d}</span>'
-        f"<h4>{topic}</h4>{stamp}</div>"
+        '<details class="ins">'
+        '<summary class="ins-h">'
+        f"<h4>{topic}</h4>{stamp}</summary>"
         f'<ul class="ins-pts">{body}</ul>{tags_html}'
-        "</article>"
+        "</details>"
     )
 
 
@@ -1112,7 +1129,11 @@ def _insights_pane(video: dict, structured: dict) -> str:
             "structured points for this video.</p></div>"
         )
 
-    return tldr + _agenda_chips(video) + cards + _cost_note(video)
+    extras = _agenda_chips(video) + _cost_note(video)
+    return tldr + cards + (
+        '<details class="reading-meta"><summary>Processing details</summary>'
+        + extras + '</details>' if extras else ''
+    )
 
 
 def _timeline_pane(video: dict, structured: dict) -> str:
@@ -1324,17 +1345,15 @@ def _resources_pane(structured: dict, research: dict) -> str:
     return out
 
 
-def _chat_pane() -> str:
+def _chat_pane(video_id: str = "") -> str:
+    vid = _e(video_id or "")
     return (
         '<div class="empty" style="padding-top:40px">' + _icon("forum") +
         "<h3>Ask this video anything</h3>"
-        "<p>Chat runs against the transcript embeddings for this video. It is not wired "
-        "into this view yet — the box below is a preview of the interface.</p></div>"
-        '<div class="composer" style="border:0;background:none;padding:0;margin-top:8px">'
-        '<div class="wrap"><textarea rows="1" disabled '
-        'placeholder="Chat is not connected yet…"></textarea>'
-        '<button class="send" disabled aria-label="Send">' + _icon("send", "fill") + "</button>"
-        "</div></div>"
+        "<p>Open the native Chat page to ask a cited question about this video.</p>"
+        f'<button class="btn btn-primary" onclick="_nav({{page:\'chat\',vid:\'{vid}\'}})">'
+        "Open Chat</button>"
+        "</div>"
     )
 
 
@@ -1395,7 +1414,7 @@ def _detail_pane(video: dict) -> str:
         "timeline": _timeline_pane(video, structured),
         "research": _research_pane(video, research),
         "resources": _resources_pane(structured, research),
-        "chat": _chat_pane(),
+        "chat": _chat_pane(vid),
     }
     body = "".join(
         f'<div class="pane" data-pane="{key}"{"" if i == 0 else " hidden"}>{panes[key]}</div>'
@@ -1597,7 +1616,7 @@ def render_library_page(
     """
     selected = next((v for v in videos if v["video_id"] == selected_id), None) if selected_id else None
     if selected is None and videos:
-        selected = videos[0]
+        selected = next((v for v in videos if v.get("status") == db.STATUS_DONE), videos[0])
     selected_id = selected["video_id"] if selected else None
     # `videos` may be light rows (no structured_insights/research_data), so pull
     # the complete record for the one video whose detail pane we actually draw.
@@ -1659,7 +1678,7 @@ def render_library_page(
         '<span class="mono dim"><span id="shown">' + str(len(videos)) + "</span> of "
         + str(len(videos)) + "</span></div>"
         '<div class="search">' + _icon("search") +
-        '<input id="q" class="input" type="search" placeholder="Filter by title or channel…" '
+        '<input id="q" class="input" type="search" placeholder="Filter videos" '
         'autocomplete="off" oninput="onSearch(this)"/></div>'
         f'<div class="filters">{chips}</div>'
         '<div class="seg" role="group" aria-label="Type">'
