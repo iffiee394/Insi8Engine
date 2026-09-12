@@ -1,7 +1,7 @@
 # Build status — personal knowledge system
 
 Updated: 2026-09-12.
-Current state: **Release A/B feature code is implemented, but full release acceptance remains incomplete. The minimal homepage and reading UI have now been checked in the local browser, including a 390px homepage. The earlier AppTest/live-provider walkthrough is partial integration evidence; it does not establish hosted readiness or PostgreSQL recovery.**
+Current state: **Release A/B feature code is implemented and deployed to Streamlit at https://insi8engine-33.streamlit.app/. Full release acceptance remains incomplete. The minimal homepage and reading UI have been checked locally, and hosted Home, Library, Saved, Search, Ask library, and Add video load without tracebacks. Live provider search/chat should be retested after the API key is replaced. PostgreSQL recovery remains unverified.**
 Baseline commit reviewed: `76f6a63`.
 
 ## Evidence already collected
@@ -11,7 +11,7 @@ Baseline commit reviewed: `76f6a63`.
 - Failed video `JpaK3F7fLHE` classified as **quota**. Recoverable, but not auto-retried (would spend provider credits).
 - Additive migrations applied to the configured PostgreSQL store via normal `db.init_db()`; schema_version 4. Video/playlist/embedding counts unchanged after migration.
 - Disposable PostgreSQL target: **blocked** (`TEST_DATABASE_URL` unset). SQLite migration/index/save/chat tests were not substituted as PostgreSQL evidence.
-- Hosted browser behavior, access controls, backups, independent scheduling, and latency were not verified.
+- Hosted Home, Library, Saved, Search, Ask library, and Add video pages loaded on Streamlit after deploy commit `9717276`; access controls, backups, independent scheduling, provider calls after key rotation, and latency were not fully verified.
 - Existing unrelated untracked visual assets and content deliverables were left untouched.
 
 ## Execution checklist
@@ -99,7 +99,7 @@ Repair (dry-run default):
 
 ## Remaining / next exact action
 
-1. Finish the remaining acceptance gates; local homepage and recent-video navigation have been inspected in a real browser, but a full hosted search/chat/save/download walkthrough remains unverified.
+1. Finish the remaining acceptance gates; hosted core pages load, but a full hosted search/chat/save/download walkthrough remains unverified after API key rotation.
 2. Do not bulk-repair the 47 unverified embeddings until you choose a bounded `--apply` batch.
 3. Failed video `JpaK3F7fLHE` is a quota error — retry only that video when quota is available.
 4. Disposable PostgreSQL migration/index evidence is still blocked.
@@ -116,3 +116,10 @@ Repair (dry-run default):
 - Local browser: homepage desktop and 390×844 layout inspected; no horizontal overflow at 390px. Recent-video link opened the correct selected video. Browser verification is local, not hosted deployment evidence.
 - Read-only PostgreSQL health unchanged: 66 videos (65 done/1 quota failure); 47 eligible structured sources, all 47 embedding models unverified; 18 completed videos ineligible because structured insights are empty. No database repair or provider model change in this UI task.
 - Corrected top-level completion claims: PostgreSQL restore was never proven by the SQLite restore. Full Release A/B gates remain open; Release C is not started.
+
+### 2026-09-12 — Streamlit deployment
+
+- Commit `9717276` pushed to `origin/main`; Streamlit app woke successfully at `https://insi8engine-33.streamlit.app/`.
+- Hosted pages checked without tracebacks: Home, Library, Saved, Search, Ask library, Add video.
+- Hosted Library read live PostgreSQL data: 66 videos, 65 processed, 1 failed, and the collapsed reading interface rendered.
+- Not retested yet: live hosted provider calls after API key rotation, download bytes, private access restrictions, backups/recovery, and unattended worker behavior.
