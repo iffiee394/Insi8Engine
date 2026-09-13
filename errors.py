@@ -43,6 +43,15 @@ def classify_error(error_message: str, provider: str = "") -> dict:
     msg = str(error_message or "")
     lower = msg.lower()
 
+    if ("403" in lower and ("download" in lower or "youtube" in lower)) or "youtube download blocked" in lower:
+        return {
+            "title": "YouTube blocked the download",
+            "message": "The server could not retrieve this video's audio.",
+            "fix": "Changing an AI API key will not fix this. Open 'Use a transcript instead' below, "
+                   "save the video's transcript, then click Process video.",
+            "raw": error_message,
+        }
+
     if "429" in lower or "rate limit" in lower or "quota" in lower:
         if "groq" in lower or provider == "groq":
             return {**ERROR_MAP["429"]["groq"], "raw": error_message}
@@ -51,7 +60,7 @@ def classify_error(error_message: str, provider: str = "") -> dict:
     if "empty transcript" in lower or "no transcript" in lower or "captions" in lower:
         return {**ERROR_MAP["no_captions"], "raw": error_message}
 
-    if "private" in lower or "unavailable" in lower or "age" in lower:
+    if "private video" in lower or "video unavailable" in lower or "age-restricted" in lower:
         return {**ERROR_MAP["private_video"], "raw": error_message}
 
     if "json" in lower and ("parse" in lower or "decode" in lower or "could not parse" in lower):

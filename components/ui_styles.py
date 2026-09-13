@@ -3,6 +3,18 @@
 from __future__ import annotations
 
 
+def baseline_css() -> str:
+    """Only style the active native UI; avoid legacy iframe layout overrides."""
+    return """<style>
+    .stApp { background:#111221; color:#E8E8F0; }
+    header[data-testid="stHeader"], footer, #MainMenu { display:none; }
+    [data-testid="stMainBlockContainer"] { padding-top:0; }
+    [data-baseweb="select"] div[value] {
+        line-height:1.5 !important; font-size:14px !important; max-height:none !important;
+    }
+    </style>"""
+
+
 def global_css() -> str:
     return """
     <style>

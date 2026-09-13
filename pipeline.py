@@ -9,6 +9,8 @@ from urllib.parse import urlparse
 
 from groq import Groq
 from youtube_transcript_api import YouTubeTranscriptApi
+from youtube_transcript_api._errors import NoTranscriptFound
+from transcriber import AudioDownloadError
 
 import config
 import db
@@ -48,13 +50,11 @@ def _fetch_caption_segment_dicts(video_id: str) -> list[dict] | None:
         transcript = None
         try:
             transcript = api.fetch(video_id, languages=("en", "en-US", "en-GB"))
-        except Exception:
-            try:
-                transcript_list = api.list(video_id)
-                transcript = transcript_list.find_generated_transcript(["en"]).fetch()
-            except Exception:
-                transcript_list = api.list(video_id)
-                transcript = next(iter(transcript_list)).fetch()
+        except NoTranscriptFound:
+            # Only retry language selection. An IP block or network error is
+            # not evidence that another language request will work.
+            transcript_list = api.list(video_id)
+            transcript = next(iter(transcript_list)).fetch()
 
         segments: list[dict] = []
         for seg in transcript:
@@ -73,7 +73,8 @@ def _fetch_caption_segment_dicts(video_id: str) -> list[dict] | None:
                     end = None
             segments.append({"start": start, "end": end, "text": text.strip()})
         return segments or None
-    except Exception:
+    except Exception as exc:
+        logger.warning("Caption retrieval failed for %s (%s)", video_id, type(exc).__name__)
         return None
 
 
@@ -156,6 +157,9 @@ def fetch_transcript_data(video_id: str, *, persist: bool = True, refresh: bool 
                 if persist:
                     _persist_transcript(video_id, data)
                 return data
+        except AudioDownloadError:
+            # Both providers need the same source audio; do not download twice.
+            raise
         except Exception:
             pass
 

@@ -1,5 +1,11 @@
 # Specs plan — InsightEngine personal knowledge system
 
+> **Priority override — 2026-09-13:** Baseline speed and dependable ingestion come first.
+> The release ordering below is historical. Do not expand Chat, Saved, agents, or other
+> knowledge features until the gates in [Baseline speed plan](docs/knowledge-system/BASELINE_SPEED_PLAN.md)
+> pass on the deployed site. Existing features may remain available; their presence
+> is not evidence that the baseline is ready.
+
 Prepared: 2026-09-12. Baseline commit: `76f6a63`.
 Status: implementation specification; application changes have not been built by this document.
 

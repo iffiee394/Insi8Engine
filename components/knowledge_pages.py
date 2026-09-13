@@ -13,6 +13,7 @@ import db
 import dbcache
 import config
 import knowledge_store
+from components.navigation import navigate, page_button
 from export import (
     export_collection_markdown,
     export_saved_item_markdown,
@@ -44,6 +45,7 @@ def native_page_css() -> str:
     [data-testid="stForm"] { border: 0; padding: 0; }
     [data-testid="stExpander"] { border-color: #2A2A42; }
     button { box-shadow: none !important; }
+    .st-key-site_nav { padding:18px 0 12px; border-bottom:1px solid #2A2A42; margin-bottom:24px; }
     .ie-nav { display:flex; align-items:center; gap:24px; min-height:78px;
         border-bottom:1px solid #2A2A42; margin-bottom:28px; font-size:13px; }
     .ie-nav a { color:#A9ABB9; text-decoration:none; white-space:nowrap; }
@@ -86,23 +88,15 @@ def native_page_css() -> str:
 
 
 def render_native_nav(active: str) -> None:
-    links = []
-    for page, label in [("search", "Search"), ("library", "Library"), ("saved", "Saved")]:
-        current = ' aria-current="page"' if active == page else ''
-        links.append(f'<a href="?page={page}" target="_self"{current}>{label}</a>')
-    st.markdown(
-        '<nav class="ie-nav" aria-label="Main navigation">'
-        '<a class="ie-brand" href="?page=home" target="_self">InsightEngine</a>'
-        + ''.join(links)
-        + '<details><summary aria-label="More pages">More</summary><div>'
-        '<a href="?page=chat" target="_self">Ask library</a>'
-        '<a href="?page=queue" target="_self">Queue</a>'
-        '<a href="?page=playlists" target="_self">Playlists</a>'
-        '<a href="?page=settings" target="_self">Settings</a>'
-        '</div></details>'
-        '<a class="ie-add" href="?page=add" target="_self">+ Add video</a></nav>',
-        unsafe_allow_html=True,
-    )
+    with st.container(horizontal=True, vertical_alignment="center", key="site_nav"):
+        for page, label in [("home", "InsightEngine"), ("library", "Library"),
+                            ("search", "Search"), ("add", "+ Add video")]:
+            page_button(label, page, key=f"nav_{page}")
+        with st.popover("More", key=f"more_{active}"):
+            for page, label in [("queue", "Queue"), ("playlists", "Playlists"),
+                                ("settings", "Settings"), ("saved", "Saved"),
+                                ("chat", "Ask library")]:
+                page_button(label, page, key=f"nav_{page}")
 
 
 def render_home_page(videos: list[dict]) -> None:
@@ -123,22 +117,15 @@ def render_home_page(videos: list[dict]) -> None:
         st.query_params.clear()
         st.query_params["page"] = "search"
         st.rerun()
-    st.markdown('<p class="ie-secondary"><a href="?page=chat" target="_self">'
-                'Or ask your library a question ↗</a></p>', unsafe_allow_html=True)
     recent = sorted((v for v in videos if v.get("status") == db.STATUS_DONE),
                     key=lambda v: v.get("processed_at") or v.get("added_at") or "", reverse=True)[:4]
     if recent:
-        rows = ['<div class="ie-section"><span>Recently added</span>'
-                '<a href="?page=library" target="_self">View library →</a></div>']
+        st.caption("Recently added")
         for video in recent:
             vid = video["video_id"]
             if not re.fullmatch(r"[\w-]{11}", vid):
                 continue
-            rows.append(f'<a class="ie-recent" href="?page=library&amp;vid={vid}" target="_self">'
-                        f'<span><strong>{html.escape(video.get("title") or "Untitled video")}</strong>'
-                        f'<small>{html.escape(video.get("channel_name") or "YouTube")}</small></span>'
-                        '<span class="ie-arrow" aria-hidden="true">↗</span></a>')
-        st.markdown(''.join(rows), unsafe_allow_html=True)
+            page_button(video.get("title") or "Untitled video", "library", video_id=vid)
     else:
         st.caption("Add your first video to start your library.")
 
@@ -164,7 +151,7 @@ def render_add_page() -> None:
                     if not ok:
                         st.info(message)
                 st.success(result.message)
-                st.link_button("Open library", f"?page=library&vid={result.video_id}")
+                page_button("Open library", "library", video_id=result.video_id)
             else:
                 st.error(result.message)
 
@@ -180,7 +167,12 @@ def render_profile_settings_page() -> None:
                            ("Anthropic", "ANTHROPIC_API_KEY"), ("Groq", "GROQ_API_KEY"),
                            ("Tavily", "TAVILY_API_KEY")]:
             st.caption(f"{label} · {'Configured' if getattr(config, key, '') else 'Not configured'}")
-        st.markdown('[Usage and system details](?page=system)')
+        st.caption("Configured means a key is present; it does not confirm quota or validity.")
+        st.markdown("To replace a key: [Streamlit workspace](https://share.streamlit.io) → "
+                    "app menu (⋮) → Settings → Secrets. Change only the relevant key, "
+                    "save, then reboot the app to reload it.")
+        st.code('GEMINI_API_KEY = "your-new-key"', language="toml")
+        page_button("Usage and system details", "system")
 
 
 def _safe_filename(name: str, suffix: str = ".md") -> str:

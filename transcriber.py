@@ -15,6 +15,26 @@ import config
 CHUNK_SECONDS = 600  # 10-minute chunks for long audio
 
 
+class AudioDownloadError(RuntimeError):
+    """Fetching the source failed; switching AI providers cannot fix this."""
+
+
+def youtube_runtime_options() -> dict:
+    """Enable installed supported runtimes explicitly, including Node."""
+    runtimes = {}
+    for name in ("deno", "node"):
+        path = shutil.which(name)
+        if path:
+            runtimes[name] = {"path": path}
+    if "deno" not in runtimes:
+        try:
+            from deno import find_deno_bin
+            runtimes["deno"] = {"path": find_deno_bin()}
+        except (ImportError, FileNotFoundError):
+            pass
+    return runtimes
+
+
 def transcribe_file(media_path: Path | str) -> str:
     """Send a local video/audio file to Groq Whisper."""
     api_key = config.GROQ_API_KEY
@@ -78,20 +98,32 @@ def download_youtube_audio(video_id: str, output_dir: Path) -> Path:
             }
         ],
         "quiet": True,
-        "no_warnings": True,
+        "no_warnings": False,
+        "noplaylist": True,
+        "socket_timeout": 20,
+        "retries": 1,
+        "extractor_retries": 1,
+        "fragment_retries": 1,
+        "js_runtimes": youtube_runtime_options(),
     }
 
-    with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-        ydl.download([url])
+    try:
+        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+            ydl.download([url])
+    except yt_dlp.utils.DownloadError as exc:
+        if "403" in str(exc) or "sign in to confirm" in str(exc).lower():
+            raise AudioDownloadError(
+                "YouTube download blocked (403 / access challenge). The server could not "
+                "retrieve this video's audio. Changing the Gemini or Groq API key will not "
+                "fix this. Open Library > this video > Use a transcript instead."
+            ) from exc
+        raise AudioDownloadError(f"YouTube audio download failed: {exc}") from exc
 
     mp3_path = output_dir / f"{video_id}.mp3"
     if mp3_path.exists():
         return mp3_path
 
-    for f in output_dir.glob(f"{video_id}.*"):
-        return f
-
-    raise RuntimeError(f"yt-dlp did not produce an audio file for {video_id}")
+    raise AudioDownloadError(f"yt-dlp did not produce a complete MP3 file for {video_id}")
 
 
 def transcribe_youtube_audio(video_id: str) -> tuple[str, str]:

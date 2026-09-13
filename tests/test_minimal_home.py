@@ -42,9 +42,9 @@ class MinimalHomeTests(unittest.TestCase):
             self.assertFalse(app.exception)
             self.assertEqual(app.session_state["active_page"], "home")
             self.assertEqual(app.session_state["selected_id"], "donevideo01")
-            markup = " ".join(m.value for m in app.markdown)
-            self.assertIn("A useful idea", markup)
-            self.assertNotIn("Failed video", markup)
+            labels = [b.label for b in app.button]
+            self.assertIn("A useful idea", labels)
+            self.assertNotIn("Failed video", labels)
             self.assertEqual(len(app.text_input), 1)
             details.assert_not_called()
             search.assert_not_called()
@@ -55,7 +55,7 @@ class MinimalHomeTests(unittest.TestCase):
                    return_value=SearchResponse(status="empty")) as search:
             app = AppTest.from_function(shell).run()
             app.text_input[0].set_value("a useful idea")
-            app.button[0].click().run()
+            next(b for b in app.button if b.label == "Search" and b.key != "nav_search").click().run()
             self.assertFalse(app.exception)
             self.assertEqual(app.session_state["active_page"], "search")
             self.assertEqual(app.session_state["search_query"], "a useful idea")
@@ -72,6 +72,29 @@ class MinimalHomeTests(unittest.TestCase):
             self.assertFalse(app.exception)
             profile.assert_not_called()
             self.assertFalse(app.text_area)
+
+    def test_navigation_preserves_session_and_skips_library_read_on_add(self):
+        app = AppTest.from_function(shell).run()
+        app.session_state["search_query"] = "keep this search"
+        with patch("components.ui_shell.dbcache.list_videos_light") as listing:
+            app.button(key="nav_add").click().run()
+            self.assertFalse(app.exception)
+            self.assertEqual(app.session_state["active_page"], "add")
+            self.assertEqual(app.session_state["search_query"], "keep this search")
+            listing.assert_not_called()
+        app.button(key="nav_home").click().run()
+        self.assertFalse(app.exception)
+        self.assertEqual(app.session_state["active_page"], "home")
+
+    def test_recent_video_opens_native_library_and_renders_points(self):
+        video = {"video_id": "donevideo01", "title": "A useful idea", "status": "done",
+                 "structured_insights": '{"insights":[{"topic":"Test topic","points":["Useful detail"]}]}'}
+        with patch("components.baseline_pages.dbcache.get_video", return_value=video):
+            app = AppTest.from_function(shell).run()
+            app.button(key="open_library_donevideo01").click().run()
+            self.assertFalse(app.exception)
+            self.assertEqual(app.session_state["active_page"], "library")
+            self.assertIn("Useful detail", " ".join(m.value for m in app.markdown))
 
 
 if __name__ == "__main__":

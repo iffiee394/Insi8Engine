@@ -11,7 +11,7 @@ import streamlit as st
 
 import config
 from components.ui_shell import render_app
-from components.ui_styles import global_css
+from components.ui_styles import baseline_css
 from components import stitch_components as stitch
 import db
 from background_jobs import is_worker_running, start_poll_background, start_process_one_background
@@ -1219,7 +1219,7 @@ st.set_page_config(
     initial_sidebar_state="collapsed",
 )
 
-st.markdown(global_css(), unsafe_allow_html=True)
+st.markdown(baseline_css(), unsafe_allow_html=True)
 
 config_status = config.validate()
 if not config_status["ok"]:

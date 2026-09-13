@@ -1,6 +1,26 @@
 # Build status — personal knowledge system
 
-Updated: 2026-09-12.
+Updated: 2026-09-13.
+
+## Baseline repair — 2026-09-13
+
+Priority: speed and reliable import now precede further feature work. See
+[Baseline speed plan](BASELINE_SPEED_PLAN.md); this supersedes the older release ordering.
+
+- The latest repair commit replaces the active iframe screens and reload-based
+  navigation with native controls. Add and Settings no longer fetch all library metadata.
+- 24 tests pass, including session-preserving navigation, visible insight points,
+  bypassing retrieval with stored transcripts, and stopping duplicate download fallbacks.
+- Local browser checked Home, Add, Settings, mobile Home/Library and the actual
+  failed-video recovery view.
+- Actual audio retrieval of `JpaK3F7fLHE` still returned HTTP 403 with EJS installed and
+  Node enabled. Automatic download recovery is **not verified**; no model API calls were
+  made by this diagnostic. The new transcript recovery route is available in local code.
+- Hosted deployment verified at https://insi8engine-33.streamlit.app/ after the repair:
+  Home, Library, Settings and the connected-services instructions load.
+  Full hosted latency gates are still pending measurement.
+
+The earlier deployment and release evidence below is historical.
 Current state: **Release A/B feature code is implemented and deployed to Streamlit at https://insi8engine-33.streamlit.app/. Full release acceptance remains incomplete. The minimal homepage and reading UI have been checked locally, and hosted Home, Library, Saved, Search, Ask library, and Add video load without tracebacks. Live provider search/chat should be retested after the API key is replaced. PostgreSQL recovery remains unverified.**
 Baseline commit reviewed: `76f6a63`.
 
@@ -8,7 +28,8 @@ Baseline commit reviewed: `76f6a63`.
 
 - Live read-only PostgreSQL health (2026-09-12): 66 videos, 65 done, 1 failed, 2 playlists.
 - 426 embeddings across 47 videos. 18 done videos are **ineligible** (empty structured insights), not missing embeddings of usable insight text. 47 indexed videos are unverified/unknown-model until bounded repair.
-- Failed video `JpaK3F7fLHE` classified as **quota**. Recoverable, but not auto-retried (would spend provider credits).
+- Earlier failed video `JpaK3F7fLHE` was classified as quota; its current recorded failure
+  is YouTube audio download HTTP 403 (verified 2026-09-13).
 - Additive migrations applied to the configured PostgreSQL store via normal `db.init_db()`; schema_version 4. Video/playlist/embedding counts unchanged after migration.
 - Disposable PostgreSQL target: **blocked** (`TEST_DATABASE_URL` unset). SQLite migration/index/save/chat tests were not substituted as PostgreSQL evidence.
 - Hosted Home, Library, Saved, Search, Ask library, and Add video pages loaded on Streamlit after deploy commit `9717276`; access controls, backups, independent scheduling, provider calls after key rotation, and latency were not fully verified.

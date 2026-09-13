@@ -1,4 +1,4 @@
-"""InsightEngine shell — routes to Stitch iframe pages (Option D)."""
+"""InsightEngine routes. Navigation stays within the Streamlit session."""
 
 from __future__ import annotations
 
@@ -17,7 +17,7 @@ from components.knowledge_pages import (
     render_saved_page,
     render_search_page,
 )
-from components.stitch_pages import (
+from components.baseline_pages import (
     render_library_page,
     render_playlists_page,
     render_queue_page,
@@ -50,7 +50,8 @@ def _read_query_params() -> None:
     vid = params.get("vid", "")
     if vid:
         st.session_state.selected_id = vid
-        if page == "chat":
+        if page == "chat" and (st.session_state.get("chat_scope_type") != "video"
+                               or st.session_state.get("chat_scope_id") != vid):
             st.session_state.chat_scope_type = "video"
             st.session_state.chat_scope_id = vid
             st.session_state.chat_conversation_id = None
@@ -120,7 +121,8 @@ def render_app(ctx: dict) -> None:
     # Light rows: the list/queue views never touch the big JSON columns, and
     # pulling them for all videos cost ~3MB and several seconds per render.
     # Cached, so a rerun costs no round-trip (see dbcache for invalidation).
-    all_videos = dbcache.list_videos_light()
+    page = st.session_state.active_page
+    all_videos = dbcache.list_videos_light() if page in {"home", "library", "queue", "playlists"} else []
     if st.session_state.selected_id is None and all_videos:
         first = next((v for v in all_videos if v.get("status") == db.STATUS_DONE), all_videos[0])
         st.session_state.selected_id = first["video_id"]
@@ -130,7 +132,7 @@ def render_app(ctx: dict) -> None:
 
     # Keep the 3s worker tick off native pages so Search/Saved/Chat can scroll
     # and so AppTest/acceptance runs are not blocked by a repeating fragment.
-    if page in {"library", "queue", "playlists", "system"}:
+    if page in {"library", "queue"} and any(v.get("status") == db.STATUS_PROCESSING for v in all_videos):
 
         @st.fragment(run_every=3)
         def _queue_tick() -> None:
