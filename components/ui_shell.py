@@ -19,11 +19,17 @@ from components.future_pages import (
     render_saved_page,
     render_search_page,
 )
-from components.baseline_pages import (
+# The full dashboard (video list + detail pane with Insights / Timeline /
+# Research / Resources, usage and profile) is the Stitch UI. The stripped-back
+# native pages remain available at ?page=simple.
+from components.stitch_pages import (
     render_library_page,
     render_playlists_page,
     render_queue_page,
     render_settings_page,
+)
+from components.baseline_pages import (
+    render_library_page as render_simple_library_page,
 )
 from ingest import ingest_pasted_url
 
@@ -43,6 +49,7 @@ def _read_query_params() -> None:
         "saved",
         "chat",
         "export",
+        "simple",
     }
 
     page = params.get("page", "")
@@ -126,7 +133,7 @@ def render_app(ctx: dict) -> None:
     page = st.session_state.active_page
     if page == "home":  # legacy entry point; the library is the home now
         page = st.session_state.active_page = "library"
-    all_videos = dbcache.list_videos_light() if page in {"library", "queue", "playlists"} else []
+    all_videos = dbcache.list_videos_light() if page in {"library", "queue", "playlists", "simple"} else []
     if st.session_state.selected_id is None and all_videos:
         first = next((v for v in all_videos if v.get("status") == db.STATUS_DONE), all_videos[0])
         st.session_state.selected_id = first["video_id"]
@@ -136,7 +143,7 @@ def render_app(ctx: dict) -> None:
 
     # Keep the 3s worker tick off native pages so Search/Saved/Chat can scroll
     # and so AppTest/acceptance runs are not blocked by a repeating fragment.
-    if page in {"library", "queue"} and any(v.get("status") == db.STATUS_PROCESSING for v in all_videos):
+    if page in {"library", "queue", "simple"} and any(v.get("status") == db.STATUS_PROCESSING for v in all_videos):
 
         @st.fragment(run_every=3)
         def _queue_tick() -> None:
@@ -171,6 +178,9 @@ def render_app(ctx: dict) -> None:
         return
     if page == "export":
         render_export_page()
+        return
+    if page == "simple":
+        render_simple_library_page(all_videos, selected_id=st.session_state.get("selected_id"))
         return
 
     if page == "system":

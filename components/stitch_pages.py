@@ -868,7 +868,7 @@ _RAIL_ITEMS = (
     ("chat", "forum", "Chat"),
     ("queue", "pending_actions", "Queue"),
     ("playlists", "folder_open", "Playlists"),
-    ("settings", "tune", "Settings"),
+    ("system", "tune", "Settings"),
 )
 
 
@@ -2064,8 +2064,8 @@ def render_settings_page() -> None:
         '<label class="switch"><input type="checkbox" id="s-personalize"'
         f'{" checked" if personalize else ""}/><span class="track"></span></label></div>'
         '<div style="display:flex;gap:8px;margin-top:14px">'
-        '<button class="btn btn-primary" onclick="saveProfile()">Save changes</button>'
-        '<button class="btn" onclick="location.reload()">Discard</button></div>'
+        "<button class=\"btn btn-primary\" onclick=\"goPage('settings')\">Edit profile</button>"
+        '<button class="btn" onclick="location.reload()">Refresh</button></div>'
         "</section>"
         '<section class="set-sec"><h3>API keys</h3>'
         '<p class="muted" style="font-size:12.5px;margin-bottom:12px">Keys are read from the '

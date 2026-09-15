@@ -25,14 +25,21 @@ insights in the library, whenever.**
 Everything else is deliberately out of the way until that loop is fast and
 dependable.
 
-## What the interface does now
+## What the interface is
 
-- The app opens on **Library**. No search box in the way of the content.
-- Videos are a scannable list, not a dropdown, so the library can be browsed.
-- Insights render **open** — no click per topic. Timestamps are plain links.
-- Supporting material (resources, technical error detail) stays folded.
-- Navigation is **Library · Playlists · + Add video**, with Queue and Settings
-  under More. Five destinations, down from nine.
+The full **Stitch dashboard** (`components/stitch_pages.py`): video list with
+thumbnails and filters on the left, detail pane on the right with Insights,
+Timeline, Research and Resources, plus the settings view carrying profile,
+usage and API-key status.
+
+A stripped-back native library was tried and rejected as too plain. It is kept
+at `?page=simple` (`components/baseline_pages.py`) and is still the fastest
+view, since it avoids the iframe and its reload-based navigation.
+
+Known trade-off of the Stitch UI: navigation goes through query parameters and
+reloads the page, which is slower than the native pages and was the reason the
+native ones were built. Worth revisiting only if it becomes annoying in daily
+use.
 
 ## Deferred, not deleted
 

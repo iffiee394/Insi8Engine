@@ -69,6 +69,28 @@ Repair (dry-run default):
 
 ## Record each completed task here
 
+### 2026-09-15 — Full dashboard restored; dropped-connection bug fixed
+
+- The minimal native library was rejected as too plain. `library`, `queue` and
+  `playlists` route back to the Stitch dashboard; the native library remains at
+  `?page=simple`. Nothing was rebuilt — `components/stitch_pages.py` was intact
+  and already used the cached reads and light rows.
+- The rail's gear now opens the full settings view (profile + usage + API keys)
+  instead of the bare profile form. Its Save button posted personal fields
+  through the URL, which is disabled for privacy, so it now opens the working
+  native editor instead.
+- **Bug found and fixed:** `?page=system` rendered blank. Supabase's pooler
+  closes idle connections; the query failed with "server closed the connection
+  unexpectedly", and `_PgConnection.__exit__` then called rollback on the dead
+  socket, raising `InterfaceError` over the original error. `dbconn.py` now
+  re-dials a dropped connection and retries — but only at the start of a
+  transaction, since replaying a statement that may already have applied is not
+  safe — and `__exit__` never raises over the original exception.
+- Verified by closing a live connection underneath the thread-local: both
+  `list_videos` and `get_video` recovered.
+- Tests: 24 pass. Local browser: dashboard, video switching with thumbnails,
+  and the settings view.
+
 ### 2026-09-15 — Scope narrowed to the core loop; search/chat deferred
 
 - Owner's scope: curate a playlist, add videos, spend quota on insights, read

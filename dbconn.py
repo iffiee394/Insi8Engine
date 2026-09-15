@@ -54,31 +54,98 @@ def placeholder_to_pg(sql: str) -> str:
     return "".join(out)
 
 
+def _dropped(exc: Exception) -> bool:
+    """Is this the pooler having closed an idle connection underneath us?"""
+    import psycopg2
+
+    if not isinstance(exc, (psycopg2.OperationalError, psycopg2.InterfaceError)):
+        return False
+    text = str(exc).lower()
+    return ("closed the connection" in text or "connection already closed" in text
+            or "server closed" in text or "terminating connection" in text
+            or "connection not open" in text)
+
+
+def _discard() -> None:
+    """Forget this thread's connection so the next call dials a fresh one."""
+    conn = getattr(_local, "conn", None)
+    _local.conn = None
+    if conn is not None:
+        try:
+            conn._raw.close()
+        except Exception:
+            pass
+
+
 class _PgConnection:
-    """sqlite3.Connection-shaped wrapper over a psycopg2 connection."""
+    """sqlite3.Connection-shaped wrapper over a psycopg2 connection.
+
+    Supabase's pooler closes connections that have been idle, which for a
+    dashboard left open in a tab is the normal case rather than an edge case.
+    A dropped connection is therefore re-dialled and the statement retried,
+    but only at the start of a transaction — replaying a statement that may
+    already have applied is not safe.
+    """
 
     def __init__(self, raw: Any) -> None:
         self._raw = raw
+        self._dirty = False  # a statement has run since the last commit/rollback
+
+    def _cursor(self):
+        from psycopg2.extras import RealDictCursor
+
+        return self._raw.cursor(cursor_factory=RealDictCursor)
 
     def execute(self, sql: str, params: tuple | list = ()) -> Any:
-        from psycopg2.extras import RealDictCursor
-
-        cur = self._raw.cursor(cursor_factory=RealDictCursor)
-        cur.execute(placeholder_to_pg(sql), tuple(params))
-        return cur
+        statement = placeholder_to_pg(sql)
+        try:
+            cur = self._cursor()
+            cur.execute(statement, tuple(params))
+            self._dirty = True
+            return cur
+        except Exception as exc:
+            if not _dropped(exc):
+                self._dirty = True
+                raise
+            # Mid-transaction we cannot know what applied, so surface it.
+            if self._dirty:
+                _discard()
+                raise
+            _discard()
+            fresh = connect()
+            cur = fresh._cursor()
+            cur.execute(statement, tuple(params))
+            fresh._dirty = True
+            # Adopt the new socket so the caller's `with` block stays valid.
+            self._raw = fresh._raw
+            self._dirty = True
+            return cur
 
     def executemany(self, sql: str, seq: list) -> Any:
-        from psycopg2.extras import RealDictCursor
-
-        cur = self._raw.cursor(cursor_factory=RealDictCursor)
+        cur = self._cursor()
         cur.executemany(placeholder_to_pg(sql), [tuple(p) for p in seq])
+        self._dirty = True
         return cur
 
     def commit(self) -> None:
-        self._raw.commit()
+        try:
+            self._raw.commit()
+        except Exception as exc:
+            if not _dropped(exc):
+                raise
+            _discard()
+        finally:
+            self._dirty = False
 
     def rollback(self) -> None:
-        self._raw.rollback()
+        try:
+            self._raw.rollback()
+        except Exception as exc:
+            if not _dropped(exc):
+                raise
+            _discard()
+        finally:
+            self._dirty = False
 
     def close(self) -> None:
         # Connections are pooled per thread; closing here would defeat that.
@@ -88,11 +155,16 @@ class _PgConnection:
         return self
 
     def __exit__(self, exc_type, exc, tb) -> bool:
-        # Mirrors sqlite3's context manager: commit on success, roll back on error.
-        if exc_type is None:
-            self._raw.commit()
-        else:
-            self._raw.rollback()
+        # Mirrors sqlite3's context manager: commit on success, roll back on
+        # error — but never raise a second exception over the first one, which
+        # is what turned a dropped connection into a blank page.
+        try:
+            if exc_type is None:
+                self.commit()
+            else:
+                self.rollback()
+        except Exception:
+            _discard()
         return False
 
 
