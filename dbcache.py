@@ -24,9 +24,14 @@ import streamlit as st
 import db
 
 # Lists drive what you see at a glance (status pills, counts), so they refresh
-# sooner than a single video's fully-processed detail, which rarely changes.
-_LIST_TTL = 20
-_ITEM_TTL = 90
+# sooner than a single video's detail.
+#
+# A processed video's insights do not change until it is re-processed, and that
+# path invalidates explicitly — so the detail cache is held long enough that
+# browsing the library stays instant instead of paying a ~580ms round-trip each
+# time you revisit a video.
+_LIST_TTL = 60
+_ITEM_TTL = 1800
 
 
 @st.cache_data(ttl=_LIST_TTL, show_spinner=False)

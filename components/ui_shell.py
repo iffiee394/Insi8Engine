@@ -9,11 +9,13 @@ import db
 import dbcache
 from background_jobs import is_worker_running, start_process_one_background
 from components.knowledge_pages import (
-    render_home_page,
     render_add_page,
     render_profile_settings_page,
-    render_chat_page,
     render_export_page,
+)
+# Deferred, still routable by URL but absent from the nav.
+from components.future_pages import (
+    render_chat_page,
     render_saved_page,
     render_search_page,
 )
@@ -109,7 +111,7 @@ def render_app(ctx: dict) -> None:
 
     # ── Session state defaults ──
     defaults = {
-        "active_page": "home",
+        "active_page": "library",
         "selected_id": None,
         "selected_playlist_id": None,
         "was_worker_running": False,
@@ -122,7 +124,9 @@ def render_app(ctx: dict) -> None:
     # pulling them for all videos cost ~3MB and several seconds per render.
     # Cached, so a rerun costs no round-trip (see dbcache for invalidation).
     page = st.session_state.active_page
-    all_videos = dbcache.list_videos_light() if page in {"home", "library", "queue", "playlists"} else []
+    if page == "home":  # legacy entry point; the library is the home now
+        page = st.session_state.active_page = "library"
+    all_videos = dbcache.list_videos_light() if page in {"library", "queue", "playlists"} else []
     if st.session_state.selected_id is None and all_videos:
         first = next((v for v in all_videos if v.get("status") == db.STATUS_DONE), all_videos[0])
         st.session_state.selected_id = first["video_id"]
@@ -147,9 +151,6 @@ def render_app(ctx: dict) -> None:
         _queue_tick()
 
     # ── Route to the correct page ──
-    if page == "home":
-        render_home_page(all_videos)
-        return
     if page == "add":
         render_add_page()
         return

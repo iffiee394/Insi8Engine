@@ -69,6 +69,31 @@ Repair (dry-run default):
 
 ## Record each completed task here
 
+### 2026-09-15 — Scope narrowed to the core loop; search/chat deferred
+
+- Owner's scope: curate a playlist, add videos, spend quota on insights, read
+  them in the library. Semantic search and unattended scaling are explicitly
+  later work. Captured in [FUTURE_PLAN.md](FUTURE_PLAN.md).
+- Search, Saved and Chat moved intact to `components/future_pages.py` and taken
+  out of the navigation. Nothing deleted; routes still resolve (`?page=search`,
+  `?page=saved`, `?page=chat`) and their tests still run.
+- The app now opens on **Library** instead of a search box. Videos are a
+  scannable list rather than a dropdown, and insights render open — no click per
+  topic. Timestamps became plain links instead of a button each.
+- Navigation: Library · Playlists · + Add video, with Queue and Settings under
+  More. Five destinations, down from nine.
+- Detail cache raised to 30 min (a processed video's insights only change on
+  re-process, which invalidates explicitly). Library list cache 60s.
+- Measured core loop: cold landing 1,312 ms; warm 3.7 ms; first open of a given
+  video ~579 ms (Singapore round-trip), ~1 ms on revisit.
+- Measured search cost for the record: 4.5 s total, of which the Gemini query
+  embedding is 3,350 ms and Postgres execution is 2.6 ms. Neither Streamlit nor
+  the database is the bottleneck.
+- Health unchanged and re-confirmed: 66 videos (65 done / 1 failed), 426
+  embeddings across 47 videos, 19 empty-insight videos, all 47 `unknown_model`.
+- Tests: 25 pass. Local browser checked Library (select, read, failed-video
+  recovery), Add and Playlists. Not hosted-verified in this task.
+
 ### 2026-09-12 — A0 complete (local + live read-only)
 
 - Result: complete for health/backup/sqlite restore; PostgreSQL disposable restore blocked.
