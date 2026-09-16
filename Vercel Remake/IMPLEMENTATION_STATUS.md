@@ -24,13 +24,26 @@ processing.
 - `npm audit --omit=dev` reports zero vulnerabilities after moving to Next 16.3.5.
 - `npm run typecheck` passes.
 - `npm run build` passes.
-- Browser check passed at `http://localhost:3000`: 66 videos load, the selected video detail renders, Add opens, Queue opens, and Settings shows provider/API status.
+- Browser check passed at `http://localhost:3000`: 66 videos load, thumbnails render in the library, the selected video detail renders, Add opens, Queue opens, and Settings shows provider/API status.
+- Processed-video insight check passed using `dkyYDGxbBFY`: summary renders and 7 insight sections display as one-column readable sections.
 
 ## Current local test URLs
 
 - Frontend: `http://localhost:3000`
 - API: `http://127.0.0.1:8000`
 - API health: `http://127.0.0.1:8000/health`
+
+
+## Insight data audit
+
+Checked on 2026-09-16 against the current configured database:
+
+- 66 total videos are available through the remake.
+- 65 videos are `done` and have summaries plus key points.
+- 47 videos also have structured insight JSON.
+- 1 video is `failed` with the known YouTube `HTTP Error 403: Forbidden` processing issue.
+
+The current insight display issue was a frontend formatting problem, not a missing database connection.
 
 ## Not done yet
 

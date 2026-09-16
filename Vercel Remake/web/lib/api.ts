@@ -3,6 +3,7 @@ export type Video = {
   title: string;
   url: string;
   status: string;
+  thumbnail_url?: string;
   summary?: string;
   key_points?: string;
   structured_insights?: string;

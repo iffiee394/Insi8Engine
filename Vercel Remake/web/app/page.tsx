@@ -17,6 +17,10 @@ function statusClass(status: string | undefined) {
   return `pill ${status || "pending"}`;
 }
 
+function thumbnailUrl(video: Video): string {
+  return video.thumbnail_url || `https://i.ytimg.com/vi/${video.video_id}/mqdefault.jpg`;
+}
+
 export default function Home() {
   const [page, setPage] = useState<Page>("library");
   const [videos, setVideos] = useState<Video[]>([]);
@@ -207,12 +211,13 @@ export default function Home() {
                 className={`row ${selectedId === video.video_id ? "active" : ""}`}
                 onClick={() => void chooseVideo(video.video_id)}
               >
-                <div className="thumb" />
+                <span className="thumb" aria-hidden="true">
+                  <img src={thumbnailUrl(video)} alt="" loading="lazy" />
+                  <span className={statusClass(video.status)}>{video.status}</span>
+                </span>
                 <span className="row-body">
                   <strong>{video.title || video.video_id}</strong>
-                  <span>
-                    {video.channel_name || "Unknown channel"} · {video.status}
-                  </span>
+                  <span>{video.channel_name || "Unknown channel"}</span>
                 </span>
               </button>
             ))}
@@ -325,25 +330,37 @@ function VideoDetail({
         </div>
       ) : null}
 
-      {summary ? <p className="summary">{summary}</p> : <p className="summary">No extracted notes yet.</p>}
+      <section className="reader-block">
+        <p className="reader-label">Summary</p>
+        {summary ? <p className="summary">{summary}</p> : <p className="summary">No extracted notes yet.</p>}
+      </section>
 
-      <div className="insight-grid">
-        {insights.map((insight, index) => (
-          <details className="card" key={`${insight.title}-${index}`} open={index === 0}>
-            <summary>{insight.title}</summary>
-            {insight.content ? <p>{insight.content}</p> : null}
-            {insight.points.length ? (
-              <ul>
-                {insight.points.map((point) => (
-                  <li key={point}>{point}</li>
-                ))}
-              </ul>
-            ) : null}
-          </details>
-        ))}
-      </div>
+      {insights.length ? (
+        <section className="insights-stack" aria-label="Insights">
+          <div className="section-heading">
+            <p className="reader-label">Insights</p>
+            <span>{insights.length} section{insights.length === 1 ? "" : "s"}</span>
+          </div>
+          {insights.map((insight, index) => (
+            <article className="insight-section" key={`${insight.title}-${index}`}>
+              <div className="section-number">{String(index + 1).padStart(2, "0")}</div>
+              <div className="section-copy">
+                <h2>{insight.title}</h2>
+                {insight.content ? <p>{insight.content}</p> : null}
+                {insight.points.length ? (
+                  <ul>
+                    {insight.points.map((point) => (
+                      <li key={point}>{point}</li>
+                    ))}
+                  </ul>
+                ) : null}
+              </div>
+            </article>
+          ))}
+        </section>
+      ) : null}
 
-      <div className="insight-grid">
+      <div className="support-grid">
         <details className="card">
           <summary>Use a transcript instead</summary>
           <p>
