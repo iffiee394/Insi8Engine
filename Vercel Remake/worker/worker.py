@@ -17,6 +17,11 @@ REMAKE_ROOT = Path(__file__).resolve().parents[1]
 LEGACY_ROOT = REMAKE_ROOT.parent
 load_dotenv()
 load_dotenv(LEGACY_ROOT / ".env", override=False)
+API_APP_ROOT = REMAKE_ROOT / "api"
+sys.path.insert(0, str(API_APP_ROOT))
+from app.runtime_settings import apply_runtime_provider_keys
+
+apply_runtime_provider_keys(override=True)
 
 WORKER_ID = f"{socket.gethostname()}:{os.getpid()}"
 POLL_SECONDS = int(os.getenv("WORKER_POLL_SECONDS", "5"))
@@ -105,6 +110,21 @@ def fail_job(job: dict[str, Any], error: str) -> None:
         )
 
 
+def refresh_legacy_provider_config() -> None:
+    status = apply_runtime_provider_keys(override=True)
+    config_module = sys.modules.get("config")
+    if config_module is not None:
+        mapping = {
+            "YOUTUBE_API_KEY": os.getenv("YOUTUBE_API_KEY", ""),
+            "GEMINI_API_KEY": os.getenv("GEMINI_API_KEY", ""),
+            "ANTHROPIC_API_KEY": os.getenv("ANTHROPIC_API_KEY", ""),
+            "GROQ_API_KEY": os.getenv("GROQ_API_KEY", ""),
+            "TAVILY_API_KEY": os.getenv("TAVILY_API_KEY", ""),
+        }
+        for name, value in mapping.items():
+            setattr(config_module, name, value)
+
+
 def load_legacy_processor():
     if not LEGACY_APP_ROOT:
         raise RuntimeError("LEGACY_APP_ROOT must point to the current Streamlit project root.")
@@ -120,7 +140,9 @@ def load_legacy_processor():
 def handle_job(job: dict[str, Any]) -> None:
     if job["kind"] != "process_video":
         raise RuntimeError(f"Unsupported job kind: {job['kind']}")
+    refresh_legacy_provider_config()
     process_one = load_legacy_processor()
+    refresh_legacy_provider_config()
     code = process_one(job["video_id"])
     if code != 0:
         raise RuntimeError(f"process_one exited with code {code}")

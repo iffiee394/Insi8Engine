@@ -6,9 +6,12 @@ from pathlib import Path
 
 from dotenv import load_dotenv
 
+from .runtime_settings import apply_runtime_provider_keys
+
 
 load_dotenv()
 load_dotenv(Path(__file__).resolve().parents[3] / ".env", override=False)
+apply_runtime_provider_keys(override=True)
 
 
 class Settings:

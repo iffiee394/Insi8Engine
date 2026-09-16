@@ -79,5 +79,10 @@ export const api = {
     request<{ ok: boolean; video: Video; job: Job | null }>(`/videos/${id}/transcript`, {
       method: "POST",
       body: JSON.stringify({ transcript, enqueue: true })
+    }),
+  saveProviderKeys: (keys: Record<string, string>) =>
+    request<{ ok: boolean; services: Record<string, boolean> }>("/settings/providers", {
+      method: "POST",
+      body: JSON.stringify(keys)
     })
 };

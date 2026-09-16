@@ -190,19 +190,42 @@ input:focus, textarea:focus, select:focus {
 .section-heading { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
 .section-heading span { color: var(--muted); font-size: 12px; }
 .insight-section {
-  display: grid; grid-template-columns: 46px minmax(0, 1fr); gap: 16px;
   border: 1px solid var(--border); border-radius: 14px; background: var(--surface);
-  padding: 18px; box-shadow: 0 18px 44px rgba(0, 0, 0, 0.12);
+  padding: 0; box-shadow: 0 18px 44px rgba(0, 0, 0, 0.12); overflow: hidden;
 }
+.insight-section > summary {
+  list-style: none; cursor: pointer; display: grid; grid-template-columns: 46px minmax(0, 1fr);
+  gap: 16px; align-items: center; padding: 18px; color: var(--text);
+}
+.insight-section > summary::-webkit-details-marker { display: none; }
+.insight-section > summary::after {
+  content: "+"; justify-self: end; align-self: center; color: var(--secondary); font-size: 18px;
+  grid-column: 2; grid-row: 1;
+}
+.insight-section[open] > summary::after { content: "–"; }
 .section-number {
   width: 34px; height: 34px; border-radius: 10px; display: grid; place-items: center;
   background: rgba(108, 92, 231, 0.13); color: var(--secondary); font-size: 12px; font-weight: 800;
 }
-.section-copy h2 { margin: 1px 0 10px; font-size: 20px; line-height: 1.25; letter-spacing: -0.025em; }
+.section-summary-copy { display: grid; gap: 4px; padding-right: 28px; }
+.section-summary-copy span { font-size: 20px; line-height: 1.25; letter-spacing: -0.025em; font-weight: 760; }
+.section-summary-copy small { color: var(--muted); font-size: 12px; font-weight: 500; }
+.section-copy { padding: 0 18px 18px 80px; }
 .section-copy p, .section-copy li { color: #cfd2df; line-height: 1.68; font-size: 15px; }
 .section-copy p { margin: 0 0 12px; }
 .section-copy ul { margin: 0; padding-left: 19px; display: grid; gap: 8px; }
 .section-copy li::marker { color: var(--secondary); }
+.research-panel { max-width: 980px; display: grid; gap: 12px; margin-top: 24px; }
+.resource-list { display: grid; gap: 12px; margin-top: 14px; }
+.resource-item { border-top: 1px solid rgba(255,255,255,0.06); padding-top: 12px; display: grid; gap: 8px; }
+.resource-item:first-child { border-top: 0; padding-top: 0; }
+.resource-item strong { display: block; }
+.resource-item span, .resource-item small { color: var(--muted); font-size: 12px; }
+.resource-item p { margin: 0; }
+.resource-item a, .link-list a { color: var(--secondary); }
+.link-list { display: grid; gap: 10px; margin-top: 14px; }
+.link-list a { border: 1px solid rgba(198, 191, 255, 0.12); border-radius: 10px; padding: 10px 12px; display: grid; gap: 4px; }
+.link-list small { color: var(--muted); }
 .support-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; margin-top: 24px; max-width: 980px; }
 .card, details.card { border: 1px solid var(--border); border-radius: 12px; background: var(--surface); padding: 16px; }
 details.card { display: block; }
@@ -216,6 +239,8 @@ summary { cursor: pointer; color: var(--text); font-weight: 650; }
 }
 .error { border-color: rgba(239, 68, 68, 0.28); background: rgba(239, 68, 68, 0.1); color: #ffc1c1; }
 .form { display: grid; gap: 13px; max-width: 760px; }
+.settings-form { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; margin-top: 16px; max-width: 900px; }
+.settings-form .button { align-self: end; }
 .queue-list { display: grid; gap: 10px; }
 .job {
   display: grid; grid-template-columns: 110px minmax(0, 1fr) 130px; gap: 14px; align-items: center;
@@ -240,7 +265,8 @@ pre { overflow: auto; border: 1px solid var(--border); border-radius: 10px; back
   .context { max-height: 430px; border-right: 0; border-bottom: 1px solid var(--border); }
   .main { overflow: visible; }
   .main-head { position: static; flex-direction: column; align-items: flex-start; }
-  .support-grid, .settings-grid { grid-template-columns: 1fr; }
-  .insight-section { grid-template-columns: 1fr; }
+  .support-grid, .settings-grid, .settings-form { grid-template-columns: 1fr; }
+  .insight-section > summary { grid-template-columns: 1fr; }
+  .section-copy { padding: 0 18px 18px; }
   .job { grid-template-columns: 1fr; }
 }

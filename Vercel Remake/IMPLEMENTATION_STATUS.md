@@ -25,7 +25,8 @@ processing.
 - `npm run typecheck` passes.
 - `npm run build` passes.
 - Browser check passed at `http://localhost:3000`: 66 videos load, thumbnails render in the library, the selected video detail renders, Add opens, Queue opens, and Settings shows provider/API status.
-- Processed-video insight check passed using `dkyYDGxbBFY`: summary renders and 7 insight sections display as one-column readable sections.
+- Processed-video insight check passed using `dkyYDGxbBFY`: summary renders, 7 insight sections display as collapsible one-column sections, and research resources/links render from `structured_insights`.
+- Settings now includes write-only provider API key fields for YouTube, Gemini, Anthropic, Groq, and Tavily. Saved runtime keys are ignored by git and loaded by the API/worker.
 
 ## Current local test URLs
 

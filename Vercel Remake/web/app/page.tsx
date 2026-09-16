@@ -2,7 +2,7 @@
 
 import { FormEvent, useEffect, useMemo, useState } from "react";
 import { api, type Health, type Job, type Video } from "../lib/api";
-import { videoInsights, videoSummary } from "../lib/insights";
+import { videoInsights, videoResearch, videoSummary } from "../lib/insights";
 
 type Page = "library" | "add" | "queue" | "settings";
 
@@ -36,12 +36,14 @@ export default function Home() {
 
   async function loadVideo(id: string) {
     const result = await api.video(id);
+    setError("");
     setSelected(result.item);
     setSelectedJobs(result.jobs);
   }
 
   async function loadVideos(preferredId?: string) {
     const result = await api.videos();
+    setError("");
     setVideos(result.items);
     const nextId = preferredId || selectedId || result.items[0]?.video_id || "";
     setSelectedId(nextId);
@@ -50,6 +52,7 @@ export default function Home() {
 
   async function loadJobs() {
     const result = await api.jobs();
+    setError("");
     setJobs(result.items);
   }
 
@@ -61,6 +64,7 @@ export default function Home() {
           api.videos(),
           api.jobs()
         ]);
+        setError("");
         setHealth(healthResult);
         setVideos(videosResult.items);
         setJobs(jobsResult.items);
@@ -302,6 +306,7 @@ function VideoDetail({
 
   const summary = videoSummary(video);
   const insights = videoInsights(video);
+  const research = videoResearch(video);
   const failed = video.status === "failed";
 
   return (
@@ -342,10 +347,15 @@ function VideoDetail({
             <span>{insights.length} section{insights.length === 1 ? "" : "s"}</span>
           </div>
           {insights.map((insight, index) => (
-            <article className="insight-section" key={`${insight.title}-${index}`}>
-              <div className="section-number">{String(index + 1).padStart(2, "0")}</div>
+            <details className="insight-section" key={`${insight.title}-${index}`} open={index === 0}>
+              <summary>
+                <span className="section-number">{String(index + 1).padStart(2, "0")}</span>
+                <span className="section-summary-copy">
+                  <span>{insight.title}</span>
+                  <small>{insight.points.length} point{insight.points.length === 1 ? "" : "s"}</small>
+                </span>
+              </summary>
               <div className="section-copy">
-                <h2>{insight.title}</h2>
                 {insight.content ? <p>{insight.content}</p> : null}
                 {insight.points.length ? (
                   <ul>
@@ -355,8 +365,53 @@ function VideoDetail({
                   </ul>
                 ) : null}
               </div>
-            </article>
+            </details>
           ))}
+        </section>
+      ) : null}
+
+      {research.resources.length || research.links.length ? (
+        <section className="research-panel">
+          <div className="section-heading">
+            <p className="reader-label">Research</p>
+            <span>{research.resources.length} resources · {research.links.length} links</span>
+          </div>
+
+          {research.resources.length ? (
+            <details className="card" open>
+              <summary>Research insights and resources</summary>
+              <div className="resource-list">
+                {research.resources.map((resource, index) => (
+                  <article className="resource-item" key={`${resource.name}-${index}`}>
+                    <div>
+                      <strong>{resource.name}</strong>
+                      <span>{resource.type} · {resource.source || "insight"}</span>
+                    </div>
+                    {resource.detail ? <p>{resource.detail}</p> : null}
+                    {resource.url ? (
+                      <a href={resource.url} target="_blank" rel="noreferrer">
+                        Open source
+                      </a>
+                    ) : null}
+                  </article>
+                ))}
+              </div>
+            </details>
+          ) : null}
+
+          {research.links.length ? (
+            <details className="card">
+              <summary>Links from video, description, and research</summary>
+              <div className="link-list">
+                {research.links.map((link) => (
+                  <a href={link.url} target="_blank" rel="noreferrer" key={link.url}>
+                    <span>{link.label}</span>
+                    <small>{link.source}</small>
+                  </a>
+                ))}
+              </div>
+            </details>
+          ) : null}
         </section>
       ) : null}
 
@@ -457,7 +512,40 @@ function QueuePanel({ jobs, onRefresh }: { jobs: Job[]; onRefresh: () => Promise
 }
 
 function SettingsPanel({ health }: { health: Health | null }) {
-  const services = health?.services || {};
+  const [services, setServices] = useState<Record<string, boolean>>(health?.services || {});
+  const [saving, setSaving] = useState(false);
+  const [message, setMessage] = useState("");
+
+  useEffect(() => {
+    setServices(health?.services || {});
+  }, [health]);
+
+  async function saveKeys(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setMessage("");
+    const form = new FormData(event.currentTarget);
+    const keys: Record<string, string> = {};
+    for (const name of ["youtube", "gemini", "anthropic", "groq", "tavily"]) {
+      const value = String(form.get(name) || "").trim();
+      if (value) keys[name] = value;
+    }
+    if (!Object.keys(keys).length) {
+      setMessage("Paste at least one new key to save.");
+      return;
+    }
+    setSaving(true);
+    try {
+      const result = await api.saveProviderKeys(keys);
+      setServices(result.services);
+      setMessage("Saved. New jobs will use the updated provider keys.");
+      event.currentTarget.reset();
+    } catch (exc) {
+      setMessage(exc instanceof Error ? exc.message : "Could not save keys.");
+    } finally {
+      setSaving(false);
+    }
+  }
+
   return (
     <section>
       <p className="caps">Configuration</p>
@@ -473,15 +561,50 @@ function SettingsPanel({ health }: { health: Health | null }) {
           </div>
         ))}
       </div>
+
+      <details className="card" open>
+        <summary>Provider API keys</summary>
+        <p>
+          Paste only the keys you want to add or replace. Blank fields keep the current key. Stored keys are used by the API and worker, but are never shown back in the dashboard.
+        </p>
+        <form className="settings-form" onSubmit={saveKeys}>
+          <div className="field">
+            <label htmlFor="youtube-key">YouTube API key</label>
+            <input id="youtube-key" name="youtube" type="password" autoComplete="off" placeholder="Paste new YouTube key" />
+          </div>
+          <div className="field">
+            <label htmlFor="gemini-key">Gemini API key</label>
+            <input id="gemini-key" name="gemini" type="password" autoComplete="off" placeholder="Paste new Gemini key" />
+          </div>
+          <div className="field">
+            <label htmlFor="anthropic-key">Anthropic API key</label>
+            <input id="anthropic-key" name="anthropic" type="password" autoComplete="off" placeholder="Paste new Anthropic key" />
+          </div>
+          <div className="field">
+            <label htmlFor="groq-key">Groq API key</label>
+            <input id="groq-key" name="groq" type="password" autoComplete="off" placeholder="Paste new Groq key" />
+          </div>
+          <div className="field">
+            <label htmlFor="tavily-key">Tavily API key</label>
+            <input id="tavily-key" name="tavily" type="password" autoComplete="off" placeholder="Paste new Tavily key" />
+          </div>
+          <button className="button" disabled={saving}>{saving ? "Saving..." : "Save keys"}</button>
+        </form>
+        {message ? <p className="notice">{message}</p> : null}
+      </details>
+
       <details className="card">
         <summary>Deployment variables</summary>
-        <p>Set these in Vercel/Render instead of editing the interface.</p>
+        <p>For hosted production, set stable keys as environment variables on the API/worker host. The dashboard key form is best for this remake runtime and local testing.</p>
         <pre>
 {`DATABASE_URL=postgresql://...
 NEXT_PUBLIC_API_BASE_URL=https://your-api-host
 APP_ALLOWED_ORIGINS=https://your-vercel-app.vercel.app
+YOUTUBE_API_KEY=...
 GEMINI_API_KEY=...
-GROQ_API_KEY=...`}
+ANTHROPIC_API_KEY=...
+GROQ_API_KEY=...
+TAVILY_API_KEY=...`}
         </pre>
       </details>
     </section>

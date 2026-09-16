@@ -7,6 +7,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 
 from . import db
+from .runtime_settings import provider_status, save_provider_keys
 from .settings import get_settings
 from .youtube import fetch_public_metadata, parse_video_id
 
@@ -36,6 +37,14 @@ class ProcessRequest(BaseModel):
     reason: str = "manual"
 
 
+class ProviderKeysRequest(BaseModel):
+    youtube: str | None = None
+    gemini: str | None = None
+    anthropic: str | None = None
+    groq: str | None = None
+    tavily: str | None = None
+
+
 @app.get("/health")
 def health() -> dict:
     configured = bool(settings.database_url)
@@ -47,14 +56,20 @@ def health() -> dict:
     return {
         "ok": configured,
         "database": "configured" if configured else "missing",
-        "services": {
-            "youtube": bool(settings.youtube_api_key),
-            "gemini": bool(settings.gemini_api_key),
-            "anthropic": bool(settings.anthropic_api_key),
-            "groq": bool(settings.groq_api_key),
-            "tavily": bool(settings.tavily_api_key),
-        },
+        "services": provider_status(),
     }
+
+
+@app.get("/settings/providers")
+def get_provider_settings() -> dict:
+    return {"services": provider_status()}
+
+
+@app.post("/settings/providers")
+def update_provider_settings(req: ProviderKeysRequest) -> dict:
+    status = save_provider_keys(req.model_dump(exclude_none=True))
+    get_settings.cache_clear()
+    return {"ok": True, "services": status}
 
 
 @app.get("/videos")
