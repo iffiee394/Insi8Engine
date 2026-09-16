@@ -1,0 +1,12 @@
+api/.venv/
+worker/.venv/
+web/node_modules/
+web/.next/
+web/out/
+web/*.tsbuildinfo
+__pycache__/
+**/__pycache__/
+*.pyc
+*.log
+.env
+.env.local
