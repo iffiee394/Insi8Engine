@@ -29,6 +29,21 @@ export type Playlist = {
   enabled?: boolean;
 };
 
+export type Profile = {
+  display_name: string;
+  email: string;
+  about_me: string;
+  interests: string;
+  insight_style: string;
+  known_topics: string;
+  personalize_extractions: boolean;
+};
+
+export type ProfileResponse = {
+  profile: Profile;
+  prompt_preview: string;
+};
+
 export type Job = {
   id: string;
   kind: string;
@@ -77,6 +92,12 @@ export const api = {
   videos: () => request<{ items: Video[] }>("/videos?limit=100"),
   video: (id: string) => request<{ item: Video; jobs: Job[] }>(`/videos/${id}`),
   playlists: () => request<{ items: Playlist[] }>("/playlists"),
+  profile: () => request<ProfileResponse>("/settings/profile"),
+  saveProfile: (profile: Profile) =>
+    request<{ ok: boolean } & ProfileResponse>("/settings/profile", {
+      method: "POST",
+      body: JSON.stringify(profile)
+    }),
   jobs: () => request<{ items: Job[] }>("/jobs?limit=30"),
   search: (q: string) => request<{ items: Video[] }>(`/search?q=${encodeURIComponent(q)}&limit=12`),
   ingest: (input: { url: string; kind: string; agendaMode: "default" | "custom"; agenda: string; playlistId: string }) =>

@@ -1,12 +1,22 @@
 "use client";
 
 import { FormEvent, useEffect, useMemo, useState } from "react";
-import { api, type Health, type Job, type Playlist, type Video } from "../lib/api";
+import { api, type Health, type Job, type Playlist, type Profile, type Video } from "../lib/api";
 import { videoInsights, videoResearch, videoSummary } from "../lib/insights";
 
 type Page = "library" | "add" | "queue" | "settings";
 
-const DEFAULT_AGENDA = `Extract the most useful ideas for my personal knowledge system. Focus on practical lessons, frameworks, examples, decisions, tools, people, companies, and links I may want to revisit. Keep the output easy to scan and turn into actions.`;
+const DEFAULT_AGENDA = `The worker will generate the real agenda from your saved profile, selected playlist profile, and the video's transcript. Keep your profile current so the system knows which insights are important for you.`;
+
+const EMPTY_PROFILE: Profile = {
+  display_name: "",
+  email: "",
+  about_me: "",
+  interests: "",
+  insight_style: "",
+  known_topics: "",
+  personalize_extractions: true
+};
 
 const CUSTOM_AGENDA_EXAMPLE = `Focus on:
 - specific tactics I can apply
@@ -99,6 +109,8 @@ export default function Home() {
   const [selectedJobs, setSelectedJobs] = useState<Job[]>([]);
   const [jobs, setJobs] = useState<Job[]>([]);
   const [playlists, setPlaylists] = useState<Playlist[]>([]);
+  const [profile, setProfile] = useState<Profile>(EMPTY_PROFILE);
+  const [profilePrompt, setProfilePrompt] = useState("");
   const [health, setHealth] = useState<Health | null>(null);
   const [query, setQuery] = useState("");
   const [notice, setNotice] = useState("");
@@ -130,17 +142,20 @@ export default function Home() {
   useEffect(() => {
     async function boot() {
       try {
-        const [healthResult, videosResult, jobsResult, playlistsResult] = await Promise.all([
+        const [healthResult, videosResult, jobsResult, playlistsResult, profileResult] = await Promise.all([
           api.health(),
           api.videos(),
           api.jobs(),
-          api.playlists()
+          api.playlists(),
+          api.profile()
         ]);
         setError("");
         setHealth(healthResult);
         setVideos(videosResult.items);
         setJobs(jobsResult.items);
         setPlaylists(playlistsResult.items);
+        setProfile(profileResult.profile);
+        setProfilePrompt(profileResult.prompt_preview);
         const firstVideo = videosResult.items[0] || null;
         setSelected(firstVideo);
         setSelectedId(firstVideo?.video_id || "");
@@ -372,7 +387,15 @@ export default function Home() {
             ) : null}
 
             {page === "settings" ? (
-              <SettingsPanel health={health} />
+              <SettingsPanel
+                health={health}
+                profile={profile}
+                profilePrompt={profilePrompt}
+                onProfileSaved={(nextProfile, nextPrompt) => {
+                  setProfile(nextProfile);
+                  setProfilePrompt(nextPrompt);
+                }}
+              />
             ) : null}
           </div>
         </section>
@@ -671,15 +694,51 @@ function QueuePanel({ jobs, onRefresh }: { jobs: Job[]; onRefresh: () => Promise
   );
 }
 
-function SettingsPanel({ health }: { health: Health | null }) {
+function SettingsPanel({
+  health,
+  profile,
+  profilePrompt,
+  onProfileSaved
+}: {
+  health: Health | null;
+  profile: Profile;
+  profilePrompt: string;
+  onProfileSaved: (profile: Profile, prompt: string) => void;
+}) {
   const [services, setServices] = useState<Record<string, boolean>>(health?.services || {});
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState("");
   const [bulkKeys, setBulkKeys] = useState("");
+  const [profileDraft, setProfileDraft] = useState<Profile>(profile);
+  const [profileSaving, setProfileSaving] = useState(false);
+  const [profileMessage, setProfileMessage] = useState("");
 
   useEffect(() => {
     setServices(health?.services || {});
   }, [health]);
+
+  useEffect(() => {
+    setProfileDraft(profile);
+  }, [profile]);
+
+  function updateProfileField<K extends keyof Profile>(key: K, value: Profile[K]) {
+    setProfileDraft((current) => ({ ...current, [key]: value }));
+  }
+
+  async function saveProfile(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setProfileSaving(true);
+    setProfileMessage("");
+    try {
+      const result = await api.saveProfile(profileDraft);
+      onProfileSaved(result.profile, result.prompt_preview);
+      setProfileMessage("Profile saved. New agenda generation will use this profile.");
+    } catch (exc) {
+      setProfileMessage(exc instanceof Error ? exc.message : "Could not save profile.");
+    } finally {
+      setProfileSaving(false);
+    }
+  }
 
   async function saveKeys(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -723,6 +782,57 @@ function SettingsPanel({ health }: { health: Health | null }) {
           </div>
         ))}
       </div>
+
+      <details className="card" open>
+        <summary>Profile-driven agenda</summary>
+        <p>
+          This profile is injected into default agenda generation and extraction. Custom agenda requests are combined with this profile, so write the profile as your stable lens and the custom agenda as the video-specific focus.
+        </p>
+        <form className="settings-form" onSubmit={saveProfile}>
+          <div className="field">
+            <label htmlFor="profile-name">Name</label>
+            <input id="profile-name" value={profileDraft.display_name || ""} onChange={(event) => updateProfileField("display_name", event.target.value)} placeholder="Your name" />
+          </div>
+          <div className="field">
+            <label htmlFor="profile-email">Email</label>
+            <input id="profile-email" value={profileDraft.email || ""} onChange={(event) => updateProfileField("email", event.target.value)} placeholder="you@example.com" />
+          </div>
+          <div className="field span-2">
+            <label htmlFor="profile-about">About me / background</label>
+            <textarea id="profile-about" value={profileDraft.about_me || ""} onChange={(event) => updateProfileField("about_me", event.target.value)} placeholder="Who you are, what you are building, your current goals..." />
+          </div>
+          <div className="field span-2">
+            <label htmlFor="profile-interests">What insights matter to me</label>
+            <textarea id="profile-interests" value={profileDraft.interests || ""} onChange={(event) => updateProfileField("interests", event.target.value)} placeholder="Markets, automation, SaaS, coding, client delivery, content systems, research angles..." />
+          </div>
+          <div className="field span-2">
+            <label htmlFor="profile-style">Insight style</label>
+            <textarea id="profile-style" value={profileDraft.insight_style || ""} onChange={(event) => updateProfileField("insight_style", event.target.value)} placeholder="Prefer specific examples, workflows, steps, links, practical playbooks, avoid generic summaries..." />
+          </div>
+          <div className="field span-2">
+            <label htmlFor="profile-known">Things I already know</label>
+            <textarea id="profile-known" value={profileDraft.known_topics || ""} onChange={(event) => updateProfileField("known_topics", event.target.value)} placeholder="Topics to skip unless the video gives a new angle..." />
+          </div>
+          <label className="check-row span-2">
+            <input
+              type="checkbox"
+              checked={profileDraft.personalize_extractions !== false}
+              onChange={(event) => updateProfileField("personalize_extractions", event.target.checked)}
+            />
+            Personalize agendas and insights using this profile
+          </label>
+          <button className="button" disabled={profileSaving}>{profileSaving ? "Saving..." : "Save profile"}</button>
+        </form>
+        {profileMessage ? <p className="notice">{profileMessage}</p> : null}
+        {profilePrompt ? (
+          <details className="card nested-card">
+            <summary>Profile prompt preview</summary>
+            <pre>{profilePrompt}</pre>
+          </details>
+        ) : (
+          <p className="summary">No profile lens is active yet. Add interests and an insight style to make default agendas more personal.</p>
+        )}
+      </details>
 
       <details className="card" open>
         <summary>Provider API keys</summary>

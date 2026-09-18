@@ -12,6 +12,50 @@ from .pgconnect import connect_postgres
 from .settings import get_settings
 
 
+
+
+DEFAULT_PROFILE: dict[str, Any] = {
+    "display_name": "",
+    "email": "",
+    "about_me": "",
+    "interests": "",
+    "insight_style": "",
+    "known_topics": "",
+    "personalize_extractions": True,
+}
+
+
+def _merge_profile(raw: Any) -> dict[str, Any]:
+    merged = dict(DEFAULT_PROFILE)
+    if isinstance(raw, str) and raw.strip():
+        try:
+            parsed = json.loads(raw)
+        except json.JSONDecodeError:
+            parsed = {}
+        if isinstance(parsed, dict):
+            merged.update(parsed)
+    elif isinstance(raw, dict):
+        merged.update(raw)
+    has_profile_text = any(str(merged.get(key, "")).strip() for key in ("about_me", "interests", "insight_style", "known_topics"))
+    merged["personalize_extractions"] = True if not has_profile_text else bool(merged.get("personalize_extractions", True))
+    return merged
+
+
+def _format_profile_sections(profile: dict[str, Any], *, prefix: str = "User") -> str:
+    if profile.get("personalize_extractions") is False:
+        return ""
+    sections: list[str] = []
+    if str(profile.get("about_me", "")).strip():
+        sections.append(f"{prefix} background: {str(profile.get('about_me', '')).strip()}")
+    if str(profile.get("interests", "")).strip():
+        sections.append(f"{prefix} interests: {str(profile.get('interests', '')).strip()}")
+    if str(profile.get("insight_style", "")).strip():
+        sections.append(f"Insight style: {str(profile.get('insight_style', '')).strip()}")
+    if str(profile.get("known_topics", "")).strip():
+        sections.append("Topics already known (skip unless new angle):\n" + str(profile.get("known_topics", "")).strip())
+    return "\n\n".join(sections)
+
+
 class DatabaseNotConfigured(RuntimeError):
     pass
 
@@ -75,6 +119,60 @@ def ensure_job_schema() -> None:
             "ON knowledge_jobs(video_id, kind) "
             "WHERE status IN ('queued', 'running') AND kind = 'process_video'"
         )
+
+
+def ensure_profile_schema() -> None:
+    with connect() as conn:
+        cur = conn.cursor()
+        cur.execute(
+            """
+            CREATE TABLE IF NOT EXISTS personal_settings (
+                id TEXT PRIMARY KEY,
+                profile_json TEXT NOT NULL DEFAULT '{}',
+                updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+            )
+            """
+        )
+
+
+def get_profile() -> dict[str, Any]:
+    ensure_profile_schema()
+    with connect() as conn:
+        cur = conn.cursor()
+        cur.execute("SELECT profile_json FROM personal_settings WHERE id = %s", ("default",))
+        row = cur.fetchone()
+    if not row:
+        return dict(DEFAULT_PROFILE)
+    return _merge_profile(row.get("profile_json"))
+
+
+def save_profile(updates: dict[str, Any]) -> dict[str, Any]:
+    current = get_profile()
+    for key in DEFAULT_PROFILE:
+        if key in updates:
+            current[key] = updates[key]
+    current["personalize_extractions"] = bool(current.get("personalize_extractions", True))
+    payload = json.dumps(current, ensure_ascii=False)
+    with connect() as conn:
+        cur = conn.cursor()
+        cur.execute(
+            """
+            INSERT INTO personal_settings (id, profile_json, updated_at)
+            VALUES (%s, %s, now())
+            ON CONFLICT (id) DO UPDATE SET
+                profile_json = EXCLUDED.profile_json,
+                updated_at = EXCLUDED.updated_at
+            """,
+            ("default", payload),
+        )
+    return current
+
+
+def profile_prompt_preview() -> str:
+    block = _format_profile_sections(get_profile())
+    if not block:
+        return ""
+    return "USER PROFILE — used to shape agenda, tone, and depth:\n---\n" + block + "\n---"
 
 
 def list_videos(status: str | None = None, limit: int = 80) -> list[dict[str, Any]]:

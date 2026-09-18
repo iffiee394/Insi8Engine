@@ -50,6 +50,16 @@ class ProviderKeysRequest(BaseModel):
     tavily: str | None = None
 
 
+class ProfileRequest(BaseModel):
+    display_name: str = ""
+    email: str = ""
+    about_me: str = ""
+    interests: str = ""
+    insight_style: str = ""
+    known_topics: str = ""
+    personalize_extractions: bool = True
+
+
 @app.get("/health")
 def health() -> dict:
     configured = bool(settings.database_url)
@@ -63,6 +73,17 @@ def health() -> dict:
         "database": "configured" if configured else "missing",
         "services": provider_status(),
     }
+
+
+@app.get("/settings/profile")
+def get_profile_settings() -> dict:
+    return {"profile": db.get_profile(), "prompt_preview": db.profile_prompt_preview()}
+
+
+@app.post("/settings/profile")
+def update_profile_settings(req: ProfileRequest) -> dict:
+    profile = db.save_profile(req.model_dump())
+    return {"ok": True, "profile": profile, "prompt_preview": db.profile_prompt_preview()}
 
 
 @app.get("/settings/providers")
