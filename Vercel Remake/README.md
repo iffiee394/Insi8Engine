@@ -78,6 +78,11 @@ that environment already contains the extraction stack (`groq`, `google-genai`,
 
 ## Deploy notes
 
+Full deployment instructions live in `DEPLOYMENT.md`. A Render-style API + worker
+blueprint is included as `render.yaml` inside this folder. It is kept here so the
+remake remains isolated from the Streamlit project; copy it to the repository root
+only when you are ready to use Render's blueprint importer.
+
 For Vercel `web/`, set:
 
 - `NEXT_PUBLIC_API_BASE_URL=https://your-api-host`
