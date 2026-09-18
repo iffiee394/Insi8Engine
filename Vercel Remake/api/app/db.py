@@ -135,6 +135,27 @@ def ensure_profile_schema() -> None:
         )
 
 
+def ensure_worker_schema() -> None:
+    with connect() as conn:
+        cur = conn.cursor()
+        cur.execute(
+            """
+            CREATE TABLE IF NOT EXISTS worker_heartbeats (
+                worker_id TEXT PRIMARY KEY,
+                status TEXT NOT NULL DEFAULT 'idle',
+                current_job_id TEXT NOT NULL DEFAULT '',
+                current_video_id TEXT NOT NULL DEFAULT '',
+                note TEXT NOT NULL DEFAULT '',
+                updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+            )
+            """
+        )
+        cur.execute(
+            "CREATE INDEX IF NOT EXISTS worker_heartbeats_updated_idx "
+            "ON worker_heartbeats(updated_at DESC)"
+        )
+
+
 def get_profile() -> dict[str, Any]:
     ensure_profile_schema()
     with connect() as conn:
@@ -365,6 +386,130 @@ def list_playlists() -> list[dict[str, Any]]:
             """
         )
         return _rows(cur)
+
+
+def update_playlist(
+    playlist_id: str,
+    *,
+    name: str | None = None,
+    description: str | None = None,
+    kind: str | None = None,
+    extraction_focus: str | None = None,
+    enabled: bool | None = None,
+) -> dict[str, Any] | None:
+    fields: list[str] = []
+    values: list[Any] = []
+    updates = {
+        "name": name,
+        "description": description,
+        "kind": kind,
+        "extraction_focus": extraction_focus,
+        "enabled": None if enabled is None else int(bool(enabled)),
+    }
+    for key, value in updates.items():
+        if value is not None:
+            fields.append(f"{key} = %s")
+            values.append(value)
+    if not fields:
+        with connect() as conn:
+            cur = conn.cursor()
+            cur.execute(
+                """
+                SELECT playlist_id, name, description, kind, extraction_focus, enabled, created_at
+                FROM playlists
+                WHERE playlist_id = %s
+                """,
+                (playlist_id,),
+            )
+            row = cur.fetchone()
+            return dict(row) if row else None
+
+    values.append(playlist_id)
+    with connect() as conn:
+        cur = conn.cursor()
+        cur.execute(
+            f"""
+            UPDATE playlists
+            SET {", ".join(fields)}
+            WHERE playlist_id = %s
+            RETURNING playlist_id, name, description, kind, extraction_focus, enabled, created_at
+            """,
+            values,
+        )
+        row = cur.fetchone()
+        return dict(row) if row else None
+
+
+def record_worker_heartbeat(
+    worker_id: str,
+    *,
+    status: str = "idle",
+    current_job_id: str = "",
+    current_video_id: str = "",
+    note: str = "",
+) -> None:
+    ensure_worker_schema()
+    with connect() as conn:
+        cur = conn.cursor()
+        cur.execute(
+            """
+            INSERT INTO worker_heartbeats (
+                worker_id, status, current_job_id, current_video_id, note, updated_at
+            ) VALUES (%s, %s, %s, %s, %s, now())
+            ON CONFLICT (worker_id) DO UPDATE SET
+                status = EXCLUDED.status,
+                current_job_id = EXCLUDED.current_job_id,
+                current_video_id = EXCLUDED.current_video_id,
+                note = EXCLUDED.note,
+                updated_at = EXCLUDED.updated_at
+            """,
+            (worker_id, status[:40], current_job_id[:120], current_video_id[:120], note[:500]),
+        )
+
+
+def worker_status() -> dict[str, Any]:
+    ensure_worker_schema()
+    ensure_job_schema()
+    with connect() as conn:
+        cur = conn.cursor()
+        cur.execute(
+            """
+            SELECT worker_id, status, current_job_id, current_video_id, note,
+                   updated_at,
+                   EXTRACT(EPOCH FROM (now() - updated_at))::INTEGER AS seconds_since_seen
+            FROM worker_heartbeats
+            ORDER BY updated_at DESC
+            LIMIT 5
+            """
+        )
+        workers = _rows(cur)
+        cur.execute(
+            """
+            SELECT
+                COUNT(*) FILTER (WHERE status = 'queued') AS queued,
+                COUNT(*) FILTER (WHERE status = 'running') AS running,
+                COUNT(*) FILTER (WHERE status = 'failed') AS failed,
+                COUNT(*) FILTER (WHERE status = 'done') AS done
+            FROM knowledge_jobs
+            """
+        )
+        counts = dict(cur.fetchone() or {})
+
+    active = [
+        worker for worker in workers
+        if int(worker.get("seconds_since_seen") or 999999) <= 30
+    ]
+    return {
+        "ok": bool(active),
+        "workers": workers,
+        "active_workers": len(active),
+        "queue": {
+            "queued": int(counts.get("queued") or 0),
+            "running": int(counts.get("running") or 0),
+            "failed": int(counts.get("failed") or 0),
+            "done": int(counts.get("done") or 0),
+        },
+    }
 
 
 def list_jobs(video_id: str | None = None, limit: int = 50) -> list[dict[str, Any]]:

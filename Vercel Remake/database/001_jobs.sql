@@ -23,3 +23,15 @@ CREATE INDEX IF NOT EXISTS knowledge_jobs_video_idx
 CREATE UNIQUE INDEX IF NOT EXISTS knowledge_jobs_one_active_process_per_video_idx
     ON knowledge_jobs(video_id, kind)
     WHERE status IN ('queued', 'running') AND kind = 'process_video';
+
+CREATE TABLE IF NOT EXISTS worker_heartbeats (
+    worker_id TEXT PRIMARY KEY,
+    status TEXT NOT NULL DEFAULT 'idle',
+    current_job_id TEXT NOT NULL DEFAULT '',
+    current_video_id TEXT NOT NULL DEFAULT '',
+    note TEXT NOT NULL DEFAULT '',
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+CREATE INDEX IF NOT EXISTS worker_heartbeats_updated_idx
+    ON worker_heartbeats(updated_at DESC);

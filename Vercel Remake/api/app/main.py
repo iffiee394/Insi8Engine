@@ -46,6 +46,14 @@ class PlaylistSyncRequest(BaseModel):
     max_process: int | None = Field(default=3, ge=0, le=50)
 
 
+class PlaylistUpdateRequest(BaseModel):
+    name: str | None = None
+    description: str | None = None
+    kind: Literal["general", "podcast"] | None = None
+    extraction_focus: str | None = None
+    enabled: bool | None = None
+
+
 class ProviderKeysRequest(BaseModel):
     youtube: str | None = None
     gemini: str | None = None
@@ -70,6 +78,7 @@ def health() -> dict:
     if configured:
         try:
             db.ensure_job_schema()
+            db.ensure_worker_schema()
         except Exception as exc:
             return {"ok": False, "database": "error", "error": str(exc)[:240]}
     return {
@@ -126,12 +135,32 @@ def playlists() -> dict:
     return {"items": db.list_playlists()}
 
 
+@app.patch("/playlists/{playlist_id}")
+def update_playlist(playlist_id: str, req: PlaylistUpdateRequest) -> dict:
+    item = db.update_playlist(
+        playlist_id,
+        name=req.name.strip() if isinstance(req.name, str) else None,
+        description=req.description.strip() if isinstance(req.description, str) else None,
+        kind=req.kind,
+        extraction_focus=req.extraction_focus.strip() if isinstance(req.extraction_focus, str) else None,
+        enabled=req.enabled,
+    )
+    if not item:
+        raise HTTPException(status_code=404, detail="Playlist not found")
+    return {"ok": True, "item": item}
+
+
 
 
 @app.post("/playlists/sync")
 def sync_playlists(req: PlaylistSyncRequest) -> dict:
     job = db.enqueue_playlist_sync(req.max_process)
     return {"ok": True, "job": job}
+
+
+@app.get("/worker/status")
+def worker_status() -> dict:
+    return db.worker_status()
 
 
 @app.get("/jobs")

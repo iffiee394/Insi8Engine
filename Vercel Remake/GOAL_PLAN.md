@@ -18,6 +18,7 @@ The goal is a fast, normal website version of the knowledge system that can run 
    - The worker processes jobs outside the UI so the site does not freeze.
    - New videos are queued through `knowledge_jobs`.
    - Playlist sync can register videos only with `max_process=0`, or process a limited number with default agenda.
+   - The worker writes a heartbeat so the Queue page can show whether processing is alive.
 
 4. **Provider keys**
    - Settings accepts raw keys, `.env` style blocks, or JSON.
@@ -29,6 +30,7 @@ The goal is a fast, normal website version of the knowledge system that can run 
    - Default processing uses profile + playlist focus + transcript to create the agenda.
    - Custom agenda is combined with profile + playlist focus + transcript for a specific video.
    - The video detail screen shows the Processing lens so you can verify what guided extraction.
+   - Settings can edit playlist extraction focus, so playlist-driven default processing can be tuned from the remake dashboard.
 
 6. **Deployment path**
    - `DEPLOYMENT.md` contains the service split and environment variables.
@@ -94,6 +96,7 @@ Expected result:
 - At least one processed video exists.
 - Playlists load.
 - Profile save/restore works.
+- Worker status endpoint loads.
 - Video Processing lens sees an active profile during the temporary roundtrip.
 - Jobs load.
 
@@ -101,6 +104,12 @@ For playlist sync without processing a video:
 
 ```powershell
 .\.venv\Scripts\python.exe "Vercel Remake\scripts\smoke_check.py" --queue-playlist-sync --max-process 0 --wait-job 260
+```
+
+To prove playlist agenda focus wiring without permanently changing a playlist:
+
+```powershell
+.\.venv\Scripts\python.exe "Vercel Remake\scripts\smoke_check.py" --playlist-roundtrip
 ```
 
 ## Cloud deployment shape
@@ -127,8 +136,6 @@ For playlist sync without processing a video:
 
 ## Remaining improvements
 
-1. Add a hosted worker heartbeat card so the dashboard can show whether the background worker is alive.
-2. Add a playlist editor so playlist extraction focus can be changed from the remake dashboard.
-3. Add a scheduled cloud sync for specific days after the manual playlist sync is proven stable.
-4. Add login/auth before public deployment if the dashboard will be exposed beyond personal use.
-5. Add a compact chat/retrieval tab only after video ingestion, agendas, and insight rendering feel reliable.
+1. Add scheduled cloud sync for specific days after the manual playlist sync is proven stable.
+2. Add login/auth before public deployment if the dashboard will be exposed beyond personal use.
+3. Add a compact chat/retrieval tab only after video ingestion, agendas, and insight rendering feel reliable.

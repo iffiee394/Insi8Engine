@@ -1,7 +1,7 @@
 "use client";
 
 import { FormEvent, useEffect, useMemo, useState } from "react";
-import { api, type AgendaLens, type Health, type Job, type Playlist, type Profile, type Video } from "../lib/api";
+import { api, type AgendaLens, type Health, type Job, type Playlist, type Profile, type Video, type WorkerStatus } from "../lib/api";
 import { videoInsights, videoResearch, videoSummary } from "../lib/insights";
 
 type Page = "library" | "add" | "queue" | "settings";
@@ -115,6 +115,7 @@ export default function Home() {
   const [selectedJobs, setSelectedJobs] = useState<Job[]>([]);
   const [selectedAgendaLens, setSelectedAgendaLens] = useState<AgendaLens | null>(null);
   const [jobs, setJobs] = useState<Job[]>([]);
+  const [workerStatus, setWorkerStatus] = useState<WorkerStatus | null>(null);
   const [playlists, setPlaylists] = useState<Playlist[]>([]);
   const [profile, setProfile] = useState<Profile>(EMPTY_PROFILE);
   const [profilePrompt, setProfilePrompt] = useState("");
@@ -142,9 +143,10 @@ export default function Home() {
   }
 
   async function loadJobs() {
-    const result = await api.jobs();
+    const [result, worker] = await Promise.all([api.jobs(), api.workerStatus()]);
     setError("");
     setJobs(result.items);
+    setWorkerStatus(worker);
   }
 
   async function syncPlaylists(event: FormEvent<HTMLFormElement>) {
@@ -170,17 +172,19 @@ export default function Home() {
   useEffect(() => {
     async function boot() {
       try {
-        const [healthResult, videosResult, jobsResult, playlistsResult, profileResult] = await Promise.all([
+        const [healthResult, videosResult, jobsResult, playlistsResult, profileResult, workerResult] = await Promise.all([
           api.health(),
           api.videos(),
           api.jobs(),
           api.playlists(),
-          api.profile()
+          api.profile(),
+          api.workerStatus()
         ]);
         setError("");
         setHealth(healthResult);
         setVideos(videosResult.items);
         setJobs(jobsResult.items);
+        setWorkerStatus(workerResult);
         setPlaylists(playlistsResult.items);
         setProfile(profileResult.profile);
         setProfilePrompt(profileResult.prompt_preview);
@@ -309,6 +313,15 @@ export default function Home() {
     }
   }
 
+  async function savePlaylistFocus(playlistId: string, updates: Partial<Pick<Playlist, "name" | "description" | "kind" | "extraction_focus" | "enabled">>) {
+    const result = await api.savePlaylist(playlistId, updates);
+    setPlaylists((items) => items.map((playlist) => playlist.playlist_id === playlistId ? result.item : playlist));
+    if (selected?.playlist_id === playlistId) {
+      await loadVideo(selected.video_id);
+    }
+    return result.item;
+  }
+
   return (
     <main className="shell">
       <aside className="rail" aria-label="Primary navigation">
@@ -419,7 +432,7 @@ export default function Home() {
             ) : null}
 
             {page === "queue" ? (
-              <QueuePanel jobs={jobs} loading={loading} onRefresh={loadJobs} onSync={syncPlaylists} />
+              <QueuePanel jobs={jobs} workerStatus={workerStatus} loading={loading} onRefresh={loadJobs} onSync={syncPlaylists} />
             ) : null}
 
             {page === "settings" ? (
@@ -427,6 +440,8 @@ export default function Home() {
                 health={health}
                 profile={profile}
                 profilePrompt={profilePrompt}
+                playlists={playlists}
+                onPlaylistSaved={savePlaylistFocus}
                 onProfileSaved={(nextProfile, nextPrompt) => {
                   setProfile(nextProfile);
                   setProfilePrompt(nextPrompt);
@@ -783,15 +798,18 @@ function AddPanel({
 
 function QueuePanel({
   jobs,
+  workerStatus,
   loading,
   onRefresh,
   onSync
 }: {
   jobs: Job[];
+  workerStatus: WorkerStatus | null;
   loading: boolean;
   onRefresh: () => Promise<void>;
   onSync: (event: FormEvent<HTMLFormElement>) => Promise<void>;
 }) {
+  const newestWorker = workerStatus?.workers[0] || null;
   return (
     <section>
       <div className="main-actions" style={{ justifyContent: "space-between", marginBottom: 18 }}>
@@ -803,6 +821,29 @@ function QueuePanel({
           Refresh
         </button>
       </div>
+
+      <section className="status-strip" aria-label="Worker status">
+        <div>
+          <strong>{workerStatus?.ok ? "Worker online" : "Worker not seen"}</strong>
+          <span>
+            {newestWorker
+              ? `${newestWorker.status} · seen ${newestWorker.seconds_since_seen}s ago`
+              : "Start the worker so queued videos can process."}
+          </span>
+        </div>
+        <div>
+          <strong>{workerStatus?.queue.queued ?? 0}</strong>
+          <span>queued</span>
+        </div>
+        <div>
+          <strong>{workerStatus?.queue.running ?? 0}</strong>
+          <span>running</span>
+        </div>
+        <div>
+          <strong>{workerStatus?.queue.failed ?? 0}</strong>
+          <span>failed</span>
+        </div>
+      </section>
 
       <details className="card" open>
         <summary>Sync enabled playlists</summary>
@@ -840,11 +881,15 @@ function SettingsPanel({
   health,
   profile,
   profilePrompt,
+  playlists,
+  onPlaylistSaved,
   onProfileSaved
 }: {
   health: Health | null;
   profile: Profile;
   profilePrompt: string;
+  playlists: Playlist[];
+  onPlaylistSaved: (playlistId: string, updates: Partial<Pick<Playlist, "name" | "description" | "kind" | "extraction_focus" | "enabled">>) => Promise<Playlist>;
   onProfileSaved: (profile: Profile, prompt: string) => void;
 }) {
   const [services, setServices] = useState<Record<string, boolean>>(health?.services || {});
@@ -991,6 +1036,22 @@ function SettingsPanel({
       </details>
 
       <details className="card" open>
+        <summary>Playlist agenda profiles</summary>
+        <p>
+          Playlist focus is added to the default agenda when a video belongs to that playlist. Use this for recurring streams such as AI tools, podcasts, or client research.
+        </p>
+        <div className="playlist-editor-list">
+          {playlists.length ? (
+            playlists.map((playlist) => (
+              <PlaylistEditor playlist={playlist} onSave={onPlaylistSaved} key={playlist.playlist_id} />
+            ))
+          ) : (
+            <p className="summary">No playlists found yet. Sync or add a playlist in the existing database first.</p>
+          )}
+        </div>
+      </details>
+
+      <details className="card" open>
         <summary>Provider API keys</summary>
         <p>
           Paste only the keys you want to add or replace. Blank fields keep the current key. Stored keys are used by the API and worker, but are never shown back in the dashboard.
@@ -1054,6 +1115,83 @@ TAVILY_API_KEY=...`}
         </pre>
       </details>
     </section>
+  );
+}
+
+function PlaylistEditor({
+  playlist,
+  onSave
+}: {
+  playlist: Playlist;
+  onSave: (playlistId: string, updates: Partial<Pick<Playlist, "name" | "description" | "kind" | "extraction_focus" | "enabled">>) => Promise<Playlist>;
+}) {
+  const [draft, setDraft] = useState(playlist);
+  const [saving, setSaving] = useState(false);
+  const [message, setMessage] = useState("");
+
+  useEffect(() => {
+    setDraft(playlist);
+  }, [playlist]);
+
+  async function submit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setSaving(true);
+    setMessage("");
+    try {
+      const saved = await onSave(playlist.playlist_id, {
+        name: draft.name || "",
+        description: draft.description || "",
+        kind: draft.kind,
+        extraction_focus: draft.extraction_focus || "",
+        enabled: draft.enabled !== false
+      });
+      setDraft(saved);
+      setMessage("Playlist focus saved. New default agenda jobs will use it.");
+    } catch (exc) {
+      setMessage(exc instanceof Error ? exc.message : "Could not save playlist focus.");
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return (
+    <details className="playlist-editor" open>
+      <summary>
+        <span>{draft.name || draft.playlist_id}</span>
+        <small>{draft.kind} · {draft.enabled === false ? "disabled" : "enabled"}</small>
+      </summary>
+      <form className="settings-form" onSubmit={submit}>
+        <div className="field">
+          <label htmlFor={`${playlist.playlist_id}-name`}>Name</label>
+          <input id={`${playlist.playlist_id}-name`} value={draft.name || ""} onChange={(event) => setDraft((current) => ({ ...current, name: event.target.value }))} />
+        </div>
+        <div className="field">
+          <label htmlFor={`${playlist.playlist_id}-kind`}>Kind</label>
+          <select id={`${playlist.playlist_id}-kind`} value={draft.kind} onChange={(event) => setDraft((current) => ({ ...current, kind: event.target.value }))}>
+            <option value="general">General</option>
+            <option value="podcast">Podcast</option>
+          </select>
+        </div>
+        <div className="field span-2">
+          <label htmlFor={`${playlist.playlist_id}-desc`}>Description</label>
+          <textarea id={`${playlist.playlist_id}-desc`} value={draft.description || ""} onChange={(event) => setDraft((current) => ({ ...current, description: event.target.value }))} placeholder="What this playlist is for..." />
+        </div>
+        <div className="field span-2">
+          <label htmlFor={`${playlist.playlist_id}-focus`}>Extraction focus</label>
+          <textarea id={`${playlist.playlist_id}-focus`} value={draft.extraction_focus || ""} onChange={(event) => setDraft((current) => ({ ...current, extraction_focus: event.target.value }))} placeholder="For this playlist, prioritize tools, workflows, pricing, deployment steps, examples, links, and ideas I can reuse..." />
+        </div>
+        <label className="check-row span-2">
+          <input
+            type="checkbox"
+            checked={draft.enabled !== false}
+            onChange={(event) => setDraft((current) => ({ ...current, enabled: event.target.checked }))}
+          />
+          Include this playlist in sync
+        </label>
+        <button className="button" disabled={saving}>{saving ? "Saving..." : "Save playlist focus"}</button>
+      </form>
+      {message ? <p className="notice">{message}</p> : null}
+    </details>
   );
 }
 

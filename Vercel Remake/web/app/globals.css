@@ -274,6 +274,16 @@ summary { cursor: pointer; color: var(--text); font-weight: 650; }
 .settings-form { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; margin-top: 16px; max-width: 900px; }
 .settings-form .button { align-self: end; }
 .queue-list { display: grid; gap: 10px; }
+.status-strip {
+  display: grid; grid-template-columns: minmax(220px, 1fr) repeat(3, 110px);
+  gap: 10px; margin: 0 0 16px; max-width: 980px;
+}
+.status-strip div {
+  border: 1px solid var(--border); border-radius: 12px;
+  background: var(--surface); padding: 14px;
+}
+.status-strip strong { display: block; margin-bottom: 5px; }
+.status-strip span { color: var(--muted); font-size: 12px; line-height: 1.45; }
 .job {
   display: grid; grid-template-columns: 110px minmax(0, 1fr) 130px; gap: 14px; align-items: center;
   border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px;
@@ -283,6 +293,14 @@ summary { cursor: pointer; color: var(--text); font-weight: 650; }
 .service { border: 1px solid var(--border); border-radius: 10px; background: var(--surface); padding: 14px; }
 .service strong { display: block; margin-bottom: 6px; }
 .service span { color: var(--muted); font-size: 12px; }
+.playlist-editor-list { display: grid; gap: 12px; margin-top: 14px; }
+.playlist-editor {
+  border: 1px solid rgba(198, 191, 255, 0.11);
+  border-radius: 12px; background: rgba(255,255,255,0.025); padding: 14px;
+}
+.playlist-editor > summary { display: flex; justify-content: space-between; gap: 12px; align-items: baseline; }
+.playlist-editor > summary span { font-weight: 760; }
+.playlist-editor > summary small { color: var(--muted); font-size: 12px; }
 pre { overflow: auto; border: 1px solid var(--border); border-radius: 10px; background: #0b0c15; padding: 14px; color: #d8d5ff; }
 
 @media (max-width: 900px) {
@@ -297,7 +315,7 @@ pre { overflow: auto; border: 1px solid var(--border); border-radius: 10px; back
   .context { max-height: 430px; border-right: 0; border-bottom: 1px solid var(--border); }
   .main { overflow: visible; }
   .main-head { position: static; flex-direction: column; align-items: flex-start; }
-  .support-grid, .settings-grid, .settings-form, .lens-grid, .cockpit-grid { grid-template-columns: 1fr; }
+  .support-grid, .settings-grid, .settings-form, .lens-grid, .cockpit-grid, .status-strip { grid-template-columns: 1fr; }
   .insight-section > summary { grid-template-columns: 1fr; }
   .section-copy { padding: 0 18px 18px; }
   .job { grid-template-columns: 1fr; }

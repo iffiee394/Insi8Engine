@@ -69,6 +69,26 @@ export type Job = {
   finished_at?: string | null;
 };
 
+export type WorkerStatus = {
+  ok: boolean;
+  active_workers: number;
+  queue: {
+    queued: number;
+    running: number;
+    failed: number;
+    done: number;
+  };
+  workers: Array<{
+    worker_id: string;
+    status: string;
+    current_job_id: string;
+    current_video_id: string;
+    note: string;
+    updated_at: string;
+    seconds_since_seen: number;
+  }>;
+};
+
 export type Health = {
   ok: boolean;
   database: string;
@@ -105,6 +125,11 @@ export const api = {
   videos: () => request<{ items: Video[] }>("/videos?limit=100"),
   video: (id: string) => request<{ item: Video; jobs: Job[]; agenda_lens: AgendaLens }>(`/videos/${id}`),
   playlists: () => request<{ items: Playlist[] }>("/playlists"),
+  savePlaylist: (id: string, updates: Partial<Pick<Playlist, "name" | "description" | "kind" | "extraction_focus" | "enabled">>) =>
+    request<{ ok: boolean; item: Playlist }>(`/playlists/${encodeURIComponent(id)}`, {
+      method: "PATCH",
+      body: JSON.stringify(updates)
+    }),
   syncPlaylists: (maxProcess: number) =>
     request<{ ok: boolean; job: Job }>("/playlists/sync", {
       method: "POST",
@@ -117,6 +142,7 @@ export const api = {
       body: JSON.stringify(profile)
     }),
   jobs: () => request<{ items: Job[] }>("/jobs?limit=30"),
+  workerStatus: () => request<WorkerStatus>("/worker/status"),
   search: (q: string) => request<{ items: Video[] }>(`/search?q=${encodeURIComponent(q)}&limit=12`),
   ingest: (input: { url: string; kind: string; agendaMode: "default" | "custom"; agenda: string; playlistId: string }) =>
     request<{ ok: boolean; video: Video; job: Job }>("/ingest", {

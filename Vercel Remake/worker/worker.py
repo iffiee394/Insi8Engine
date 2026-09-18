@@ -19,6 +19,7 @@ load_dotenv()
 load_dotenv(LEGACY_ROOT / ".env", override=False)
 API_APP_ROOT = REMAKE_ROOT / "api"
 sys.path.insert(0, str(API_APP_ROOT))
+from app import db as api_db
 from app.pgconnect import connect_postgres
 from app.runtime_settings import apply_runtime_provider_keys
 
@@ -246,22 +247,40 @@ def handle_job(job: dict[str, Any]) -> None:
         raise RuntimeError(f"process_one exited with code {code}")
 
 
+def heartbeat(status: str, job: dict[str, Any] | None = None, note: str = "") -> None:
+    try:
+        api_db.record_worker_heartbeat(
+            WORKER_ID,
+            status=status,
+            current_job_id=str((job or {}).get("id") or ""),
+            current_video_id=str((job or {}).get("video_id") or ""),
+            note=note,
+        )
+    except Exception as exc:
+        print(f"Heartbeat failed: {exc}", flush=True)
+
+
 def main() -> None:
     print(f"InsightEngine worker started as {WORKER_ID}", flush=True)
+    heartbeat("starting", note="worker booted")
     while True:
         job = claim_job()
         if not job:
+            heartbeat("idle")
             time.sleep(POLL_SECONDS)
             continue
         print(f"Claimed {job['id']} for {job['video_id']}", flush=True)
+        heartbeat("running", job, f"handling {job['kind']}")
         try:
             handle_job(job)
         except Exception as exc:
             print(f"Job failed: {job['id']} {exc}", flush=True)
             fail_job(job, str(exc))
+            heartbeat("idle", note=f"last failure: {str(exc)[:180]}")
         else:
             finish_job(job["id"])
             print(f"Job done: {job['id']}", flush=True)
+            heartbeat("idle", note=f"finished {job['id']}")
 
 
 if __name__ == "__main__":

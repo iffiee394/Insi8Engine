@@ -56,6 +56,10 @@ def save_profile(api_base: str, profile: dict[str, Any]) -> dict[str, Any]:
     return request_json(api_base, "/settings/profile", method="POST", body=profile)
 
 
+def save_playlist(api_base: str, playlist_id: str, updates: dict[str, Any]) -> dict[str, Any]:
+    return request_json(api_base, f"/playlists/{playlist_id}", method="PATCH", body=updates)
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description="Smoke-check the Vercel Remake dashboard, API, DB, and queue.")
     parser.add_argument("--api-base", default="http://127.0.0.1:8000", help="FastAPI base URL")
@@ -68,10 +72,16 @@ def main() -> int:
         action="store_true",
         help="Temporarily save a test profile, verify agenda lens sees it, then restore the original profile",
     )
+    parser.add_argument(
+        "--playlist-roundtrip",
+        action="store_true",
+        help="Temporarily save a test playlist extraction focus, verify it appears in the agenda lens, then restore it",
+    )
     args = parser.parse_args()
 
     checks: list[Check] = []
     first_video_id = ""
+    playlists: list[dict[str, Any]] = []
 
     try:
         status, text = request_text(args.web_url)
@@ -104,6 +114,19 @@ def main() -> int:
         add(checks, "playlists load", bool(playlists), f"{len(playlists)} playlist(s)")
     except Exception as exc:
         add(checks, "playlists load", False, str(exc))
+
+    try:
+        worker = request_json(args.api_base, "/worker/status")
+        active_workers = int(worker.get("active_workers") or 0)
+        queue = worker.get("queue") or {}
+        add(
+            checks,
+            "worker status",
+            "workers" in worker and "queue" in worker,
+            f"active_workers={active_workers} queued={queue.get('queued', 0)} running={queue.get('running', 0)}",
+        )
+    except Exception as exc:
+        add(checks, "worker status", False, str(exc))
 
     try:
         profile = request_json(args.api_base, "/settings/profile")
@@ -153,6 +176,57 @@ def main() -> int:
                     add(checks, "profile restore", False, str(exc))
                 else:
                     add(checks, "profile restore", True, "original profile restored")
+
+    if args.playlist_roundtrip:
+        if not playlists:
+            add(checks, "playlist focus roundtrip", False, "no playlist available")
+        else:
+            playlist = playlists[0]
+            playlist_id = str(playlist.get("playlist_id") or "")
+            original = {
+                "name": playlist.get("name") or "",
+                "description": playlist.get("description") or "",
+                "kind": playlist.get("kind") or "general",
+                "extraction_focus": playlist.get("extraction_focus") or "",
+                "enabled": bool(playlist.get("enabled")),
+            }
+            marker = f"smoke-playlist-{int(time.time())}"
+            try:
+                saved = save_playlist(
+                    args.api_base,
+                    playlist_id,
+                    {
+                        **original,
+                        "extraction_focus": f"{marker}: prioritize deployable steps, links, tooling decisions, and reusable implementation details.",
+                    },
+                ).get("item") or {}
+                add(
+                    checks,
+                    "playlist focus roundtrip",
+                    marker in str(saved.get("extraction_focus") or ""),
+                    f"playlist={playlist_id}",
+                )
+                target_video_id = first_video_id
+                if target_video_id:
+                    video = request_json(args.api_base, f"/videos/{target_video_id}")
+                    lens = video.get("agenda_lens") or {}
+                    expected = str(lens.get("playlist_id") or "") == playlist_id
+                    visible = marker in str(lens.get("playlist_focus") or lens.get("profile_prompt_preview") or "")
+                    add(
+                        checks,
+                        "agenda lens sees playlist focus",
+                        (not expected) or visible,
+                        f"video={target_video_id} playlist_match={expected}",
+                    )
+            except Exception as exc:
+                add(checks, "playlist focus roundtrip", False, str(exc))
+            finally:
+                try:
+                    save_playlist(args.api_base, playlist_id, original)
+                except Exception as exc:
+                    add(checks, "playlist focus restore", False, str(exc))
+                else:
+                    add(checks, "playlist focus restore", True, "original playlist restored")
 
     try:
         jobs = request_json(args.api_base, "/jobs?limit=5").get("items", [])

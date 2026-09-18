@@ -138,10 +138,17 @@ To prove profile-driven agenda wiring without permanently changing the profile, 
 `--profile-roundtrip`. The script saves a temporary marked profile, verifies the
 profile prompt and video processing lens see it, then restores the original profile.
 
+To prove playlist extraction focus wiring without permanently changing a playlist, add
+`--playlist-roundtrip`. The script saves a temporary marked playlist focus, verifies
+the API accepts it and the agenda lens can see it when applicable, then restores the
+original playlist.
+
 1. Open `/health` on the API. It should return `ok: true` and provider service flags.
 2. Open the web dashboard. Videos should load from `/videos`.
 3. Save a profile in Settings and confirm `/settings/profile` returns a prompt preview.
-4. Add one disposable YouTube video with default agenda. Confirm it appears in Queue.
-5. Confirm the worker marks the job `done` or records a clear error.
-6. Use Queue -> Sync enabled playlists with `0` first. Confirm a `sync_playlists` job reaches `done`.
-7. Use Queue -> Sync enabled playlists with `1` only after the register-only sync works.
+4. Open Queue and confirm `/worker/status` reports the worker heartbeat after the worker starts.
+5. Save playlist extraction focus in Settings and confirm the selected video's Processing lens can show playlist focus.
+6. Add one disposable YouTube video with default agenda. Confirm it appears in Queue.
+7. Confirm the worker marks the job `done` or records a clear error.
+8. Use Queue -> Sync enabled playlists with `0` first. Confirm a `sync_playlists` job reaches `done`.
+9. Use Queue -> Sync enabled playlists with `1` only after the register-only sync works.
