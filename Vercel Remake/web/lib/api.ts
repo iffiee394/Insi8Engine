@@ -44,6 +44,19 @@ export type ProfileResponse = {
   prompt_preview: string;
 };
 
+export type AgendaLens = {
+  mode: "default" | "custom";
+  status: string;
+  agenda_text: string;
+  profile_active: boolean;
+  profile_has_text: boolean;
+  profile_prompt_preview: string;
+  playlist_id: string;
+  playlist_name: string;
+  playlist_kind: string;
+  playlist_focus: string;
+};
+
 export type Job = {
   id: string;
   kind: string;
@@ -90,7 +103,7 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
 export const api = {
   health: () => request<Health>("/health"),
   videos: () => request<{ items: Video[] }>("/videos?limit=100"),
-  video: (id: string) => request<{ item: Video; jobs: Job[] }>(`/videos/${id}`),
+  video: (id: string) => request<{ item: Video; jobs: Job[]; agenda_lens: AgendaLens }>(`/videos/${id}`),
   playlists: () => request<{ items: Playlist[] }>("/playlists"),
   syncPlaylists: (maxProcess: number) =>
     request<{ ok: boolean; job: Job }>("/playlists/sync", {

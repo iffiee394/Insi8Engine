@@ -1,7 +1,7 @@
 "use client";
 
 import { FormEvent, useEffect, useMemo, useState } from "react";
-import { api, type Health, type Job, type Playlist, type Profile, type Video } from "../lib/api";
+import { api, type AgendaLens, type Health, type Job, type Playlist, type Profile, type Video } from "../lib/api";
 import { videoInsights, videoResearch, videoSummary } from "../lib/insights";
 
 type Page = "library" | "add" | "queue" | "settings";
@@ -107,6 +107,7 @@ export default function Home() {
   const [selectedId, setSelectedId] = useState("");
   const [selected, setSelected] = useState<Video | null>(null);
   const [selectedJobs, setSelectedJobs] = useState<Job[]>([]);
+  const [selectedAgendaLens, setSelectedAgendaLens] = useState<AgendaLens | null>(null);
   const [jobs, setJobs] = useState<Job[]>([]);
   const [playlists, setPlaylists] = useState<Playlist[]>([]);
   const [profile, setProfile] = useState<Profile>(EMPTY_PROFILE);
@@ -122,6 +123,7 @@ export default function Home() {
     setError("");
     setSelected(result.item);
     setSelectedJobs(result.jobs);
+    setSelectedAgendaLens(result.agenda_lens);
   }
 
   async function loadVideos(preferredId?: string) {
@@ -211,6 +213,7 @@ export default function Home() {
     setSelectedId(id);
     setSelected(videos.find((video) => video.video_id === id) ?? null);
     setSelectedJobs([]);
+    setSelectedAgendaLens(null);
     setError("");
     setPage("library");
     await loadVideo(id);
@@ -391,6 +394,7 @@ export default function Home() {
               <VideoDetail
                 video={displayedVideo}
                 jobs={selectedJobs}
+                agendaLens={selectedAgendaLens}
                 loading={loading}
                 onProcess={processSelected}
                 onCustomProcess={processSelectedWithAgenda}
@@ -427,6 +431,7 @@ export default function Home() {
 function VideoDetail({
   video,
   jobs,
+  agendaLens,
   loading,
   onProcess,
   onCustomProcess,
@@ -434,6 +439,7 @@ function VideoDetail({
 }: {
   video: Video | null;
   jobs: Job[];
+  agendaLens: AgendaLens | null;
   loading: boolean;
   onProcess: () => Promise<void>;
   onCustomProcess: (event: FormEvent<HTMLFormElement>) => Promise<void>;
@@ -479,17 +485,7 @@ function VideoDetail({
         </div>
       ) : null}
 
-      {video.user_agenda ? (
-        <section className="reader-block compact">
-          <p className="reader-label">Custom agenda</p>
-          <p className="summary">{video.user_agenda}</p>
-        </section>
-      ) : video.auto_agenda ? (
-        <section className="reader-block compact">
-          <p className="reader-label">Default agenda used</p>
-          <p className="summary">{video.auto_agenda}</p>
-        </section>
-      ) : null}
+      <AgendaLensPanel lens={agendaLens} />
 
       <section className="reader-block">
         <p className="reader-label">Summary</p>
@@ -613,6 +609,52 @@ function VideoDetail({
         </details>
       </div>
     </section>
+  );
+}
+
+
+function AgendaLensPanel({ lens }: { lens: AgendaLens | null }) {
+  if (!lens) return null;
+  const activeProfile = lens.profile_has_text && lens.profile_active;
+  return (
+    <details className="card" open>
+      <summary>Processing lens</summary>
+      <div className="lens-grid">
+        <div>
+          <strong>Agenda mode</strong>
+          <span>{lens.mode === "custom" ? "Custom agenda" : "Default generated agenda"}</span>
+        </div>
+        <div>
+          <strong>Profile</strong>
+          <span>{activeProfile ? "Active" : lens.profile_has_text ? "Saved but disabled" : "No profile text yet"}</span>
+        </div>
+        <div>
+          <strong>Playlist</strong>
+          <span>{lens.playlist_name || lens.playlist_kind || "No playlist profile"}</span>
+        </div>
+      </div>
+      <p className="summary">{lens.status}</p>
+      {lens.agenda_text ? (
+        <div className="reader-block compact">
+          <p className="reader-label">Agenda text</p>
+          <p className="summary preserve-lines">{lens.agenda_text}</p>
+        </div>
+      ) : null}
+      {lens.playlist_focus ? (
+        <div className="reader-block compact">
+          <p className="reader-label">Playlist focus</p>
+          <p className="summary preserve-lines">{lens.playlist_focus}</p>
+        </div>
+      ) : null}
+      {lens.profile_prompt_preview ? (
+        <details className="nested-card card">
+          <summary>Profile prompt used by processor</summary>
+          <pre>{lens.profile_prompt_preview}</pre>
+        </details>
+      ) : (
+        <p className="summary">Add profile text in Settings to make the default agenda personal.</p>
+      )}
+    </details>
   );
 }
 

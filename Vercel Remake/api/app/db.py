@@ -207,6 +207,56 @@ def get_video(video_id: str) -> dict[str, Any] | None:
         return dict(row) if row else None
 
 
+def agenda_lens_for_video(video: dict[str, Any]) -> dict[str, Any]:
+    profile = get_profile()
+    profile_sections = _format_profile_sections(profile)
+    playlist_id = str(video.get("playlist_id") or "").strip()
+    playlist = None
+    playlist_focus = ""
+    if playlist_id:
+        with connect() as conn:
+            cur = conn.cursor()
+            cur.execute(
+                """
+                SELECT playlist_id, name, description, kind, extraction_focus, profile_json
+                FROM playlists
+                WHERE playlist_id = %s
+                """,
+                (playlist_id,),
+            )
+            row = cur.fetchone()
+        if row:
+            playlist = dict(row)
+            playlist_focus = str(playlist.get("extraction_focus") or "").strip()
+
+    user_agenda = str(video.get("user_agenda") or "").strip()
+    auto_agenda = str(video.get("auto_agenda") or "").strip()
+    mode = "custom" if user_agenda else "default"
+
+    if mode == "custom":
+        agenda_text = user_agenda
+        status = "custom agenda saved"
+    elif auto_agenda:
+        agenda_text = auto_agenda
+        status = "default agenda generated during processing"
+    else:
+        agenda_text = ""
+        status = "default agenda will be generated from profile, playlist focus, and transcript during processing"
+
+    return {
+        "mode": mode,
+        "status": status,
+        "agenda_text": agenda_text,
+        "profile_active": bool(profile_sections),
+        "profile_has_text": any(str(profile.get(key, "")).strip() for key in ("about_me", "interests", "insight_style", "known_topics")),
+        "profile_prompt_preview": profile_prompt_preview(),
+        "playlist_id": playlist_id,
+        "playlist_name": (playlist or {}).get("name", "") if playlist else "",
+        "playlist_kind": (playlist or {}).get("kind", "") if playlist else str(video.get("playlist_type") or ""),
+        "playlist_focus": playlist_focus,
+    }
+
+
 def list_playlists() -> list[dict[str, Any]]:
     with connect() as conn:
         cur = conn.cursor()

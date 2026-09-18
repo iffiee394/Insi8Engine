@@ -118,7 +118,7 @@ def video(video_id: str) -> dict:
     item = db.get_video(video_id)
     if not item:
         raise HTTPException(status_code=404, detail="Video not found")
-    return {"item": item, "jobs": db.list_jobs(video_id=video_id, limit=10)}
+    return {"item": item, "jobs": db.list_jobs(video_id=video_id, limit=10), "agenda_lens": db.agenda_lens_for_video(item)}
 
 
 @app.get("/playlists")
