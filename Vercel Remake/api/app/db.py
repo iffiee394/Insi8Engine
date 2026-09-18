@@ -168,11 +168,70 @@ def save_profile(updates: dict[str, Any]) -> dict[str, Any]:
     return current
 
 
-def profile_prompt_preview() -> str:
-    block = _format_profile_sections(get_profile())
-    if not block:
+def _format_playlist_sections(playlist: dict[str, Any] | None) -> str:
+    if not playlist:
         return ""
-    return "USER PROFILE — used to shape agenda, tone, and depth:\n---\n" + block + "\n---"
+
+    sections: list[str] = []
+    try:
+        playlist_profile = json.loads(playlist.get("profile_json") or "{}")
+    except json.JSONDecodeError:
+        playlist_profile = {}
+    if isinstance(playlist_profile, dict):
+        playlist_block = _format_profile_sections(playlist_profile, prefix="Playlist focus")
+        if playlist_block:
+            sections.append(playlist_block)
+
+    playlist_focus = str(playlist.get("extraction_focus") or "").strip()
+    if playlist_focus:
+        sections.append(f"Playlist extraction focus:\n{playlist_focus}")
+
+    return "\n\n".join(sections)
+
+
+def _playlist_profile_sections(playlist_id: str) -> tuple[str, dict[str, Any] | None]:
+    playlist_id = playlist_id.strip()
+    if not playlist_id:
+        return "", None
+
+    with connect() as conn:
+        cur = conn.cursor()
+        cur.execute(
+            """
+            SELECT playlist_id, name, description, kind, extraction_focus, profile_json
+            FROM playlists
+            WHERE playlist_id = %s
+            """,
+            (playlist_id,),
+        )
+        row = cur.fetchone()
+
+    if not row:
+        return "", None
+
+    playlist = dict(row)
+    return _format_playlist_sections(playlist), playlist
+
+
+def profile_prompt_preview(
+    *,
+    playlist_id: str = "",
+    profile: dict[str, Any] | None = None,
+    playlist: dict[str, Any] | None = None,
+) -> str:
+    sections: list[str] = []
+    profile_block = _format_profile_sections(profile if profile is not None else get_profile())
+    if profile_block:
+        sections.append(profile_block)
+    playlist_block = _format_playlist_sections(playlist)
+    if not playlist_block and playlist_id:
+        playlist_block, _playlist = _playlist_profile_sections(playlist_id)
+    if playlist_block:
+        sections.append(playlist_block)
+
+    if not sections:
+        return ""
+    return "USER PROFILE — used to shape agenda, tone, and depth:\n---\n" + "\n\n".join(sections) + "\n---"
 
 
 def list_videos(status: str | None = None, limit: int = 80) -> list[dict[str, Any]]:
@@ -207,15 +266,33 @@ def get_video(video_id: str) -> dict[str, Any] | None:
         return dict(row) if row else None
 
 
-def agenda_lens_for_video(video: dict[str, Any]) -> dict[str, Any]:
-    profile = get_profile()
-    profile_sections = _format_profile_sections(profile)
-    playlist_id = str(video.get("playlist_id") or "").strip()
-    playlist = None
-    playlist_focus = ""
-    if playlist_id:
-        with connect() as conn:
-            cur = conn.cursor()
+def get_video_detail(video_id: str) -> dict[str, Any] | None:
+    with connect() as conn:
+        cur = conn.cursor()
+        cur.execute("SELECT * FROM videos WHERE video_id = %s", (video_id,))
+        video_row = cur.fetchone()
+        if not video_row:
+            return None
+
+        video = dict(video_row)
+        cur.execute(
+            """
+            SELECT * FROM knowledge_jobs
+            WHERE video_id = %s
+            ORDER BY created_at DESC
+            LIMIT 10
+            """,
+            (video_id,),
+        )
+        jobs = _rows(cur)
+
+        cur.execute("SELECT profile_json FROM personal_settings WHERE id = %s", ("default",))
+        profile_row = cur.fetchone()
+        profile = _merge_profile(profile_row.get("profile_json") if profile_row else {})
+
+        playlist = None
+        playlist_id = str(video.get("playlist_id") or "").strip()
+        if playlist_id:
             cur.execute(
                 """
                 SELECT playlist_id, name, description, kind, extraction_focus, profile_json
@@ -224,10 +301,30 @@ def agenda_lens_for_video(video: dict[str, Any]) -> dict[str, Any]:
                 """,
                 (playlist_id,),
             )
-            row = cur.fetchone()
-        if row:
-            playlist = dict(row)
-            playlist_focus = str(playlist.get("extraction_focus") or "").strip()
+            playlist_row = cur.fetchone()
+            playlist = dict(playlist_row) if playlist_row else None
+
+    return {
+        "item": video,
+        "jobs": jobs,
+        "agenda_lens": agenda_lens_for_video(video, profile=profile, playlist=playlist),
+    }
+
+
+def agenda_lens_for_video(
+    video: dict[str, Any],
+    *,
+    profile: dict[str, Any] | None = None,
+    playlist: dict[str, Any] | None = None,
+) -> dict[str, Any]:
+    profile = profile if profile is not None else get_profile()
+    profile_sections = _format_profile_sections(profile)
+    playlist_id = str(video.get("playlist_id") or "").strip()
+    playlist_focus = ""
+    if playlist_id and playlist is None:
+        _playlist_block, playlist = _playlist_profile_sections(playlist_id)
+    if playlist:
+        playlist_focus = str(playlist.get("extraction_focus") or "").strip()
 
     user_agenda = str(video.get("user_agenda") or "").strip()
     auto_agenda = str(video.get("auto_agenda") or "").strip()
@@ -235,7 +332,7 @@ def agenda_lens_for_video(video: dict[str, Any]) -> dict[str, Any]:
 
     if mode == "custom":
         agenda_text = user_agenda
-        status = "custom agenda saved"
+        status = "custom agenda will be combined with the saved profile, playlist focus, and transcript during processing"
     elif auto_agenda:
         agenda_text = auto_agenda
         status = "default agenda generated during processing"
@@ -249,7 +346,7 @@ def agenda_lens_for_video(video: dict[str, Any]) -> dict[str, Any]:
         "agenda_text": agenda_text,
         "profile_active": bool(profile_sections),
         "profile_has_text": any(str(profile.get(key, "")).strip() for key in ("about_me", "interests", "insight_style", "known_topics")),
-        "profile_prompt_preview": profile_prompt_preview(),
+        "profile_prompt_preview": profile_prompt_preview(playlist_id=playlist_id, profile=profile, playlist=playlist),
         "playlist_id": playlist_id,
         "playlist_name": (playlist or {}).get("name", "") if playlist else "",
         "playlist_kind": (playlist or {}).get("kind", "") if playlist else str(video.get("playlist_type") or ""),

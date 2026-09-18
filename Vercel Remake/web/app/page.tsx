@@ -101,6 +101,12 @@ function normalizeSingleProviderInput(value: string, provider: string): string {
   return stripWrappingQuotes(value);
 }
 
+function profileHasText(profile: Profile): boolean {
+  return ["about_me", "interests", "insight_style", "known_topics"].some((key) =>
+    String(profile[key as keyof Profile] || "").trim()
+  );
+}
+
 export default function Home() {
   const [page, setPage] = useState<Page>("library");
   const [videos, setVideos] = useState<Video[]>([]);
@@ -403,7 +409,13 @@ export default function Home() {
             ) : null}
 
             {page === "add" ? (
-              <AddPanel loading={loading} playlists={playlists} onSubmit={submitAdd} />
+              <AddPanel
+                loading={loading}
+                playlists={playlists}
+                profile={profile}
+                profilePrompt={profilePrompt}
+                onSubmit={submitAdd}
+              />
             ) : null}
 
             {page === "queue" ? (
@@ -616,6 +628,9 @@ function VideoDetail({
 function AgendaLensPanel({ lens }: { lens: AgendaLens | null }) {
   if (!lens) return null;
   const activeProfile = lens.profile_has_text && lens.profile_active;
+  const recipe = lens.mode === "custom"
+    ? "Profile + custom agenda + playlist focus + transcript"
+    : "Profile + playlist focus + transcript";
   return (
     <details className="card" open>
       <summary>Processing lens</summary>
@@ -631,6 +646,10 @@ function AgendaLensPanel({ lens }: { lens: AgendaLens | null }) {
         <div>
           <strong>Playlist</strong>
           <span>{lens.playlist_name || lens.playlist_kind || "No playlist profile"}</span>
+        </div>
+        <div>
+          <strong>Extraction recipe</strong>
+          <span>{recipe}</span>
         </div>
       </div>
       <p className="summary">{lens.status}</p>
@@ -661,13 +680,18 @@ function AgendaLensPanel({ lens }: { lens: AgendaLens | null }) {
 function AddPanel({
   loading,
   playlists,
+  profile,
+  profilePrompt,
   onSubmit
 }: {
   loading: boolean;
   playlists: Playlist[];
+  profile: Profile;
+  profilePrompt: string;
   onSubmit: (event: FormEvent<HTMLFormElement>) => Promise<void>;
 }) {
   const [agendaMode, setAgendaMode] = useState<"default" | "custom">("default");
+  const hasProfile = profileHasText(profile);
   return (
     <section>
       <p className="caps">New source</p>
@@ -675,6 +699,37 @@ function AddPanel({
       <p className="summary">
         This creates a queued job. The worker processes the video separately, so the dashboard stays fast.
       </p>
+
+      <section className="agenda-cockpit" aria-label="Agenda cockpit">
+        <div>
+          <p className="reader-label">Goal</p>
+          <h2>Extract what matters to you, not a generic summary.</h2>
+          <p>
+            Default processing builds the agenda from your saved profile, the selected playlist focus, and the transcript. Custom agenda adds a video-specific instruction on top of that profile.
+          </p>
+        </div>
+        <div className="cockpit-grid">
+          <div>
+            <strong>{hasProfile ? "Profile active" : "Profile needed"}</strong>
+            <span>{hasProfile ? "Default agendas will use your saved interests and style." : "Add your profile in Settings before serious processing."}</span>
+          </div>
+          <div>
+            <strong>Default agenda</strong>
+            <span>Best for normal videos and playlist automation.</span>
+          </div>
+          <div>
+            <strong>Custom agenda</strong>
+            <span>Best when this one video needs a special angle.</span>
+          </div>
+        </div>
+        {profilePrompt ? (
+          <details className="mini-preview">
+            <summary>Current profile lens</summary>
+            <pre>{profilePrompt}</pre>
+          </details>
+        ) : null}
+      </section>
+
       <form className="form" onSubmit={onSubmit}>
         <div className="field">
           <label htmlFor="url">YouTube URL</label>
@@ -869,6 +924,20 @@ function SettingsPanel({
           </div>
         ))}
       </div>
+
+      <details className="card" open>
+        <summary>Working goal</summary>
+        <p>
+          Build a fast Vercel-style knowledge system: save your profile once, add a video with a default or custom agenda, process it in the worker, then read expandable insights, research resources, and links in the dashboard.
+        </p>
+        <ol>
+          <li>Save your profile lens below. This is the stable part of every extraction.</li>
+          <li>Add a video. Use default agenda for normal processing, or custom agenda for one special angle.</li>
+          <li>Watch Queue until the processing job is done.</li>
+          <li>Open the video and check Processing lens, Insights, Research, and Links.</li>
+        </ol>
+        <p className="summary">Project plan file: <code>Vercel Remake/GOAL_PLAN.md</code></p>
+      </details>
 
       <details className="card" open>
         <summary>Profile-driven agenda</summary>

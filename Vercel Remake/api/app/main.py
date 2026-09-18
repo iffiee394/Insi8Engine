@@ -115,10 +115,10 @@ def videos(
 
 @app.get("/videos/{video_id}")
 def video(video_id: str) -> dict:
-    item = db.get_video(video_id)
-    if not item:
+    detail = db.get_video_detail(video_id)
+    if not detail:
         raise HTTPException(status_code=404, detail="Video not found")
-    return {"item": item, "jobs": db.list_jobs(video_id=video_id, limit=10), "agenda_lens": db.agenda_lens_for_video(item)}
+    return detail
 
 
 @app.get("/playlists")
