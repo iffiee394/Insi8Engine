@@ -17,6 +17,72 @@ PROVIDER_ENV = {
     "tavily": "TAVILY_API_KEY",
 }
 
+ENV_PROVIDER = {env_name: provider for provider, env_name in PROVIDER_ENV.items()}
+ENV_PROVIDER["GOOGLE_API_KEY"] = "gemini"
+
+
+def _strip_wrapping_quotes(value: str) -> str:
+    value = value.strip()
+    if len(value) >= 2 and value[0] == value[-1] and value[0] in {"'", '"'}:
+        return value[1:-1].strip()
+    return value
+
+
+def _parse_provider_lines(raw: str) -> dict[str, str]:
+    parsed: dict[str, str] = {}
+    for line in raw.replace("\r\n", "\n").split("\n"):
+        line = line.strip()
+        if not line or line.startswith("#"):
+            continue
+        if line.lower().startswith("export "):
+            line = line[7:].strip()
+        if "=" not in line:
+            continue
+        name, value = line.split("=", 1)
+        normalized_name = name.strip().upper()
+        provider = ENV_PROVIDER.get(normalized_name) or normalized_name.lower()
+        if provider in PROVIDER_ENV:
+            cleaned = _strip_wrapping_quotes(value)
+            if cleaned:
+                parsed[provider] = cleaned
+    return parsed
+
+
+def _normalize_provider_updates(updates: dict[str, Any]) -> dict[str, str]:
+    normalized: dict[str, str] = {}
+
+    for bulk_key in ("bulk", "env", "provider_keys", "providerKeys"):
+        raw_bulk = updates.get(bulk_key)
+        if isinstance(raw_bulk, str) and raw_bulk.strip():
+            stripped = raw_bulk.strip()
+            if stripped.startswith("{"):
+                try:
+                    decoded = json.loads(stripped)
+                except Exception:
+                    decoded = None
+                if isinstance(decoded, dict):
+                    normalized.update(_normalize_provider_updates(decoded))
+            normalized.update(_parse_provider_lines(stripped))
+
+    for key, raw in updates.items():
+        if raw is None:
+            continue
+        provider = ENV_PROVIDER.get(str(key).strip().upper()) or str(key).strip().lower()
+        if provider not in PROVIDER_ENV:
+            continue
+
+        value = str(raw).strip()
+        if not value:
+            continue
+        parsed_lines = _parse_provider_lines(value)
+        if provider in parsed_lines:
+            normalized[provider] = parsed_lines[provider]
+        elif len(parsed_lines) == 1:
+            normalized[provider] = next(iter(parsed_lines.values()))
+        else:
+            normalized[provider] = _strip_wrapping_quotes(value)
+    return normalized
+
 
 def _read_store() -> dict[str, str]:
     if not PROVIDER_KEYS_PATH.exists():
@@ -51,20 +117,12 @@ def provider_status() -> dict[str, bool]:
 
 def save_provider_keys(updates: dict[str, Any]) -> dict[str, bool]:
     current = _read_store()
-    for provider in PROVIDER_ENV:
-        if provider not in updates:
-            continue
-        raw = updates.get(provider)
-        if raw is None:
-            continue
-        value = str(raw).strip()
-        if value:
-            current[provider] = value
-            os.environ[PROVIDER_ENV[provider]] = value
-            if provider == "gemini":
-                os.environ["GOOGLE_API_KEY"] = value
-        else:
-            current.pop(provider, None)
+    normalized = _normalize_provider_updates(updates)
+    for provider, value in normalized.items():
+        current[provider] = value
+        os.environ[PROVIDER_ENV[provider]] = value
+        if provider == "gemini":
+            os.environ["GOOGLE_API_KEY"] = value
     RUNTIME_DIR.mkdir(parents=True, exist_ok=True)
     PROVIDER_KEYS_PATH.write_text(json.dumps(current, indent=2), encoding="utf-8")
     return provider_status()

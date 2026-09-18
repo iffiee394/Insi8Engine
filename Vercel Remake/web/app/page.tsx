@@ -21,6 +21,68 @@ function thumbnailUrl(video: Video): string {
   return video.thumbnail_url || `https://i.ytimg.com/vi/${video.video_id}/mqdefault.jpg`;
 }
 
+const providerNames = ["youtube", "gemini", "anthropic", "groq", "tavily"] as const;
+
+const providerEnvToName: Record<string, string> = {
+  YOUTUBE_API_KEY: "youtube",
+  GEMINI_API_KEY: "gemini",
+  GOOGLE_API_KEY: "gemini",
+  ANTHROPIC_API_KEY: "anthropic",
+  GROQ_API_KEY: "groq",
+  TAVILY_API_KEY: "tavily"
+};
+
+function stripWrappingQuotes(value: string): string {
+  const trimmed = value.trim();
+  if (trimmed.length >= 2 && trimmed[0] === trimmed[trimmed.length - 1] && ["'", '"'].includes(trimmed[0])) {
+    return trimmed.slice(1, -1).trim();
+  }
+  return trimmed;
+}
+
+function parseProviderKeyBlock(input: string): Record<string, string> {
+  const parsed: Record<string, string> = {};
+  const trimmed = input.trim();
+  if (!trimmed) return parsed;
+
+  if (trimmed.startsWith("{")) {
+    try {
+      const data = JSON.parse(trimmed) as Record<string, unknown>;
+      for (const [key, rawValue] of Object.entries(data)) {
+        const provider = providerEnvToName[key.trim().toUpperCase()] || key.trim().toLowerCase();
+        if (providerNames.includes(provider as (typeof providerNames)[number]) && typeof rawValue === "string" && rawValue.trim()) {
+          parsed[provider] = stripWrappingQuotes(rawValue);
+        }
+      }
+      return parsed;
+    } catch {
+      // Fall back to .env parsing below.
+    }
+  }
+
+  for (const originalLine of input.replace(/\r\n/g, "\n").split("\n")) {
+    let line = originalLine.trim();
+    if (!line || line.startsWith("#")) continue;
+    if (line.toLowerCase().startsWith("export ")) line = line.slice(7).trim();
+    if (!line.includes("=")) continue;
+    const [rawName, ...rawParts] = line.split("=");
+    const provider = providerEnvToName[rawName.trim().toUpperCase()] || rawName.trim().toLowerCase();
+    const value = stripWrappingQuotes(rawParts.join("="));
+    if (providerNames.includes(provider as (typeof providerNames)[number]) && value) {
+      parsed[provider] = value;
+    }
+  }
+  return parsed;
+}
+
+function normalizeSingleProviderInput(value: string, provider: string): string {
+  const parsed = parseProviderKeyBlock(value);
+  if (parsed[provider]) return parsed[provider];
+  const keys = Object.values(parsed);
+  if (keys.length === 1) return keys[0];
+  return stripWrappingQuotes(value);
+}
+
 export default function Home() {
   const [page, setPage] = useState<Page>("library");
   const [videos, setVideos] = useState<Video[]>([]);
@@ -515,6 +577,7 @@ function SettingsPanel({ health }: { health: Health | null }) {
   const [services, setServices] = useState<Record<string, boolean>>(health?.services || {});
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState("");
+  const [bulkKeys, setBulkKeys] = useState("");
 
   useEffect(() => {
     setServices(health?.services || {});
@@ -524,20 +587,21 @@ function SettingsPanel({ health }: { health: Health | null }) {
     event.preventDefault();
     setMessage("");
     const form = new FormData(event.currentTarget);
-    const keys: Record<string, string> = {};
-    for (const name of ["youtube", "gemini", "anthropic", "groq", "tavily"]) {
+    const keys: Record<string, string> = parseProviderKeyBlock(bulkKeys);
+    for (const name of providerNames) {
       const value = String(form.get(name) || "").trim();
-      if (value) keys[name] = value;
+      if (value) keys[name] = normalizeSingleProviderInput(value, name);
     }
     if (!Object.keys(keys).length) {
-      setMessage("Paste at least one new key to save.");
+      setMessage("Paste at least one key, either as a raw key or as NAME=value.");
       return;
     }
     setSaving(true);
     try {
       const result = await api.saveProviderKeys(keys);
       setServices(result.services);
-      setMessage("Saved. New jobs will use the updated provider keys.");
+      setMessage(`Saved ${Object.keys(keys).length} key${Object.keys(keys).length === 1 ? "" : "s"}. New jobs will use the updated provider keys.`);
+      setBulkKeys("");
       event.currentTarget.reset();
     } catch (exc) {
       setMessage(exc instanceof Error ? exc.message : "Could not save keys.");
@@ -567,10 +631,28 @@ function SettingsPanel({ health }: { health: Health | null }) {
         <p>
           Paste only the keys you want to add or replace. Blank fields keep the current key. Stored keys are used by the API and worker, but are never shown back in the dashboard.
         </p>
+        <p className="summary">Runtime key file: <code>Vercel Remake/runtime/provider_keys.json</code></p>
+        <pre>{`YOUTUBE_API_KEY=your_new_youtube_key
+GEMINI_API_KEY=your_gemini_key
+ANTHROPIC_API_KEY=your_anthropic_key
+GROQ_API_KEY=your_groq_key
+TAVILY_API_KEY=your_tavily_key`}</pre>
         <form className="settings-form" onSubmit={saveKeys}>
+          <div className="field span-2">
+            <label htmlFor="bulk-provider-keys">Paste .env key block</label>
+            <textarea
+              id="bulk-provider-keys"
+              value={bulkKeys}
+              onChange={(event) => setBulkKeys(event.target.value)}
+              rows={6}
+              spellCheck={false}
+              placeholder="YOUTUBE_API_KEY=..."
+            />
+            <small>You can paste one line or the full block. JSON also works, for example {`{"youtube":"..."}`}.</small>
+          </div>
           <div className="field">
             <label htmlFor="youtube-key">YouTube API key</label>
-            <input id="youtube-key" name="youtube" type="password" autoComplete="off" placeholder="Paste new YouTube key" />
+            <input id="youtube-key" name="youtube" type="password" autoComplete="off" placeholder="Raw key or YOUTUBE_API_KEY=..." />
           </div>
           <div className="field">
             <label htmlFor="gemini-key">Gemini API key</label>

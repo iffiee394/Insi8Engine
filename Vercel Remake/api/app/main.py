@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import Literal
 
-from fastapi import FastAPI, HTTPException, Query
+from fastapi import FastAPI, HTTPException, Query, Request
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 
@@ -66,8 +66,11 @@ def get_provider_settings() -> dict:
 
 
 @app.post("/settings/providers")
-def update_provider_settings(req: ProviderKeysRequest) -> dict:
-    status = save_provider_keys(req.model_dump(exclude_none=True))
+async def update_provider_settings(request: Request) -> dict:
+    payload = await request.json()
+    if not isinstance(payload, dict):
+        raise HTTPException(status_code=400, detail="Send provider keys as a JSON object or .env block.")
+    status = save_provider_keys(payload)
     get_settings.cache_clear()
     return {"ok": True, "services": status}
 
