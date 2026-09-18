@@ -6,9 +6,9 @@ from contextlib import contextmanager
 from datetime import datetime, timezone
 from typing import Any, Iterator
 
-import psycopg2
 from psycopg2.extras import RealDictCursor
 
+from .pgconnect import connect_postgres
 from .settings import get_settings
 
 
@@ -25,7 +25,7 @@ def connect() -> Iterator[Any]:
     url = get_settings().database_url
     if not url:
         raise DatabaseNotConfigured("DATABASE_URL is not configured.")
-    conn = psycopg2.connect(url, connect_timeout=15, cursor_factory=RealDictCursor)
+    conn = connect_postgres(url)
     try:
         yield conn
         conn.commit()

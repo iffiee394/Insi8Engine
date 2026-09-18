@@ -8,7 +8,6 @@ from contextlib import contextmanager
 from pathlib import Path
 from typing import Any, Iterator
 
-import psycopg2
 from dotenv import load_dotenv
 from psycopg2.extras import RealDictCursor
 
@@ -19,6 +18,7 @@ load_dotenv()
 load_dotenv(LEGACY_ROOT / ".env", override=False)
 API_APP_ROOT = REMAKE_ROOT / "api"
 sys.path.insert(0, str(API_APP_ROOT))
+from app.pgconnect import connect_postgres
 from app.runtime_settings import apply_runtime_provider_keys
 
 apply_runtime_provider_keys(override=True)
@@ -33,7 +33,7 @@ def connect() -> Iterator[Any]:
     url = os.getenv("DATABASE_URL", "").strip()
     if not url:
         raise RuntimeError("DATABASE_URL is not configured.")
-    conn = psycopg2.connect(url, connect_timeout=15, cursor_factory=RealDictCursor)
+    conn = connect_postgres(url)
     try:
         yield conn
         conn.commit()
