@@ -512,6 +512,78 @@ def worker_status() -> dict[str, Any]:
     }
 
 
+def readiness_report() -> dict[str, Any]:
+    profile = get_profile()
+    has_profile = any(
+        str(profile.get(key, "")).strip()
+        for key in ("about_me", "interests", "insight_style", "known_topics")
+    )
+    playlists = list_playlists()
+    focused_playlists = [
+        playlist for playlist in playlists
+        if str(playlist.get("extraction_focus") or "").strip()
+    ]
+    worker = worker_status()
+    recent_videos = list_videos(limit=20)
+    pending = [video for video in recent_videos if video.get("status") == "pending"]
+    done = [video for video in recent_videos if video.get("status") == "done"]
+    failed = [video for video in recent_videos if video.get("status") == "failed"]
+
+    checks = [
+        {
+            "id": "profile",
+            "label": "Profile lens",
+            "ok": has_profile,
+            "detail": "Profile text is saved" if has_profile else "Add profile text so default agendas become personal.",
+        },
+        {
+            "id": "worker",
+            "label": "Worker",
+            "ok": bool(worker.get("ok")),
+            "detail": f"{worker.get('active_workers', 0)} active worker(s)",
+        },
+        {
+            "id": "playlists",
+            "label": "Playlist focus",
+            "ok": bool(focused_playlists),
+            "detail": f"{len(focused_playlists)} of {len(playlists)} playlist(s) have extraction focus.",
+        },
+        {
+            "id": "processed_videos",
+            "label": "Processed videos",
+            "ok": bool(done),
+            "detail": f"{len(done)} done video(s) in the latest {len(recent_videos)}.",
+        },
+        {
+            "id": "queue",
+            "label": "Queue",
+            "ok": int((worker.get("queue") or {}).get("running") or 0) >= 0,
+            "detail": (
+                f"{(worker.get('queue') or {}).get('queued', 0)} queued, "
+                f"{(worker.get('queue') or {}).get('running', 0)} running."
+            ),
+        },
+    ]
+
+    required_ok = all(check["ok"] for check in checks if check["id"] in {"profile", "worker", "processed_videos"})
+    return {
+        "ok": required_ok,
+        "checks": checks,
+        "counts": {
+            "videos": len(recent_videos),
+            "done": len(done),
+            "pending": len(pending),
+            "failed": len(failed),
+            "playlists": len(playlists),
+            "focused_playlists": len(focused_playlists),
+        },
+        "next_actions": [
+            check["detail"] for check in checks
+            if not check["ok"] and check["id"] in {"profile", "worker", "playlists"}
+        ],
+    }
+
+
 def list_jobs(video_id: str | None = None, limit: int = 50) -> list[dict[str, Any]]:
     ensure_job_schema()
     limit = max(1, min(limit, 100))

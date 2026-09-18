@@ -147,8 +147,9 @@ original playlist.
 2. Open the web dashboard. Videos should load from `/videos`.
 3. Save a profile in Settings and confirm `/settings/profile` returns a prompt preview.
 4. Open Queue and confirm `/worker/status` reports the worker heartbeat after the worker starts.
-5. Save playlist extraction focus in Settings and confirm the selected video's Processing lens can show playlist focus.
-6. Add one disposable YouTube video with default agenda. Confirm it appears in Queue.
-7. Confirm the worker marks the job `done` or records a clear error.
-8. Use Queue -> Sync enabled playlists with `0` first. Confirm a `sync_playlists` job reaches `done`.
-9. Use Queue -> Sync enabled playlists with `1` only after the register-only sync works.
+5. Open Settings and confirm `/readiness` reports profile, worker, playlist focus, processed videos, and queue state.
+6. Save playlist extraction focus in Settings and confirm the selected video's Processing lens can show playlist focus.
+7. Add one disposable YouTube video with default agenda. Confirm it appears in Queue.
+8. Confirm the worker marks the job `done` or records a clear error.
+9. Use Queue -> Sync enabled playlists with `0` first. Confirm a `sync_playlists` job reaches `done`.
+10. Use Queue -> Sync enabled playlists with `1` only after the register-only sync works.

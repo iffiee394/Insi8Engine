@@ -163,6 +163,11 @@ def worker_status() -> dict:
     return db.worker_status()
 
 
+@app.get("/readiness")
+def readiness() -> dict:
+    return db.readiness_report()
+
+
 @app.get("/jobs")
 def jobs(video_id: str | None = None, limit: int = Query(default=50, ge=1, le=100)) -> dict:
     return {"items": db.list_jobs(video_id=video_id, limit=limit)}

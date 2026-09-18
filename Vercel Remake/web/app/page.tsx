@@ -1,7 +1,7 @@
 "use client";
 
 import { FormEvent, useEffect, useMemo, useState } from "react";
-import { api, type AgendaLens, type Health, type Job, type Playlist, type Profile, type Video, type WorkerStatus } from "../lib/api";
+import { api, type AgendaLens, type Health, type Job, type Playlist, type Profile, type Readiness, type Video, type WorkerStatus } from "../lib/api";
 import { videoInsights, videoResearch, videoSummary } from "../lib/insights";
 
 type Page = "library" | "add" | "queue" | "settings";
@@ -120,6 +120,7 @@ export default function Home() {
   const [profile, setProfile] = useState<Profile>(EMPTY_PROFILE);
   const [profilePrompt, setProfilePrompt] = useState("");
   const [health, setHealth] = useState<Health | null>(null);
+  const [readiness, setReadiness] = useState<Readiness | null>(null);
   const [query, setQuery] = useState("");
   const [notice, setNotice] = useState("");
   const [error, setError] = useState("");
@@ -172,19 +173,21 @@ export default function Home() {
   useEffect(() => {
     async function boot() {
       try {
-        const [healthResult, videosResult, jobsResult, playlistsResult, profileResult, workerResult] = await Promise.all([
+        const [healthResult, videosResult, jobsResult, playlistsResult, profileResult, workerResult, readinessResult] = await Promise.all([
           api.health(),
           api.videos(),
           api.jobs(),
           api.playlists(),
           api.profile(),
-          api.workerStatus()
+          api.workerStatus(),
+          api.readiness()
         ]);
         setError("");
         setHealth(healthResult);
         setVideos(videosResult.items);
         setJobs(jobsResult.items);
         setWorkerStatus(workerResult);
+        setReadiness(readinessResult);
         setPlaylists(playlistsResult.items);
         setProfile(profileResult.profile);
         setProfilePrompt(profileResult.prompt_preview);
@@ -438,10 +441,16 @@ export default function Home() {
             {page === "settings" ? (
               <SettingsPanel
                 health={health}
+                readiness={readiness}
                 profile={profile}
                 profilePrompt={profilePrompt}
                 playlists={playlists}
                 onPlaylistSaved={savePlaylistFocus}
+                onReadinessRefresh={async () => {
+                  const result = await api.readiness();
+                  setReadiness(result);
+                  return result;
+                }}
                 onProfileSaved={(nextProfile, nextPrompt) => {
                   setProfile(nextProfile);
                   setProfilePrompt(nextPrompt);
@@ -879,17 +888,21 @@ function QueuePanel({
 
 function SettingsPanel({
   health,
+  readiness,
   profile,
   profilePrompt,
   playlists,
   onPlaylistSaved,
+  onReadinessRefresh,
   onProfileSaved
 }: {
   health: Health | null;
+  readiness: Readiness | null;
   profile: Profile;
   profilePrompt: string;
   playlists: Playlist[];
   onPlaylistSaved: (playlistId: string, updates: Partial<Pick<Playlist, "name" | "description" | "kind" | "extraction_focus" | "enabled">>) => Promise<Playlist>;
+  onReadinessRefresh: () => Promise<Readiness>;
   onProfileSaved: (profile: Profile, prompt: string) => void;
 }) {
   const [services, setServices] = useState<Record<string, boolean>>(health?.services || {});
@@ -969,6 +982,8 @@ function SettingsPanel({
           </div>
         ))}
       </div>
+
+      <ReadinessPanel readiness={readiness} onRefresh={onReadinessRefresh} />
 
       <details className="card" open>
         <summary>Working goal</summary>
@@ -1114,6 +1129,59 @@ GROQ_API_KEY=...
 TAVILY_API_KEY=...`}
         </pre>
       </details>
+    </section>
+  );
+}
+
+function ReadinessPanel({
+  readiness,
+  onRefresh
+}: {
+  readiness: Readiness | null;
+  onRefresh: () => Promise<Readiness>;
+}) {
+  const [refreshing, setRefreshing] = useState(false);
+
+  async function refresh() {
+    setRefreshing(true);
+    try {
+      await onRefresh();
+    } finally {
+      setRefreshing(false);
+    }
+  }
+
+  return (
+    <section className="readiness-card">
+      <div className="section-heading">
+        <div>
+          <p className="reader-label">System readiness</p>
+          <h2>{readiness?.ok ? "Ready for normal processing" : "Needs setup before serious processing"}</h2>
+        </div>
+        <button className="ghost" onClick={() => void refresh()} disabled={refreshing}>
+          {refreshing ? "Checking..." : "Refresh"}
+        </button>
+      </div>
+
+      <div className="readiness-grid">
+        {(readiness?.checks || []).map((check) => (
+          <div className={check.ok ? "ready" : "needs-work"} key={check.id}>
+            <strong>{check.ok ? "✓" : "!"} {check.label}</strong>
+            <span>{check.detail}</span>
+          </div>
+        ))}
+      </div>
+
+      {readiness?.next_actions.length ? (
+        <div className="reader-block compact">
+          <p className="reader-label">Next setup steps</p>
+          <ul>
+            {readiness.next_actions.map((action) => (
+              <li key={action}>{action}</li>
+            ))}
+          </ul>
+        </div>
+      ) : null}
     </section>
   );
 }

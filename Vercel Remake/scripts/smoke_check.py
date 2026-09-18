@@ -129,6 +129,18 @@ def main() -> int:
         add(checks, "worker status", False, str(exc))
 
     try:
+        readiness = request_json(args.api_base, "/readiness")
+        counts = readiness.get("counts") or {}
+        add(
+            checks,
+            "readiness report",
+            "checks" in readiness and "counts" in readiness,
+            f"ok={bool(readiness.get('ok'))} done={counts.get('done', 0)} pending={counts.get('pending', 0)}",
+        )
+    except Exception as exc:
+        add(checks, "readiness report", False, str(exc))
+
+    try:
         profile = request_json(args.api_base, "/settings/profile")
         profile_body = profile.get("profile") or {}
         has_profile_text = any(str(profile_body.get(key, "")).strip() for key in ("about_me", "interests", "insight_style", "known_topics"))

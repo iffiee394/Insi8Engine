@@ -293,6 +293,24 @@ summary { cursor: pointer; color: var(--text); font-weight: 650; }
 .service { border: 1px solid var(--border); border-radius: 10px; background: var(--surface); padding: 14px; }
 .service strong { display: block; margin-bottom: 6px; }
 .service span { color: var(--muted); font-size: 12px; }
+.readiness-card {
+  max-width: 980px; margin: 18px 0; padding: 16px;
+  border: 1px solid rgba(198, 191, 255, 0.13); border-radius: 14px;
+  background: linear-gradient(180deg, rgba(198, 191, 255, 0.05), rgba(26, 26, 46, 0.86));
+}
+.readiness-card h2 {
+  margin: 0; font-size: clamp(20px, 2.5vw, 28px);
+  letter-spacing: -0.035em; line-height: 1.12;
+}
+.readiness-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; margin-top: 14px; }
+.readiness-grid div {
+  border: 1px solid var(--border); border-radius: 12px;
+  background: rgba(255,255,255,0.025); padding: 13px;
+}
+.readiness-grid div.ready { border-color: rgba(46, 204, 113, 0.2); }
+.readiness-grid div.needs-work { border-color: rgba(245, 166, 35, 0.24); background: rgba(245, 166, 35, 0.055); }
+.readiness-grid strong { display: block; margin-bottom: 6px; }
+.readiness-grid span { color: var(--muted); font-size: 12px; line-height: 1.45; }
 .playlist-editor-list { display: grid; gap: 12px; margin-top: 14px; }
 .playlist-editor {
   border: 1px solid rgba(198, 191, 255, 0.11);
@@ -315,7 +333,7 @@ pre { overflow: auto; border: 1px solid var(--border); border-radius: 10px; back
   .context { max-height: 430px; border-right: 0; border-bottom: 1px solid var(--border); }
   .main { overflow: visible; }
   .main-head { position: static; flex-direction: column; align-items: flex-start; }
-  .support-grid, .settings-grid, .settings-form, .lens-grid, .cockpit-grid, .status-strip { grid-template-columns: 1fr; }
+  .support-grid, .settings-grid, .settings-form, .lens-grid, .cockpit-grid, .status-strip, .readiness-grid { grid-template-columns: 1fr; }
   .insight-section > summary { grid-template-columns: 1fr; }
   .section-copy { padding: 0 18px 18px; }
   .job { grid-template-columns: 1fr; }

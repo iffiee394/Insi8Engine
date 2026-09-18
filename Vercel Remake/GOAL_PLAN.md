@@ -36,6 +36,7 @@ The goal is a fast, normal website version of the knowledge system that can run 
    - `DEPLOYMENT.md` contains the service split and environment variables.
    - `render.yaml` is included for API and worker hosting.
    - The frontend is ready for Vercel/Netlify-style hosting with `NEXT_PUBLIC_API_BASE_URL`.
+   - Settings shows a readiness panel for profile, worker, playlist focus, processed videos, and queue state.
 
 ## Normal user workflow
 
@@ -97,6 +98,7 @@ Expected result:
 - Playlists load.
 - Profile save/restore works.
 - Worker status endpoint loads.
+- Readiness report loads.
 - Video Processing lens sees an active profile during the temporary roundtrip.
 - Jobs load.
 

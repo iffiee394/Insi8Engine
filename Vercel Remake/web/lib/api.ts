@@ -89,6 +89,25 @@ export type WorkerStatus = {
   }>;
 };
 
+export type Readiness = {
+  ok: boolean;
+  checks: Array<{
+    id: string;
+    label: string;
+    ok: boolean;
+    detail: string;
+  }>;
+  counts: {
+    videos: number;
+    done: number;
+    pending: number;
+    failed: number;
+    playlists: number;
+    focused_playlists: number;
+  };
+  next_actions: string[];
+};
+
 export type Health = {
   ok: boolean;
   database: string;
@@ -143,6 +162,7 @@ export const api = {
     }),
   jobs: () => request<{ items: Job[] }>("/jobs?limit=30"),
   workerStatus: () => request<WorkerStatus>("/worker/status"),
+  readiness: () => request<Readiness>("/readiness"),
   search: (q: string) => request<{ items: Video[] }>(`/search?q=${encodeURIComponent(q)}&limit=12`),
   ingest: (input: { url: string; kind: string; agendaMode: "default" | "custom"; agenda: string; playlistId: string }) =>
     request<{ ok: boolean; video: Video; job: Job }>("/ingest", {
