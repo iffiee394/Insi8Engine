@@ -92,6 +92,11 @@ export const api = {
   videos: () => request<{ items: Video[] }>("/videos?limit=100"),
   video: (id: string) => request<{ item: Video; jobs: Job[] }>(`/videos/${id}`),
   playlists: () => request<{ items: Playlist[] }>("/playlists"),
+  syncPlaylists: (maxProcess: number) =>
+    request<{ ok: boolean; job: Job }>("/playlists/sync", {
+      method: "POST",
+      body: JSON.stringify({ max_process: maxProcess })
+    }),
   profile: () => request<ProfileResponse>("/settings/profile"),
   saveProfile: (profile: Profile) =>
     request<{ ok: boolean } & ProfileResponse>("/settings/profile", {

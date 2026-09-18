@@ -256,6 +256,28 @@ def get_job(job_id: str) -> dict[str, Any] | None:
         return dict(row) if row else None
 
 
+def enqueue_job(
+    *,
+    kind: str,
+    video_id: str = "__system__",
+    payload: dict[str, Any] | None = None,
+) -> dict[str, Any]:
+    ensure_job_schema()
+    job_id = str(uuid.uuid4())
+    body = json.dumps(payload or {})
+    with connect() as conn:
+        cur = conn.cursor()
+        cur.execute(
+            """
+            INSERT INTO knowledge_jobs (id, kind, video_id, status, payload)
+            VALUES (%s, %s, %s, 'queued', %s::jsonb)
+            RETURNING *
+            """,
+            (job_id, kind, video_id, body),
+        )
+        return dict(cur.fetchone())
+
+
 def enqueue_process(video_id: str, payload: dict[str, Any] | None = None) -> dict[str, Any]:
     ensure_job_schema()
     job_id = str(uuid.uuid4())
@@ -279,6 +301,13 @@ def enqueue_process(video_id: str, payload: dict[str, Any] | None = None) -> dic
             (job_id, video_id, body),
         )
         return dict(cur.fetchone())
+
+
+def enqueue_playlist_sync(max_process: int | None = None) -> dict[str, Any]:
+    payload: dict[str, Any] = {"source": "dashboard"}
+    if max_process is not None:
+        payload["max_process"] = max(0, min(int(max_process), 50))
+    return enqueue_job(kind="sync_playlists", video_id="__playlist_sync__", payload=payload)
 
 
 def upsert_video_pending(

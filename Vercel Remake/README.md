@@ -57,16 +57,24 @@ npm run dev
 Worker:
 
 ```powershell
-cd "Vercel Remake\worker"
-python -m venv .venv
-.venv\Scripts\python.exe -m pip install -r requirements.txt
+cd "Vercel Remake"
 $env:DATABASE_URL="postgresql://..."
 $env:LEGACY_APP_ROOT="D:\projS\CursorP1"
-.venv\Scripts\python.exe worker.py
+..\.venv\Scripts\python.exe worker\worker.py
 ```
 
 `LEGACY_APP_ROOT` points the worker at the current Streamlit project so it can reuse
-the proven `poll.process_one()` pipeline without copying or modifying those files.
+the proven `poll.process_one()` and playlist `run_poll()` pipeline without copying or
+modifying those files. Locally, run the worker with the root project `.venv` because
+that environment already contains the extraction stack (`groq`, `google-genai`,
+`anthropic`, `yt-dlp`, `tavily-python`, and related packages).
+
+## Current dashboard flows
+
+- **Add video** queues one YouTube URL with either the generated default agenda or a custom video-specific agenda.
+- **Settings -> Profile-driven agenda** stores the user profile used by default agenda generation and custom-agenda extraction.
+- **Settings -> Provider API keys** stores local runtime keys in `runtime/provider_keys.json`, which is git-ignored.
+- **Queue -> Sync enabled playlists** pulls videos from enabled playlist profiles and queues processing through the same worker. Use `0` to register playlist videos without processing any immediately.
 
 ## Deploy notes
 

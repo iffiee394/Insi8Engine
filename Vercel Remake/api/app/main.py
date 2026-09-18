@@ -42,6 +42,10 @@ class ProcessRequest(BaseModel):
     agenda: str = ""
 
 
+class PlaylistSyncRequest(BaseModel):
+    max_process: int | None = Field(default=3, ge=0, le=50)
+
+
 class ProviderKeysRequest(BaseModel):
     youtube: str | None = None
     gemini: str | None = None
@@ -120,6 +124,14 @@ def video(video_id: str) -> dict:
 @app.get("/playlists")
 def playlists() -> dict:
     return {"items": db.list_playlists()}
+
+
+
+
+@app.post("/playlists/sync")
+def sync_playlists(req: PlaylistSyncRequest) -> dict:
+    job = db.enqueue_playlist_sync(req.max_process)
+    return {"ok": True, "job": job}
 
 
 @app.get("/jobs")

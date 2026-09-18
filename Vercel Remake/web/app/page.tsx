@@ -139,6 +139,26 @@ export default function Home() {
     setJobs(result.items);
   }
 
+  async function syncPlaylists(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setError("");
+    setNotice("");
+    setLoading(true);
+    const form = new FormData(event.currentTarget);
+    const raw = Number(form.get("maxProcess") || 3);
+    const maxProcess = Number.isFinite(raw) ? Math.max(0, Math.min(raw, 50)) : 3;
+    try {
+      await api.syncPlaylists(maxProcess);
+      setNotice(maxProcess === 0 ? "Playlist sync queued. It will register new videos without processing them." : `Playlist sync queued. It will process up to ${maxProcess} pending video${maxProcess === 1 ? "" : "s"}.`);
+      setPage("queue");
+      await loadJobs();
+    } catch (exc) {
+      setError(exc instanceof Error ? exc.message : "Could not queue playlist sync.");
+    } finally {
+      setLoading(false);
+    }
+  }
+
   useEffect(() => {
     async function boot() {
       try {
@@ -383,7 +403,7 @@ export default function Home() {
             ) : null}
 
             {page === "queue" ? (
-              <QueuePanel jobs={jobs} onRefresh={loadJobs} />
+              <QueuePanel jobs={jobs} loading={loading} onRefresh={loadJobs} onSync={syncPlaylists} />
             ) : null}
 
             {page === "settings" ? (
@@ -664,7 +684,17 @@ function AddPanel({
   );
 }
 
-function QueuePanel({ jobs, onRefresh }: { jobs: Job[]; onRefresh: () => Promise<void> }) {
+function QueuePanel({
+  jobs,
+  loading,
+  onRefresh,
+  onSync
+}: {
+  jobs: Job[];
+  loading: boolean;
+  onRefresh: () => Promise<void>;
+  onSync: (event: FormEvent<HTMLFormElement>) => Promise<void>;
+}) {
   return (
     <section>
       <div className="main-actions" style={{ justifyContent: "space-between", marginBottom: 18 }}>
@@ -676,13 +706,28 @@ function QueuePanel({ jobs, onRefresh }: { jobs: Job[]; onRefresh: () => Promise
           Refresh
         </button>
       </div>
+
+      <details className="card" open>
+        <summary>Sync enabled playlists</summary>
+        <p>
+          Pulls new videos from the enabled playlist profiles, stores them in the library, and processes the oldest pending videos with the default profile-driven agenda. Use 0 to register videos only.
+        </p>
+        <form className="settings-form" onSubmit={onSync}>
+          <div className="field">
+            <label htmlFor="maxProcess">Max videos to process now</label>
+            <input id="maxProcess" name="maxProcess" type="number" min="0" max="50" defaultValue="3" />
+          </div>
+          <button className="button" disabled={loading}>{loading ? "Queueing..." : "Sync playlists"}</button>
+        </form>
+      </details>
+
       <div className="queue-list">
         {jobs.length ? (
           jobs.map((job) => (
             <div className="job" key={job.id}>
               <span className={statusClass(job.status)}>{job.status}</span>
-              <span>{job.video_id}</span>
-              <span>{job.attempts} attempt{job.attempts === 1 ? "" : "s"}</span>
+              <span>{job.kind === "sync_playlists" ? "Enabled playlists" : job.video_id}</span>
+              <span>{job.kind} · {job.attempts} attempt{job.attempts === 1 ? "" : "s"}</span>
               {job.error ? <span className="notice error">{job.error}</span> : null}
             </div>
           ))

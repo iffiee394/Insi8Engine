@@ -27,6 +27,8 @@ processing.
 - Browser check passed at `http://localhost:3000`: 66 videos load, thumbnails render in the library, the selected video detail renders, Add opens, Queue opens, and Settings shows provider/API status.
 - Processed-video insight check passed using `dkyYDGxbBFY`: summary renders, 7 insight sections display as collapsible one-column sections, and research resources/links render from `structured_insights`.
 - Settings now includes write-only provider API key fields for YouTube, Gemini, Anthropic, Groq, and Tavily. Saved runtime keys are ignored by git and loaded by the API/worker.
+- Profile-driven agenda settings are available in the remake Settings page and are stored in the shared `personal_settings` profile row.
+- Queue now supports `sync_playlists` jobs for enabled playlist profiles.
 
 ## Current local test URLs
 
@@ -50,7 +52,7 @@ The current insight display issue was a frontend formatting problem, not a missi
 
 - `database/001_jobs.sql` has not been applied to production Supabase from this folder.
 - The hosted FastAPI service has not been deployed yet.
-- The worker is running locally, but it has not processed a new live test job in this remake yet.
+- The worker has processed a newly added video through the remake queue, and playlist sync has been verified with a register-only `sync_playlists` job.
 - Chat and semantic search are not rebuilt in the new UI yet. The first version prioritizes fast baseline browsing, adding videos, queue visibility, settings visibility, and transcript fallback.
 
 ## Next steps

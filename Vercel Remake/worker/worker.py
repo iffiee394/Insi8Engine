@@ -201,7 +201,29 @@ def _process_custom_agenda(video_id: str, agenda: str) -> None:
         raise RuntimeError(err) from exc
 
 
+def _sync_playlists(job: dict[str, Any]) -> None:
+    payload = _payload(job)
+    max_process_raw = payload.get("max_process", 3)
+    try:
+        max_process = int(max_process_raw) if max_process_raw is not None else None
+    except (TypeError, ValueError):
+        max_process = 3
+    if max_process is not None:
+        max_process = max(0, min(max_process, 50))
+
+    refresh_legacy_provider_config()
+    load_legacy_processor()
+    from poll import run_poll
+
+    code = run_poll(max_process=max_process)
+    if code != 0:
+        raise RuntimeError(f"playlist sync exited with code {code}")
+
+
 def handle_job(job: dict[str, Any]) -> None:
+    if job["kind"] == "sync_playlists":
+        _sync_playlists(job)
+        return
     if job["kind"] != "process_video":
         raise RuntimeError(f"Unsupported job kind: {job['kind']}")
     refresh_legacy_provider_config()
