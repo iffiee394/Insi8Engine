@@ -52,6 +52,10 @@ def latest_job(api_base: str, job_id: str, *, timeout: int) -> dict[str, Any] | 
     return None
 
 
+def save_profile(api_base: str, profile: dict[str, Any]) -> dict[str, Any]:
+    return request_json(api_base, "/settings/profile", method="POST", body=profile)
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description="Smoke-check the Vercel Remake dashboard, API, DB, and queue.")
     parser.add_argument("--api-base", default="http://127.0.0.1:8000", help="FastAPI base URL")
@@ -59,9 +63,15 @@ def main() -> int:
     parser.add_argument("--queue-playlist-sync", action="store_true", help="Queue a safe playlist sync smoke job")
     parser.add_argument("--max-process", type=int, default=0, help="Max videos for playlist sync smoke job; 0 registers only")
     parser.add_argument("--wait-job", type=int, default=240, help="Seconds to wait for the optional queued job")
+    parser.add_argument(
+        "--profile-roundtrip",
+        action="store_true",
+        help="Temporarily save a test profile, verify agenda lens sees it, then restore the original profile",
+    )
     args = parser.parse_args()
 
     checks: list[Check] = []
+    first_video_id = ""
 
     try:
         status, text = request_text(args.web_url)
@@ -82,6 +92,7 @@ def main() -> int:
         done = [video for video in videos if video.get("status") == "done"]
         detail = f"{len(videos)} videos returned"
         if videos:
+            first_video_id = str(videos[0].get("video_id") or "")
             detail += f"; latest={videos[0].get('video_id')}:{videos[0].get('status')}"
         add(checks, "videos load", bool(videos), detail)
         add(checks, "processed video present", bool(done), f"{len(done)} done video(s) in first page")
@@ -102,6 +113,46 @@ def main() -> int:
         add(checks, "profile endpoint", "profile" in profile, detail)
     except Exception as exc:
         add(checks, "profile endpoint", False, str(exc))
+
+    if args.profile_roundtrip:
+        original_profile: dict[str, Any] | None = None
+        try:
+            profile_response = request_json(args.api_base, "/settings/profile")
+            original_profile = dict(profile_response.get("profile") or {})
+            marker = f"smoke-profile-{int(time.time())}"
+            test_profile = {
+                **original_profile,
+                "about_me": f"{marker}: I use this system to build a personal knowledge base.",
+                "interests": "automation workflows, deployable dashboards, AI tools, client delivery, and practical implementation details",
+                "insight_style": "Prefer concrete playbooks, decisions, examples, links, and steps. Avoid generic summaries.",
+                "known_topics": "Skip basic explanations unless the video adds a new practical angle.",
+                "personalize_extractions": True,
+            }
+            saved = save_profile(args.api_base, test_profile)
+            prompt_preview = str(saved.get("prompt_preview") or "")
+            add(checks, "profile save roundtrip", marker in prompt_preview, "temporary profile appears in prompt preview")
+
+            if first_video_id:
+                video = request_json(args.api_base, f"/videos/{first_video_id}")
+                lens = video.get("agenda_lens") or {}
+                add(
+                    checks,
+                    "agenda lens sees profile",
+                    bool(lens.get("profile_has_text") and lens.get("profile_active")),
+                    f"video={first_video_id} mode={lens.get('mode')} profile_active={lens.get('profile_active')}",
+                )
+            else:
+                add(checks, "agenda lens sees profile", False, "no video available for agenda lens check")
+        except Exception as exc:
+            add(checks, "profile save roundtrip", False, str(exc))
+        finally:
+            if original_profile is not None:
+                try:
+                    save_profile(args.api_base, original_profile)
+                except Exception as exc:
+                    add(checks, "profile restore", False, str(exc))
+                else:
+                    add(checks, "profile restore", True, "original profile restored")
 
     try:
         jobs = request_json(args.api_base, "/jobs?limit=5").get("items", [])

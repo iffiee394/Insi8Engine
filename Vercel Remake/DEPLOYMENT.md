@@ -134,6 +134,10 @@ cd "D:\projS\CursorP1"
 
 To include a safe register-only playlist sync job, add `--queue-playlist-sync --max-process 0`.
 
+To prove profile-driven agenda wiring without permanently changing the profile, add
+`--profile-roundtrip`. The script saves a temporary marked profile, verifies the
+profile prompt and video processing lens see it, then restores the original profile.
+
 1. Open `/health` on the API. It should return `ok: true` and provider service flags.
 2. Open the web dashboard. Videos should load from `/videos`.
 3. Save a profile in Settings and confirm `/settings/profile` returns a prompt preview.
