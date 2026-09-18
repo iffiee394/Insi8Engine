@@ -12,8 +12,21 @@ export type Video = {
   playlist_type?: string;
   playlist_id?: string;
   transcript_source?: string;
+  user_agenda?: string;
+  auto_agenda?: string;
+  manual_summary?: string;
+  manual_key_points?: string;
   added_at?: string;
   processed_at?: string;
+};
+
+export type Playlist = {
+  playlist_id: string;
+  name: string;
+  description?: string;
+  kind: string;
+  extraction_focus?: string;
+  enabled?: boolean;
 };
 
 export type Job = {
@@ -63,17 +76,28 @@ export const api = {
   health: () => request<Health>("/health"),
   videos: () => request<{ items: Video[] }>("/videos?limit=100"),
   video: (id: string) => request<{ item: Video; jobs: Job[] }>(`/videos/${id}`),
+  playlists: () => request<{ items: Playlist[] }>("/playlists"),
   jobs: () => request<{ items: Job[] }>("/jobs?limit=30"),
   search: (q: string) => request<{ items: Video[] }>(`/search?q=${encodeURIComponent(q)}&limit=12`),
-  ingest: (url: string, kind: string) =>
+  ingest: (input: { url: string; kind: string; agendaMode: "default" | "custom"; agenda: string; playlistId: string }) =>
     request<{ ok: boolean; video: Video; job: Job }>("/ingest", {
       method: "POST",
-      body: JSON.stringify({ url, kind })
+      body: JSON.stringify({
+        url: input.url,
+        kind: input.kind,
+        agenda_mode: input.agendaMode,
+        agenda: input.agenda,
+        playlist_id: input.playlistId
+      })
     }),
-  process: (id: string) =>
-    request<{ ok: boolean; job: Job }>(`/videos/${id}/process`, {
+  process: (id: string, input?: { agendaMode?: "default" | "custom"; agenda?: string; reason?: string }) =>
+    request<{ ok: boolean; video?: Video; job: Job }>(`/videos/${id}/process`, {
       method: "POST",
-      body: JSON.stringify({ reason: "manual" })
+      body: JSON.stringify({
+        reason: input?.reason || "manual",
+        agenda_mode: input?.agendaMode || "default",
+        agenda: input?.agenda || ""
+      })
     }),
   transcript: (id: string, transcript: string) =>
     request<{ ok: boolean; video: Video; job: Job | null }>(`/videos/${id}/transcript`, {

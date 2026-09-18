@@ -77,6 +77,7 @@ export function videoSummary(video: Video | null): string {
   if (!video) return "";
   const structured = parseJson(video.structured_insights) as Record<string, unknown> | null;
   if (video.summary) return video.summary;
+  if (video.manual_summary) return video.manual_summary;
   if (structured && typeof structured.summary === "string") return structured.summary;
   return "";
 }
@@ -98,7 +99,9 @@ export function videoInsights(video: Video | null): Insight[] {
     if (sections.length) return sections;
   }
 
-  return fromKeyPoints(parseJson(video.key_points));
+  const keyPointInsights = fromKeyPoints(parseJson(video.key_points));
+  if (keyPointInsights.length) return keyPointInsights;
+  return fromKeyPoints(parseJson(video.manual_key_points));
 }
 
 

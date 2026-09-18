@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import os
 import socket
 import sys
@@ -137,13 +138,88 @@ def load_legacy_processor():
     return process_one
 
 
+def _payload(job: dict[str, Any]) -> dict[str, Any]:
+    raw = job.get("payload") or {}
+    if isinstance(raw, dict):
+        return raw
+    if isinstance(raw, str):
+        try:
+            decoded = json.loads(raw)
+        except json.JSONDecodeError:
+            return {}
+        return decoded if isinstance(decoded, dict) else {}
+    return {}
+
+
+def _process_custom_agenda(video_id: str, agenda: str) -> None:
+    if not agenda.strip():
+        raise RuntimeError("Custom agenda job is missing an agenda.")
+    refresh_legacy_provider_config()
+    load_legacy_processor()
+    import db as legacy_db
+    from pipeline import _friendly_api_error, process_video
+
+    legacy_db.init_db()
+    video = legacy_db.get_video(video_id)
+    if not video:
+        raise RuntimeError(f"Unknown video: {video_id}")
+
+    legacy_db.upsert_video(video_id, user_agenda=agenda.strip(), status=legacy_db.STATUS_PROCESSING, error_message="")
+    try:
+        result = process_video(
+            video_id,
+            video.get("title") or video_id,
+            playlist_type=video.get("playlist_type", legacy_db.PLAYLIST_GENERAL),
+            playlist_id=video.get("playlist_id", "") or "",
+            user_agenda=agenda.strip(),
+        )
+        legacy_db.upsert_video(
+            video_id,
+            status=legacy_db.STATUS_DONE,
+            summary=result["summary"],
+            key_points=result["key_points"],
+            transcript_source=result["transcript_source"],
+            error_message="",
+            user_agenda=agenda.strip(),
+            research_data=json.dumps(result.get("research_data", {}), ensure_ascii=False),
+            structured_insights=json.dumps(result.get("structured_insights", {}), ensure_ascii=False),
+            auto_agenda="",
+            usage_data=json.dumps(result.get("usage_data", {}), ensure_ascii=False),
+            channel_name=result.get("channel_name", ""),
+        )
+        try:
+            from search import index_saved_auto_insights
+
+            indexed = index_saved_auto_insights(video_id)
+            if not indexed:
+                legacy_db.record_index_error(video_id, "custom agenda index not written after extraction")
+        except Exception as exc:
+            legacy_db.record_index_error(video_id, str(exc)[:300])
+    except Exception as exc:
+        err = _friendly_api_error(exc)
+        legacy_db.upsert_video(video_id, status=legacy_db.STATUS_FAILED, error_message=err)
+        raise RuntimeError(err) from exc
+
+
 def handle_job(job: dict[str, Any]) -> None:
     if job["kind"] != "process_video":
         raise RuntimeError(f"Unsupported job kind: {job['kind']}")
     refresh_legacy_provider_config()
+    payload = _payload(job)
+    if payload.get("mode") == "custom":
+        agenda = str(payload.get("agenda") or "").strip()
+        if not agenda:
+            load_legacy_processor()
+            import db as legacy_db
+
+            video = legacy_db.get_video(job["video_id"])
+            agenda = str((video or {}).get("user_agenda") or "").strip()
+        _process_custom_agenda(job["video_id"], agenda)
+        return
+
     process_one = load_legacy_processor()
     refresh_legacy_provider_config()
-    code = process_one(job["video_id"])
+    code = process_one(job["video_id"], manual_regenerate=False)
     if code != 0:
         raise RuntimeError(f"process_one exited with code {code}")
 

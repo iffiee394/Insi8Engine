@@ -26,6 +26,9 @@ app.add_middleware(
 class IngestRequest(BaseModel):
     url: str = Field(min_length=1)
     kind: Literal["video", "podcast", "general"] = "video"
+    agenda_mode: Literal["default", "custom"] = "default"
+    agenda: str = ""
+    playlist_id: str = ""
 
 
 class TranscriptRequest(BaseModel):
@@ -35,6 +38,8 @@ class TranscriptRequest(BaseModel):
 
 class ProcessRequest(BaseModel):
     reason: str = "manual"
+    agenda_mode: Literal["default", "custom"] = "default"
+    agenda: str = ""
 
 
 class ProviderKeysRequest(BaseModel):
@@ -114,25 +119,53 @@ def ingest(req: IngestRequest) -> dict:
     video_id = parse_video_id(req.url)
     if not video_id:
         raise HTTPException(status_code=400, detail="Paste a valid YouTube video URL or video id.")
+    agenda = req.agenda.strip()
+    if req.agenda_mode == "custom" and not agenda:
+        raise HTTPException(status_code=400, detail="Write a custom agenda or switch agenda mode to default.")
     meta = fetch_public_metadata(video_id)
     playlist_type = "podcast" if req.kind == "podcast" else "general"
+    playlist_id = req.playlist_id.strip()
     db.upsert_video_pending(
         video_id=video_id,
         title=meta.title,
         url=meta.url,
         playlist_type=playlist_type,
+        playlist_id=playlist_id,
         channel_name=meta.channel_name,
+        user_agenda=agenda if req.agenda_mode == "custom" else "",
     )
-    job = db.enqueue_process(video_id, {"source": "ingest", "kind": req.kind})
+    job = db.enqueue_process(
+        video_id,
+        {
+            "source": "ingest",
+            "kind": req.kind,
+            "mode": req.agenda_mode,
+            "agenda": agenda if req.agenda_mode == "custom" else "",
+            "playlist_id": playlist_id,
+        },
+    )
     return {"ok": True, "video": db.get_video(video_id), "job": job}
 
 
 @app.post("/videos/{video_id}/process")
 def process_video(video_id: str, req: ProcessRequest) -> dict:
-    if not db.get_video(video_id):
+    video = db.get_video(video_id)
+    if not video:
         raise HTTPException(status_code=404, detail="Video not found")
-    job = db.enqueue_process(video_id, {"source": req.reason})
-    return {"ok": True, "job": job}
+    agenda = req.agenda.strip()
+    if req.agenda_mode == "custom":
+        if not agenda:
+            raise HTTPException(status_code=400, detail="Write a custom agenda or switch agenda mode to default.")
+        video = db.update_video_agenda(video_id, agenda)
+    job = db.enqueue_process(
+        video_id,
+        {
+            "source": req.reason,
+            "mode": req.agenda_mode,
+            "agenda": agenda if req.agenda_mode == "custom" else "",
+        },
+    )
+    return {"ok": True, "video": video or db.get_video(video_id), "job": job}
 
 
 @app.post("/videos/{video_id}/transcript")

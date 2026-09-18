@@ -170,7 +170,12 @@ def enqueue_process(video_id: str, payload: dict[str, Any] | None = None) -> dic
             VALUES (%s, 'process_video', %s, 'queued', %s::jsonb)
             ON CONFLICT (video_id, kind)
             WHERE status IN ('queued', 'running') AND kind = 'process_video'
-            DO UPDATE SET updated_at = now()
+            DO UPDATE SET
+                payload = CASE
+                    WHEN knowledge_jobs.status = 'queued' THEN EXCLUDED.payload
+                    ELSE knowledge_jobs.payload
+                END,
+                updated_at = now()
             RETURNING *
             """,
             (job_id, video_id, body),
@@ -186,6 +191,7 @@ def upsert_video_pending(
     playlist_type: str,
     playlist_id: str = "",
     channel_name: str = "",
+    user_agenda: str = "",
 ) -> None:
     with connect() as conn:
         cur = conn.cursor()
@@ -199,7 +205,7 @@ def upsert_video_pending(
                 usage_data, channel_name
             ) VALUES (
                 %s, %s, %s, 'pending', '', '[]', '', '', %s, '',
-                %s, '', '', '', '', '[]', %s, '{}', '{}', %s
+                %s, %s, '', '', '', '[]', %s, '{}', '{}', %s
             )
             ON CONFLICT (video_id) DO UPDATE SET
                 title = COALESCE(NULLIF(EXCLUDED.title, ''), videos.title),
@@ -207,7 +213,12 @@ def upsert_video_pending(
                 playlist_type = EXCLUDED.playlist_type,
                 playlist_id = EXCLUDED.playlist_id,
                 channel_name = COALESCE(NULLIF(EXCLUDED.channel_name, ''), videos.channel_name),
+                user_agenda = CASE
+                    WHEN EXCLUDED.user_agenda <> '' THEN EXCLUDED.user_agenda
+                    ELSE videos.user_agenda
+                END,
                 status = CASE
+                    WHEN EXCLUDED.user_agenda <> '' THEN 'pending'
                     WHEN videos.status = 'done' THEN videos.status
                     ELSE 'pending'
                 END,
@@ -216,8 +227,26 @@ def upsert_video_pending(
                     ELSE ''
                 END
             """,
-            (video_id, title, url, utcnow(), playlist_type, playlist_id, channel_name),
+            (video_id, title, url, utcnow(), playlist_type, user_agenda.strip(), playlist_id, channel_name),
         )
+
+
+def update_video_agenda(video_id: str, user_agenda: str) -> dict[str, Any] | None:
+    with connect() as conn:
+        cur = conn.cursor()
+        cur.execute(
+            """
+            UPDATE videos
+            SET user_agenda = %s,
+                status = 'pending',
+                error_message = ''
+            WHERE video_id = %s
+            RETURNING *
+            """,
+            (user_agenda.strip(), video_id),
+        )
+        row = cur.fetchone()
+        return dict(row) if row else None
 
 
 def upsert_transcript(video_id: str, transcript: str) -> None:

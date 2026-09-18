@@ -1,10 +1,18 @@
 "use client";
 
 import { FormEvent, useEffect, useMemo, useState } from "react";
-import { api, type Health, type Job, type Video } from "../lib/api";
+import { api, type Health, type Job, type Playlist, type Video } from "../lib/api";
 import { videoInsights, videoResearch, videoSummary } from "../lib/insights";
 
 type Page = "library" | "add" | "queue" | "settings";
+
+const DEFAULT_AGENDA = `Extract the most useful ideas for my personal knowledge system. Focus on practical lessons, frameworks, examples, decisions, tools, people, companies, and links I may want to revisit. Keep the output easy to scan and turn into actions.`;
+
+const CUSTOM_AGENDA_EXAMPLE = `Focus on:
+- specific tactics I can apply
+- tools, links, companies, and people mentioned
+- decisions or frameworks worth saving
+- questions I should research next`;
 
 const nav: Array<{ page: Page; label: string; icon: React.ReactNode }> = [
   { page: "library", label: "Library", icon: iconLibrary() },
@@ -90,6 +98,7 @@ export default function Home() {
   const [selected, setSelected] = useState<Video | null>(null);
   const [selectedJobs, setSelectedJobs] = useState<Job[]>([]);
   const [jobs, setJobs] = useState<Job[]>([]);
+  const [playlists, setPlaylists] = useState<Playlist[]>([]);
   const [health, setHealth] = useState<Health | null>(null);
   const [query, setQuery] = useState("");
   const [notice, setNotice] = useState("");
@@ -121,15 +130,17 @@ export default function Home() {
   useEffect(() => {
     async function boot() {
       try {
-        const [healthResult, videosResult, jobsResult] = await Promise.all([
+        const [healthResult, videosResult, jobsResult, playlistsResult] = await Promise.all([
           api.health(),
           api.videos(),
-          api.jobs()
+          api.jobs(),
+          api.playlists()
         ]);
         setError("");
         setHealth(healthResult);
         setVideos(videosResult.items);
         setJobs(jobsResult.items);
+        setPlaylists(playlistsResult.items);
         const firstVideo = videosResult.items[0] || null;
         setSelected(firstVideo);
         setSelectedId(firstVideo?.video_id || "");
@@ -179,7 +190,10 @@ export default function Home() {
     try {
       const url = String(form.get("url") || "");
       const kind = String(form.get("kind") || "video");
-      const result = await api.ingest(url, kind);
+      const agendaMode = String(form.get("agendaMode") || "default") === "custom" ? "custom" : "default";
+      const agenda = String(form.get("agenda") || "").trim();
+      const playlistId = String(form.get("playlistId") || "").trim();
+      const result = await api.ingest({ url, kind, agendaMode, agenda, playlistId });
       setNotice(`Queued: ${result.video.title || result.video.video_id}`);
       setPage("library");
       await loadVideos(result.video.video_id);
@@ -198,12 +212,34 @@ export default function Home() {
     setNotice("");
     setLoading(true);
     try {
-      await api.process(selected.video_id);
-      setNotice("Queued for processing.");
+      await api.process(selected.video_id, { agendaMode: "default", reason: "default" });
+      setNotice("Queued with the default agenda.");
       await loadVideo(selected.video_id);
       await loadJobs();
     } catch (exc) {
       setError(exc instanceof Error ? exc.message : "Could not queue this video.");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function processSelectedWithAgenda(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (!selected) return;
+    const form = new FormData(event.currentTarget);
+    const agenda = String(form.get("agenda") || "").trim();
+    setError("");
+    setNotice("");
+    setLoading(true);
+    try {
+      const result = await api.process(selected.video_id, { agendaMode: "custom", agenda, reason: "custom_agenda" });
+      setNotice("Queued with your custom agenda.");
+      if (result.video) setSelected(result.video);
+      await loadVideo(selected.video_id);
+      await loadJobs();
+      event.currentTarget.reset();
+    } catch (exc) {
+      setError(exc instanceof Error ? exc.message : "Could not queue this video with a custom agenda.");
     } finally {
       setLoading(false);
     }
@@ -322,12 +358,13 @@ export default function Home() {
                 jobs={selectedJobs}
                 loading={loading}
                 onProcess={processSelected}
+                onCustomProcess={processSelectedWithAgenda}
                 onTranscript={submitTranscript}
               />
             ) : null}
 
             {page === "add" ? (
-              <AddPanel loading={loading} onSubmit={submitAdd} />
+              <AddPanel loading={loading} playlists={playlists} onSubmit={submitAdd} />
             ) : null}
 
             {page === "queue" ? (
@@ -349,12 +386,14 @@ function VideoDetail({
   jobs,
   loading,
   onProcess,
+  onCustomProcess,
   onTranscript
 }: {
   video: Video | null;
   jobs: Job[];
   loading: boolean;
   onProcess: () => Promise<void>;
+  onCustomProcess: (event: FormEvent<HTMLFormElement>) => Promise<void>;
   onTranscript: (event: FormEvent<HTMLFormElement>) => Promise<void>;
 }) {
   if (!video) {
@@ -385,7 +424,7 @@ function VideoDetail({
           Watch
         </a>
         <button className="ghost" onClick={() => void onProcess()} disabled={loading}>
-          Queue processing
+          Queue default agenda
         </button>
       </div>
 
@@ -395,6 +434,18 @@ function VideoDetail({
           <br />
           {video.error_message || "The worker recorded a failure."}
         </div>
+      ) : null}
+
+      {video.user_agenda ? (
+        <section className="reader-block compact">
+          <p className="reader-label">Custom agenda</p>
+          <p className="summary">{video.user_agenda}</p>
+        </section>
+      ) : video.auto_agenda ? (
+        <section className="reader-block compact">
+          <p className="reader-label">Default agenda used</p>
+          <p className="summary">{video.auto_agenda}</p>
+        </section>
       ) : null}
 
       <section className="reader-block">
@@ -478,6 +529,19 @@ function VideoDetail({
       ) : null}
 
       <div className="support-grid">
+        <details className="card" open={!video.user_agenda && video.status !== "done"}>
+          <summary>Custom agenda</summary>
+          <p>
+            Use this when you want the video processed around a specific goal. The worker saves the result into the main insight fields.
+          </p>
+          <form className="form" onSubmit={onCustomProcess}>
+            <textarea name="agenda" required minLength={10} placeholder={CUSTOM_AGENDA_EXAMPLE} defaultValue={video.user_agenda || ""} />
+            <button className="button" disabled={loading}>
+              Queue with custom agenda
+            </button>
+          </form>
+        </details>
+
         <details className="card">
           <summary>Use a transcript instead</summary>
           <p>
@@ -511,11 +575,14 @@ function VideoDetail({
 
 function AddPanel({
   loading,
+  playlists,
   onSubmit
 }: {
   loading: boolean;
+  playlists: Playlist[];
   onSubmit: (event: FormEvent<HTMLFormElement>) => Promise<void>;
 }) {
+  const [agendaMode, setAgendaMode] = useState<"default" | "custom">("default");
   return (
     <section>
       <p className="caps">New source</p>
@@ -535,6 +602,37 @@ function AddPanel({
             <option value="podcast">Podcast</option>
           </select>
         </div>
+        <div className="field">
+          <label htmlFor="playlistId">Playlist profile</label>
+          <select id="playlistId" name="playlistId" defaultValue="">
+            <option value="">No specific playlist</option>
+            {playlists.map((playlist) => (
+              <option value={playlist.playlist_id} key={playlist.playlist_id}>
+                {playlist.name || playlist.playlist_id} · {playlist.kind}
+              </option>
+            ))}
+          </select>
+        </div>
+        <div className="field">
+          <label htmlFor="agendaMode">Agenda</label>
+          <select
+            id="agendaMode"
+            name="agendaMode"
+            value={agendaMode}
+            onChange={(event) => setAgendaMode(event.target.value === "custom" ? "custom" : "default")}
+          >
+            <option value="default">Default agenda</option>
+            <option value="custom">Custom agenda</option>
+          </select>
+        </div>
+        {agendaMode === "default" ? (
+          <p className="notice">{DEFAULT_AGENDA}</p>
+        ) : (
+          <div className="field">
+            <label htmlFor="agenda">Custom agenda</label>
+            <textarea id="agenda" name="agenda" required minLength={10} placeholder={CUSTOM_AGENDA_EXAMPLE} />
+          </div>
+        )}
         <button className="button" disabled={loading}>
           {loading ? "Adding..." : "Add and queue"}
         </button>
