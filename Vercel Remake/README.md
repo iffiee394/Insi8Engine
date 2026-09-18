@@ -83,6 +83,9 @@ blueprint is included as `render.yaml` inside this folder. It is kept here so th
 remake remains isolated from the Streamlit project; copy it to the repository root
 only when you are ready to use Render's blueprint importer.
 
+Use `scripts/smoke_check.py` after local or hosted changes to verify the web app,
+API, database reads, profile endpoint, queue, and optional playlist sync path.
+
 For Vercel `web/`, set:
 
 - `NEXT_PUBLIC_API_BASE_URL=https://your-api-host`

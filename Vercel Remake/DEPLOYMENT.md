@@ -117,6 +117,23 @@ Output is handled by Next.js. Set `NEXT_PUBLIC_API_BASE_URL` to the hosted API U
 
 ## Smoke test after deploy
 
+You can run the repeatable smoke checker from the repository root:
+
+```bash
+python "Vercel Remake/scripts/smoke_check.py" \
+  --api-base https://your-api-host \
+  --web-url https://your-vercel-app.vercel.app
+```
+
+For local testing with the dashboard already running:
+
+```powershell
+cd "D:\projS\CursorP1"
+.\.venv\Scripts\python.exe "Vercel Remake\scripts\smoke_check.py"
+```
+
+To include a safe register-only playlist sync job, add `--queue-playlist-sync --max-process 0`.
+
 1. Open `/health` on the API. It should return `ok: true` and provider service flags.
 2. Open the web dashboard. Videos should load from `/videos`.
 3. Save a profile in Settings and confirm `/settings/profile` returns a prompt preview.
