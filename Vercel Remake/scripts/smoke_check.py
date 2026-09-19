@@ -60,6 +60,10 @@ def save_playlist(api_base: str, playlist_id: str, updates: dict[str, Any]) -> d
     return request_json(api_base, f"/playlists/{playlist_id}", method="PATCH", body=updates)
 
 
+def apply_starter_setup(api_base: str) -> dict[str, Any]:
+    return request_json(api_base, "/settings/starter-setup", method="POST", body={"overwrite": False})
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description="Smoke-check the Vercel Remake dashboard, API, DB, and queue.")
     parser.add_argument("--api-base", default="http://127.0.0.1:8000", help="FastAPI base URL")
@@ -76,6 +80,11 @@ def main() -> int:
         "--playlist-roundtrip",
         action="store_true",
         help="Temporarily save a test playlist extraction focus, verify it appears in the agenda lens, then restore it",
+    )
+    parser.add_argument(
+        "--starter-roundtrip",
+        action="store_true",
+        help="Temporarily apply the starter profile/playlist setup, verify readiness improves, then restore originals",
     )
     args = parser.parse_args()
 
@@ -122,7 +131,7 @@ def main() -> int:
         add(
             checks,
             "worker status",
-            "workers" in worker and "queue" in worker,
+            "workers" in worker and "queue" in worker and active_workers > 0,
             f"active_workers={active_workers} queued={queue.get('queued', 0)} running={queue.get('running', 0)}",
         )
     except Exception as exc:
@@ -239,6 +248,53 @@ def main() -> int:
                     add(checks, "playlist focus restore", False, str(exc))
                 else:
                     add(checks, "playlist focus restore", True, "original playlist restored")
+
+    if args.starter_roundtrip:
+        original_profile: dict[str, Any] | None = None
+        original_playlists: list[dict[str, Any]] = []
+        try:
+            original_profile = dict(request_json(args.api_base, "/settings/profile").get("profile") or {})
+            original_playlists = request_json(args.api_base, "/playlists").get("items", [])
+            started = apply_starter_setup(args.api_base)
+            readiness = started.get("readiness") or {}
+            counts = readiness.get("counts") or {}
+            add(
+                checks,
+                "starter setup readiness",
+                bool(readiness.get("ok")),
+                f"ok={bool(readiness.get('ok'))} focused_playlists={counts.get('focused_playlists', 0)}",
+            )
+            prompt_preview = str(started.get("prompt_preview") or "")
+            add(checks, "starter setup profile", "personal knowledge system" in prompt_preview, "starter profile appears in prompt")
+        except Exception as exc:
+            add(checks, "starter setup readiness", False, str(exc))
+        finally:
+            if original_profile is not None:
+                try:
+                    save_profile(args.api_base, original_profile)
+                except Exception as exc:
+                    add(checks, "starter profile restore", False, str(exc))
+                else:
+                    add(checks, "starter profile restore", True, "original profile restored")
+            for playlist in original_playlists:
+                try:
+                    save_playlist(
+                        args.api_base,
+                        str(playlist.get("playlist_id") or ""),
+                        {
+                            "name": playlist.get("name") or "",
+                            "description": playlist.get("description") or "",
+                            "kind": playlist.get("kind") or "general",
+                            "extraction_focus": playlist.get("extraction_focus") or "",
+                            "enabled": bool(playlist.get("enabled")),
+                        },
+                    )
+                except Exception as exc:
+                    add(checks, "starter playlist restore", False, str(exc))
+                    break
+            else:
+                if original_playlists:
+                    add(checks, "starter playlist restore", True, "original playlists restored")
 
     try:
         jobs = request_json(args.api_base, "/jobs?limit=5").get("items", [])

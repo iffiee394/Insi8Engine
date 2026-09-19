@@ -143,13 +143,17 @@ To prove playlist extraction focus wiring without permanently changing a playlis
 the API accepts it and the agenda lens can see it when applicable, then restores the
 original playlist.
 
+To prove the Settings starter setup can make readiness pass without permanently
+changing profile or playlist data, add `--starter-roundtrip`.
+
 1. Open `/health` on the API. It should return `ok: true` and provider service flags.
 2. Open the web dashboard. Videos should load from `/videos`.
 3. Save a profile in Settings and confirm `/settings/profile` returns a prompt preview.
 4. Open Queue and confirm `/worker/status` reports the worker heartbeat after the worker starts.
 5. Open Settings and confirm `/readiness` reports profile, worker, playlist focus, processed videos, and queue state.
-6. Save playlist extraction focus in Settings and confirm the selected video's Processing lens can show playlist focus.
-7. Add one disposable YouTube video with default agenda. Confirm it appears in Queue.
-8. Confirm the worker marks the job `done` or records a clear error.
-9. Use Queue -> Sync enabled playlists with `0` first. Confirm a `sync_playlists` job reaches `done`.
-10. Use Queue -> Sync enabled playlists with `1` only after the register-only sync works.
+6. If the readiness panel reports missing profile or playlist focus, use **Apply starter setup** for a fast first test, then edit the profile/focus to your real preferences.
+7. Save playlist extraction focus in Settings and confirm the selected video's Processing lens can show playlist focus.
+8. Add one disposable YouTube video with default agenda. Confirm it appears in Queue.
+9. Confirm the worker marks the job `done` or records a clear error.
+10. Use Queue -> Sync enabled playlists with `0` first. Confirm a `sync_playlists` job reaches `done`.
+11. Use Queue -> Sync enabled playlists with `1` only after the register-only sync works.

@@ -72,6 +72,10 @@ class ProfileRequest(BaseModel):
     personalize_extractions: bool = True
 
 
+class StarterSetupRequest(BaseModel):
+    overwrite: bool = False
+
+
 @app.get("/health")
 def health() -> dict:
     configured = bool(settings.database_url)
@@ -97,6 +101,12 @@ def get_profile_settings() -> dict:
 def update_profile_settings(req: ProfileRequest) -> dict:
     profile = db.save_profile(req.model_dump())
     return {"ok": True, "profile": profile, "prompt_preview": db.profile_prompt_preview()}
+
+
+@app.post("/settings/starter-setup")
+def apply_starter_setup(req: StarterSetupRequest) -> dict:
+    result = db.apply_starter_setup(overwrite=req.overwrite)
+    return {"ok": True, **result}
 
 
 @app.get("/settings/providers")

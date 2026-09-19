@@ -325,6 +325,16 @@ export default function Home() {
     return result.item;
   }
 
+  async function applyStarterSetup(overwrite = false) {
+    const result = await api.applyStarterSetup(overwrite);
+    setProfile(result.profile);
+    setProfilePrompt(result.prompt_preview);
+    setPlaylists(result.playlists);
+    setReadiness(result.readiness);
+    if (selected) await loadVideo(selected.video_id);
+    return result;
+  }
+
   return (
     <main className="shell">
       <aside className="rail" aria-label="Primary navigation">
@@ -451,6 +461,7 @@ export default function Home() {
                   setReadiness(result);
                   return result;
                 }}
+                onStarterSetup={applyStarterSetup}
                 onProfileSaved={(nextProfile, nextPrompt) => {
                   setProfile(nextProfile);
                   setProfilePrompt(nextPrompt);
@@ -894,6 +905,7 @@ function SettingsPanel({
   playlists,
   onPlaylistSaved,
   onReadinessRefresh,
+  onStarterSetup,
   onProfileSaved
 }: {
   health: Health | null;
@@ -903,6 +915,7 @@ function SettingsPanel({
   playlists: Playlist[];
   onPlaylistSaved: (playlistId: string, updates: Partial<Pick<Playlist, "name" | "description" | "kind" | "extraction_focus" | "enabled">>) => Promise<Playlist>;
   onReadinessRefresh: () => Promise<Readiness>;
+  onStarterSetup: (overwrite?: boolean) => Promise<{ profile: Profile; prompt_preview: string; playlists: Playlist[]; readiness: Readiness }>;
   onProfileSaved: (profile: Profile, prompt: string) => void;
 }) {
   const [services, setServices] = useState<Record<string, boolean>>(health?.services || {});
@@ -983,7 +996,7 @@ function SettingsPanel({
         ))}
       </div>
 
-      <ReadinessPanel readiness={readiness} onRefresh={onReadinessRefresh} />
+      <ReadinessPanel readiness={readiness} onRefresh={onReadinessRefresh} onStarterSetup={onStarterSetup} />
 
       <details className="card" open>
         <summary>Working goal</summary>
@@ -1135,12 +1148,16 @@ TAVILY_API_KEY=...`}
 
 function ReadinessPanel({
   readiness,
-  onRefresh
+  onRefresh,
+  onStarterSetup
 }: {
   readiness: Readiness | null;
   onRefresh: () => Promise<Readiness>;
+  onStarterSetup: (overwrite?: boolean) => Promise<{ profile: Profile; prompt_preview: string; playlists: Playlist[]; readiness: Readiness }>;
 }) {
   const [refreshing, setRefreshing] = useState(false);
+  const [applying, setApplying] = useState(false);
+  const [message, setMessage] = useState("");
 
   async function refresh() {
     setRefreshing(true);
@@ -1151,6 +1168,19 @@ function ReadinessPanel({
     }
   }
 
+  async function applyStarter() {
+    setApplying(true);
+    setMessage("");
+    try {
+      const result = await onStarterSetup(false);
+      setMessage(result.readiness.ok ? "Starter setup applied. The system is ready for a real processing test." : "Starter setup applied. Check the remaining readiness items below.");
+    } catch (exc) {
+      setMessage(exc instanceof Error ? exc.message : "Could not apply starter setup.");
+    } finally {
+      setApplying(false);
+    }
+  }
+
   return (
     <section className="readiness-card">
       <div className="section-heading">
@@ -1158,9 +1188,14 @@ function ReadinessPanel({
           <p className="reader-label">System readiness</p>
           <h2>{readiness?.ok ? "Ready for normal processing" : "Needs setup before serious processing"}</h2>
         </div>
-        <button className="ghost" onClick={() => void refresh()} disabled={refreshing}>
-          {refreshing ? "Checking..." : "Refresh"}
-        </button>
+        <div className="main-actions">
+          <button className="ghost" onClick={() => void refresh()} disabled={refreshing || applying}>
+            {refreshing ? "Checking..." : "Refresh"}
+          </button>
+          <button className="button" onClick={() => void applyStarter()} disabled={applying}>
+            {applying ? "Applying..." : "Apply starter setup"}
+          </button>
+        </div>
       </div>
 
       <div className="readiness-grid">
@@ -1182,6 +1217,7 @@ function ReadinessPanel({
           </ul>
         </div>
       ) : null}
+      {message ? <p className="notice">{message}</p> : null}
     </section>
   );
 }

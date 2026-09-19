@@ -160,6 +160,11 @@ export const api = {
       method: "POST",
       body: JSON.stringify(profile)
     }),
+  applyStarterSetup: (overwrite = false) =>
+    request<{ ok: boolean; profile: Profile; prompt_preview: string; playlists: Playlist[]; readiness: Readiness }>("/settings/starter-setup", {
+      method: "POST",
+      body: JSON.stringify({ overwrite })
+    }),
   jobs: () => request<{ items: Job[] }>("/jobs?limit=30"),
   workerStatus: () => request<WorkerStatus>("/worker/status"),
   readiness: () => request<Readiness>("/readiness"),

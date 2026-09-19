@@ -24,6 +24,44 @@ DEFAULT_PROFILE: dict[str, Any] = {
     "personalize_extractions": True,
 }
 
+STARTER_PROFILE: dict[str, Any] = {
+    "display_name": "",
+    "email": "",
+    "about_me": (
+        "I am building a fast personal knowledge system for AI, automation, dashboards, "
+        "client delivery, coding, deployment, and research. I want each video converted "
+        "into practical notes I can reuse."
+    ),
+    "interests": (
+        "AI tools and model updates; automation workflows; APIs; SaaS and dashboard ideas; "
+        "coding and deployment steps; business opportunities; client-delivery systems; "
+        "research links, tools, people, companies, and reusable frameworks."
+    ),
+    "insight_style": (
+        "Prefer concise but specific insights: implementation steps, workflows, tools, links, "
+        "tradeoffs, examples, decisions, prompts, code/process ideas, and follow-up research. "
+        "Avoid generic summaries and motivational filler."
+    ),
+    "known_topics": (
+        "Skip basic AI definitions, generic productivity advice, and repeated high-level claims "
+        "unless the video adds a new tool, tactic, benchmark, cost, workflow, or deployment detail."
+    ),
+    "personalize_extractions": True,
+}
+
+STARTER_PLAYLIST_FOCUS: dict[str, str] = {
+    "general": (
+        "Prioritize deployable implementation steps, tools, links, models/APIs, automation workflows, "
+        "dashboard ideas, coding decisions, integration details, costs, limits, and practical ideas "
+        "that can improve the knowledge system or a client-facing workflow."
+    ),
+    "podcast": (
+        "Prioritize guest background, career/business lessons, tactical advice, named people, "
+        "companies, tools, resources, stories with reusable principles, and research links. "
+        "Separate concrete takeaways from general conversation."
+    ),
+}
+
 
 def _merge_profile(raw: Any) -> dict[str, Any]:
     merged = dict(DEFAULT_PROFILE)
@@ -187,6 +225,44 @@ def save_profile(updates: dict[str, Any]) -> dict[str, Any]:
             ("default", payload),
         )
     return current
+
+
+def apply_starter_setup(*, overwrite: bool = False) -> dict[str, Any]:
+    current_profile = get_profile()
+    has_profile_text = any(
+        str(current_profile.get(key, "")).strip()
+        for key in ("about_me", "interests", "insight_style", "known_topics")
+    )
+    if overwrite or not has_profile_text:
+        starter = {**STARTER_PROFILE}
+        starter["display_name"] = current_profile.get("display_name", "")
+        starter["email"] = current_profile.get("email", "")
+        profile = save_profile({**current_profile, **starter})
+    else:
+        profile = current_profile
+
+    updated_playlists: list[dict[str, Any]] = []
+    for playlist in list_playlists():
+        existing_focus = str(playlist.get("extraction_focus") or "").strip()
+        if existing_focus and not overwrite:
+            updated_playlists.append(playlist)
+            continue
+        kind = str(playlist.get("kind") or "general").strip().lower()
+        focus = STARTER_PLAYLIST_FOCUS.get(kind, STARTER_PLAYLIST_FOCUS["general"])
+        updated = update_playlist(
+            str(playlist.get("playlist_id") or ""),
+            extraction_focus=focus,
+            enabled=bool(playlist.get("enabled")),
+        )
+        if updated:
+            updated_playlists.append(updated)
+
+    return {
+        "profile": profile,
+        "prompt_preview": profile_prompt_preview(),
+        "playlists": updated_playlists,
+        "readiness": readiness_report(),
+    }
 
 
 def _format_playlist_sections(playlist: dict[str, Any] | None) -> str:

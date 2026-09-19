@@ -31,6 +31,7 @@ The goal is a fast, normal website version of the knowledge system that can run 
    - Custom agenda is combined with profile + playlist focus + transcript for a specific video.
    - The video detail screen shows the Processing lens so you can verify what guided extraction.
    - Settings can edit playlist extraction focus, so playlist-driven default processing can be tuned from the remake dashboard.
+   - Settings includes a starter setup button that fills a practical default profile and playlist focus for fast testing.
 
 6. **Deployment path**
    - `DEPLOYMENT.md` contains the service split and environment variables.
@@ -112,6 +113,13 @@ To prove playlist agenda focus wiring without permanently changing a playlist:
 
 ```powershell
 .\.venv\Scripts\python.exe "Vercel Remake\scripts\smoke_check.py" --playlist-roundtrip
+```
+
+To prove the one-click starter setup can make readiness pass and then restore the
+original profile/playlists:
+
+```powershell
+.\.venv\Scripts\python.exe "Vercel Remake\scripts\smoke_check.py" --starter-roundtrip
 ```
 
 ## Cloud deployment shape
