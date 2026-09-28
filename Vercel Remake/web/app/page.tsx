@@ -1,7 +1,7 @@
 "use client";
 
 import { FormEvent, useEffect, useMemo, useState } from "react";
-import { api, type AgendaLens, type Health, type Job, type Playlist, type Profile, type Readiness, type Video, type WorkerStatus } from "../lib/api";
+import { api, type Health, type Job, type Playlist, type Profile, type Readiness, type Video, type WorkerStatus } from "../lib/api";
 import { videoInsights, videoResearch, videoSummary } from "../lib/insights";
 
 type Page = "library" | "add" | "queue" | "settings";
@@ -113,7 +113,6 @@ export default function Home() {
   const [selectedId, setSelectedId] = useState("");
   const [selected, setSelected] = useState<Video | null>(null);
   const [selectedJobs, setSelectedJobs] = useState<Job[]>([]);
-  const [selectedAgendaLens, setSelectedAgendaLens] = useState<AgendaLens | null>(null);
   const [jobs, setJobs] = useState<Job[]>([]);
   const [workerStatus, setWorkerStatus] = useState<WorkerStatus | null>(null);
   const [playlists, setPlaylists] = useState<Playlist[]>([]);
@@ -132,7 +131,6 @@ export default function Home() {
     setError("");
     setSelected(result.item);
     setSelectedJobs(result.jobs);
-    setSelectedAgendaLens(result.agenda_lens);
   }
 
   async function loadVideos(preferredId?: string) {
@@ -250,7 +248,6 @@ export default function Home() {
     setSelectedId(id);
     setSelected(videos.find((video) => video.video_id === id) ?? null);
     setSelectedJobs([]);
-    setSelectedAgendaLens(null);
     setError("");
     setPage("library");
     await loadVideo(id);
@@ -379,25 +376,23 @@ export default function Home() {
       <section className="app">
         <aside className="context">
           <div className="context-head">
-            <div className="context-title">
-              <span className="caps">Library ({videos.length})</span>
-              <strong>InsightEngine</strong>
-            </div>
-            <button className="ghost" onClick={() => void loadVideos()}>
-              Refresh
+            <strong className="wordmark">InsightEngine</strong>
+            <button className="icon-button" onClick={() => void loadVideos()} aria-label="Refresh library" title="Refresh library">
+              {iconRefresh()}
             </button>
           </div>
 
           <div className="context-tools">
-            <div className="field">
-              <label htmlFor="filter">Search library</label>
+            <label className="search">
+              {iconSearch()}
               <input
                 id="filter"
+                aria-label="Search library"
                 value={query}
                 onChange={(event) => setQuery(event.target.value)}
-                placeholder="Title, channel, status..."
+                placeholder="Search titles and channels"
               />
-            </div>
+            </label>
             <div className="playlist-tabs" role="tablist" aria-label="Filter by playlist">
               {playlistTabs.map((tab) => (
                 <button
@@ -422,11 +417,11 @@ export default function Home() {
               >
                 <span className="thumb" aria-hidden="true">
                   <img src={thumbnailUrl(video)} alt="" loading="lazy" />
-                  <span className={statusClass(video.status)}>{video.status}</span>
                 </span>
                 <span className="row-body">
                   <strong>{video.title || video.video_id}</strong>
-                  <span>
+                  <span className="row-meta">
+                    {video.status !== "done" ? <i className={`dot ${video.status}`} title={video.status} /> : null}
                     {video.channel_name || "Unknown channel"}
                     {playlistFilter === "all" && video.playlist_id && playlistNames.has(video.playlist_id)
                       ? ` · ${playlistNames.get(video.playlist_id)}`
@@ -440,22 +435,12 @@ export default function Home() {
 
         <section className="main">
           <header className="main-head">
-            <nav className="top-tabs" aria-label="Section tabs">
-              {nav.map((item) => (
-                <button
-                  key={item.page}
-                  className={page === item.page ? "active" : ""}
-                  onClick={() => setPage(item.page)}
-                >
-                  {item.label}
-                </button>
-              ))}
-            </nav>
+            <p className="page-name">{nav.find((item) => item.page === page)?.label}</p>
             <div className="main-actions">
-              <span className="pill done">{doneCount} done</span>
-              <span className="pill queued">{activeJobs} active jobs</span>
+              <span className="stat">{doneCount} processed</span>
+              <span className={`stat ${activeJobs ? "live" : ""}`}>{activeJobs} running</span>
               <button className="button" onClick={() => setPage("add")}>
-                + Add video
+                {iconPlus()} Add video
               </button>
             </div>
           </header>
@@ -466,9 +451,10 @@ export default function Home() {
 
             {page === "library" ? (
               <VideoDetail
+                key={displayedVideo?.video_id || "none"}
                 video={displayedVideo}
                 jobs={selectedJobs}
-                agendaLens={selectedAgendaLens}
+                playlistName={displayedVideo?.playlist_id ? playlistNames.get(displayedVideo.playlist_id) || "" : ""}
                 loading={loading}
                 onProcess={processSelected}
                 onCustomProcess={processSelectedWithAgenda}
@@ -520,7 +506,7 @@ export default function Home() {
 function VideoDetail({
   video,
   jobs,
-  agendaLens,
+  playlistName,
   loading,
   onProcess,
   onCustomProcess,
@@ -528,17 +514,22 @@ function VideoDetail({
 }: {
   video: Video | null;
   jobs: Job[];
-  agendaLens: AgendaLens | null;
+  playlistName: string;
   loading: boolean;
   onProcess: () => Promise<void>;
   onCustomProcess: (event: FormEvent<HTMLFormElement>) => Promise<void>;
   onTranscript: (event: FormEvent<HTMLFormElement>) => Promise<void>;
 }) {
+  const [toolsOpen, setToolsOpen] = useState(() => Boolean(video && video.status !== "done"));
+  const [toolTab, setToolTab] = useState<"agenda" | "transcript">(() =>
+    video?.status === "failed" && /download|forbidden|403/i.test(video.error_message || "") ? "transcript" : "agenda"
+  );
+
   if (!video) {
     return (
-      <section>
-        <h1 className="detail-title">No video selected</h1>
-        <p className="summary">Add or choose a video to read its notes.</p>
+      <section className="empty-state">
+        <h1 className="detail-title">Pick a video</h1>
+        <p className="lede">Choose one from the library, or add a new video to extract what matters in it.</p>
       </section>
     );
   }
@@ -547,103 +538,155 @@ function VideoDetail({
   const insights = videoInsights(video);
   const research = videoResearch(video);
   const failed = video.status === "failed";
+  const activeJob = jobs.find((job) => job.status === "queued" || job.status === "running");
+  const lastJob = jobs[0];
 
   return (
-    <section>
-      <p className="caps">Video detail</p>
-      <h1 className="detail-title">{video.title || video.video_id}</h1>
-      <div className="meta">
-        <span className={statusClass(video.status)}>{video.status}</span>
-        <span className="pill">{video.channel_name || "Unknown channel"}</span>
-        <span className="pill">{video.transcript_source || "No transcript source"}</span>
+    <article className="video">
+      <div className="ambient" aria-hidden="true">
+        <img src={thumbnailUrl(video)} alt="" />
       </div>
-      <div className="meta">
-        <a className="ghost" href={video.url} target="_blank" rel="noreferrer">
-          Watch
-        </a>
-        <button className="ghost" onClick={() => void onProcess()} disabled={loading}>
-          Queue default agenda
-        </button>
-      </div>
+
+      <header className="video-head">
+        <p className="eyebrow">
+          <span className="eyebrow-status">
+            <i className={`dot ${activeJob ? "processing" : video.status}`} />
+            {activeJob ? "processing" : video.status}
+          </span>
+          <span>{video.channel_name || "Unknown channel"}</span>
+          {playlistName ? <span>{playlistName}</span> : null}
+        </p>
+        <h1 className="detail-title">{video.title || video.video_id}</h1>
+        <div className="actions">
+          <a className="button" href={video.url} target="_blank" rel="noreferrer">
+            {iconPlay()} Watch
+          </a>
+          <button
+            className={`ghost ${toolsOpen ? "on" : ""}`}
+            aria-expanded={toolsOpen}
+            onClick={() => setToolsOpen((open) => !open)}
+          >
+            {iconRefresh()} Reprocess
+          </button>
+        </div>
+      </header>
 
       {failed ? (
-        <div className="notice error">
-          <strong>Processing failed.</strong>
-          <br />
-          {video.error_message || "The worker recorded a failure."}
-        </div>
+        <p className="notice error">
+          <strong>Extraction failed.</strong> {video.error_message || "The worker recorded a failure."}
+        </p>
       ) : null}
 
-      <AgendaLensPanel lens={agendaLens} />
-
-      <section className="reader-block">
-        <p className="reader-label">Summary</p>
-        {summary ? <p className="summary">{summary}</p> : <p className="summary">No extracted notes yet.</p>}
-      </section>
-
-      {insights.length ? (
-        <section className="insights-stack" aria-label="Insights">
-          <div className="section-heading">
-            <p className="reader-label">Insights</p>
-            <span>{insights.length} section{insights.length === 1 ? "" : "s"}</span>
+      {toolsOpen ? (
+        <section className="tools" aria-label="Reprocess this video">
+          <div className="tools-head">
+            <div className="segmented" role="tablist" aria-label="Reprocess method">
+              <button role="tab" aria-selected={toolTab === "agenda"} className={toolTab === "agenda" ? "active" : ""} onClick={() => setToolTab("agenda")}>
+                Custom agenda
+              </button>
+              <button role="tab" aria-selected={toolTab === "transcript"} className={toolTab === "transcript" ? "active" : ""} onClick={() => setToolTab("transcript")}>
+                Paste transcript
+              </button>
+            </div>
+            <button className="text-button" onClick={() => void onProcess()} disabled={loading}>
+              Rerun with my profile
+            </button>
           </div>
-          {insights.map((insight, index) => (
-            <details className="insight-section" key={`${insight.title}-${index}`} open={index === 0}>
-              <summary>
-                <span className="section-number">{String(index + 1).padStart(2, "0")}</span>
-                <span className="section-summary-copy">
-                  <span>{insight.title}</span>
-                  <small>{insight.points.length} point{insight.points.length === 1 ? "" : "s"}</small>
-                </span>
-              </summary>
-              <div className="section-copy">
-                {insight.content ? <p>{insight.content}</p> : null}
-                {insight.points.length ? (
-                  <ul>
-                    {insight.points.map((point) => (
-                      <li key={point}>{point}</li>
-                    ))}
-                  </ul>
-                ) : null}
-              </div>
-            </details>
-          ))}
+
+          {toolTab === "agenda" ? (
+            <form className="form" onSubmit={onCustomProcess}>
+              <textarea name="agenda" required minLength={10} placeholder={CUSTOM_AGENDA_EXAMPLE} defaultValue={video.user_agenda || ""} />
+              <button className="button" disabled={loading}>Rerun with this agenda</button>
+            </form>
+          ) : (
+            <form className="form" onSubmit={onTranscript}>
+              <textarea name="transcript" required minLength={100} placeholder="Paste the full transcript. Use this when YouTube blocks the audio download." />
+              <button className="button" disabled={loading}>Save transcript and rerun</button>
+            </form>
+          )}
+
+          {lastJob ? (
+            <p className="job-line">
+              Last run · {lastJob.status} · {lastJob.attempts} attempt{lastJob.attempts === 1 ? "" : "s"}
+              {lastJob.error ? ` · ${lastJob.error}` : ""}
+            </p>
+          ) : null}
         </section>
       ) : null}
 
-      {research.resources.length || research.links.length ? (
-        <section className="research-panel">
-          <div className="section-heading">
-            <p className="reader-label">Research</p>
-            <span>{research.resources.length} resources · {research.links.length} links</span>
+      <section className="block">
+        <h2 className="eyebrow">Summary</h2>
+        <p className="lede">
+          {summary || (activeJob ? "The worker is extracting insights from this video now." : "No insights yet. Use Reprocess to run extraction.")}
+        </p>
+      </section>
+
+      {insights.length ? (
+        <section className="block">
+          <h2 className="eyebrow">Insights <span className="count">{insights.length}</span></h2>
+          <div className="index">
+            {insights.map((insight, index) => (
+              <details className="entry" key={`${insight.title}-${index}`}>
+                <summary>
+                  <span className="entry-title">{insight.title}</span>
+                  <span className="leader" aria-hidden="true" />
+                  <span className="entry-count">{insight.points.length ? `${insight.points.length} pts` : ""}</span>
+                  {iconChevron()}
+                </summary>
+                <div className="entry-body">
+                  {insight.content ? <p>{insight.content}</p> : null}
+                  {insight.points.length ? (
+                    <ul>
+                      {insight.points.map((point) => (
+                        <li key={point}>{point}</li>
+                      ))}
+                    </ul>
+                  ) : null}
+                </div>
+              </details>
+            ))}
           </div>
+        </section>
+      ) : null}
 
-          {research.resources.length ? (
-            <details className="card" open>
-              <summary>Research insights and resources</summary>
-              <div className="resource-list">
-                {research.resources.map((resource, index) => (
-                  <article className="resource-item" key={`${resource.name}-${index}`}>
-                    <div>
-                      <strong>{resource.name}</strong>
-                      <span>{resource.type} · {resource.source || "insight"}</span>
-                    </div>
-                    {resource.detail ? <p>{resource.detail}</p> : null}
-                    {resource.url ? (
-                      <a href={resource.url} target="_blank" rel="noreferrer">
-                        Open source
-                      </a>
-                    ) : null}
-                  </article>
-                ))}
-              </div>
-            </details>
-          ) : null}
+      {research.resources.length ? (
+        <section className="block">
+          <h2 className="eyebrow">Resources <span className="count">{research.resources.length}</span></h2>
+          <div className="index">
+            {research.resources.map((resource, index) => (
+              <details className="entry" key={`${resource.name}-${index}`}>
+                <summary>
+                  <span className="entry-title">{resource.name}</span>
+                  <span className="leader" aria-hidden="true" />
+                  <span className="entry-count">{resource.type}</span>
+                  {iconChevron()}
+                </summary>
+                <div className="entry-body">
+                  {resource.detail ? <p>{resource.detail}</p> : null}
+                  {resource.url ? (
+                    <a className="out-link" href={resource.url} target="_blank" rel="noreferrer">
+                      Open source ↗
+                    </a>
+                  ) : null}
+                </div>
+              </details>
+            ))}
+          </div>
+        </section>
+      ) : null}
 
-          {research.links.length ? (
-            <details className="card">
-              <summary>Links from video, description, and research</summary>
-              <div className="link-list">
+      {research.links.length ? (
+        <section className="block">
+          <h2 className="eyebrow">Links <span className="count">{research.links.length}</span></h2>
+          <div className="index">
+            <details className="entry">
+              <summary>
+                <span className="entry-title">Links from the video, description and research</span>
+                <span className="leader" aria-hidden="true" />
+                <span className="entry-count">{research.links.length}</span>
+                {iconChevron()}
+              </summary>
+              <div className="entry-body link-list">
                 {research.links.map((link) => (
                   <a href={link.url} target="_blank" rel="noreferrer" key={link.url}>
                     <span>{link.label}</span>
@@ -652,105 +695,10 @@ function VideoDetail({
                 ))}
               </div>
             </details>
-          ) : null}
+          </div>
         </section>
       ) : null}
-
-      <div className="support-grid">
-        <details className="card" open={!video.user_agenda && video.status !== "done"}>
-          <summary>Custom agenda</summary>
-          <p>
-            Use this when you want the video processed around a specific goal. The worker saves the result into the main insight fields.
-          </p>
-          <form className="form" onSubmit={onCustomProcess}>
-            <textarea name="agenda" required minLength={10} placeholder={CUSTOM_AGENDA_EXAMPLE} defaultValue={video.user_agenda || ""} />
-            <button className="button" disabled={loading}>
-              Queue with custom agenda
-            </button>
-          </form>
-        </details>
-
-        <details className="card">
-          <summary>Use a transcript instead</summary>
-          <p>
-            Paste the YouTube transcript when audio download is blocked. Saving it queues the
-            worker without relying on YouTube audio retrieval.
-          </p>
-          <form className="form" onSubmit={onTranscript}>
-            <textarea name="transcript" required minLength={100} placeholder="Paste transcript text..." />
-            <button className="button" disabled={loading}>
-              Save transcript and process
-            </button>
-          </form>
-        </details>
-
-        <details className="card">
-          <summary>Recent jobs</summary>
-          {jobs.length ? (
-            jobs.map((job) => (
-              <p key={job.id}>
-                {job.status} · {job.kind} · {job.attempts} attempt{job.attempts === 1 ? "" : "s"}
-              </p>
-            ))
-          ) : (
-            <p>No jobs for this video yet.</p>
-          )}
-        </details>
-      </div>
-    </section>
-  );
-}
-
-
-function AgendaLensPanel({ lens }: { lens: AgendaLens | null }) {
-  if (!lens) return null;
-  const activeProfile = lens.profile_has_text && lens.profile_active;
-  const recipe = lens.mode === "custom"
-    ? "Profile + custom agenda + playlist focus + transcript"
-    : "Profile + playlist focus + transcript";
-  return (
-    <details className="card" open>
-      <summary>Processing lens</summary>
-      <div className="lens-grid">
-        <div>
-          <strong>Agenda mode</strong>
-          <span>{lens.mode === "custom" ? "Custom agenda" : "Default generated agenda"}</span>
-        </div>
-        <div>
-          <strong>Profile</strong>
-          <span>{activeProfile ? "Active" : lens.profile_has_text ? "Saved but disabled" : "No profile text yet"}</span>
-        </div>
-        <div>
-          <strong>Playlist</strong>
-          <span>{lens.playlist_name || lens.playlist_kind || "No playlist profile"}</span>
-        </div>
-        <div>
-          <strong>Extraction recipe</strong>
-          <span>{recipe}</span>
-        </div>
-      </div>
-      <p className="summary">{lens.status}</p>
-      {lens.agenda_text ? (
-        <div className="reader-block compact">
-          <p className="reader-label">Agenda text</p>
-          <p className="summary preserve-lines">{lens.agenda_text}</p>
-        </div>
-      ) : null}
-      {lens.playlist_focus ? (
-        <div className="reader-block compact">
-          <p className="reader-label">Playlist focus</p>
-          <p className="summary preserve-lines">{lens.playlist_focus}</p>
-        </div>
-      ) : null}
-      {lens.profile_prompt_preview ? (
-        <details className="nested-card card">
-          <summary>Profile prompt used by processor</summary>
-          <pre>{lens.profile_prompt_preview}</pre>
-        </details>
-      ) : (
-        <p className="summary">Add profile text in Settings to make the default agenda personal.</p>
-      )}
-    </details>
+    </article>
   );
 }
 
@@ -1049,7 +997,7 @@ function SettingsPanel({
           <li>Save your profile lens below. This is the stable part of every extraction.</li>
           <li>Add a video. Use default agenda for normal processing, or custom agenda for one special angle.</li>
           <li>Watch Queue until the processing job is done.</li>
-          <li>Open the video and check Processing lens, Insights, Research, and Links.</li>
+          <li>Open the video and read its Summary, Insights, Resources, and Links.</li>
         </ol>
         <p className="summary">Project plan file: <code>Vercel Remake/GOAL_PLAN.md</code></p>
       </details>
@@ -1371,6 +1319,39 @@ function iconSettings() {
     <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
       <path d="M12 15.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Z" stroke="currentColor" strokeWidth="1.7" />
       <path d="M19 12a7 7 0 0 0-.1-1.1l2-1.5-2-3.4-2.4 1a7 7 0 0 0-1.9-1.1L14.3 3h-4.6l-.4 2.9A7 7 0 0 0 7.5 7l-2.4-1-2 3.4 2 1.5A7 7 0 0 0 5 12c0 .4 0 .8.1 1.1l-2 1.5 2 3.4 2.4-1a7 7 0 0 0 1.9 1.1l.4 2.9h4.6l.4-2.9a7 7 0 0 0 1.9-1.1l2.4 1 2-3.4-2-1.5c.1-.3.1-.7.1-1.1Z" stroke="currentColor" strokeWidth="1.3" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+function iconRefresh() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path d="M19.5 12a7.5 7.5 0 1 1-2.2-5.3M19.5 4.5v4h-4" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+function iconSearch() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <circle cx="11" cy="11" r="6.5" stroke="currentColor" strokeWidth="1.7" />
+      <path d="m16 16 4 4" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+function iconPlay() {
+  return (
+    <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+      <path d="M8 5.8v12.4c0 .8.9 1.3 1.6.8l9.4-6.2a1 1 0 0 0 0-1.6L9.6 5c-.7-.5-1.6 0-1.6.8Z" />
+    </svg>
+  );
+}
+
+function iconChevron() {
+  return (
+    <svg className="chevron" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path d="m9 6 6 6-6 6" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   );
 }
