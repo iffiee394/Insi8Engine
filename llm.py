@@ -104,6 +104,11 @@ def friendly_llm_error(exc: Exception) -> str:
     msg = str(exc)
     lower = msg.lower()
 
+    # Download errors already explain themselves and mention "Gemini ... API key",
+    # which the key check below would otherwise misreport.
+    if type(exc).__name__ == "AudioDownloadError":
+        return msg
+
     if "anthropic:" in lower:
         anthropic_part = msg.split("Anthropic:", 1)[-1].strip()
         if "401" in anthropic_part.lower() or "authentication" in anthropic_part.lower():

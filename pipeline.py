@@ -143,6 +143,24 @@ def fetch_transcript_data(video_id: str, *, persist: bool = True, refresh: bool 
 
     if config.GEMINI_API_KEY:
         try:
+            text = _transcribe_youtube_url_with_gemini(video_id)
+            if text and len(text.strip()) > 100:
+                data = {
+                    "text": text.strip(),
+                    "source": "gemini_youtube",
+                    "timed_text": text.strip(),
+                    "duration_seconds": 0,
+                    "segments": [],
+                    "timing_quality": "unknown",
+                    "from_store": False,
+                }
+                if persist:
+                    _persist_transcript(video_id, data)
+                return data
+        except Exception as exc:
+            logger.warning("Gemini YouTube-URL transcription failed for %s (%s)", video_id, str(exc)[:200])
+
+        try:
             text = _transcribe_with_gemini(video_id)
             if text and len(text.strip()) > 100:
                 data = {
@@ -191,6 +209,26 @@ def _fetch_youtube_captions(video_id: str) -> str | None:
     if data["source"] == "youtube_captions":
         return data["text"]
     return None
+
+
+def _transcribe_youtube_url_with_gemini(video_id: str) -> str:
+    """Let Gemini fetch the public video itself, so cloud IPs blocked by YouTube still work."""
+    from google import genai
+    from google.genai import types
+
+    client = genai.Client(api_key=config.GEMINI_API_KEY)
+    response = client.models.generate_content(
+        model=config.GEMINI_CHAT_MODEL,
+        contents=types.Content(parts=[
+            types.Part(file_data=types.FileData(file_uri=f"https://www.youtube.com/watch?v={video_id}")),
+            types.Part(text=(
+                "Transcribe the spoken audio of this video completely. Output ONLY the transcript text. "
+                "Urdu in Roman Urdu; keep English in English."
+            )),
+        ]),
+        config=types.GenerateContentConfig(media_resolution=types.MediaResolution.MEDIA_RESOLUTION_LOW),
+    )
+    return (response.text or "").strip()
 
 
 def _transcribe_with_gemini(video_id: str) -> str:
