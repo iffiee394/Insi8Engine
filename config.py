@@ -50,10 +50,10 @@ LLM_PRIMARY = os.getenv("LLM_PRIMARY", "gemini").strip().lower()
 FALLBACK_TO_ANTHROPIC = os.getenv("FALLBACK_TO_ANTHROPIC", "true").strip().lower() in (
     "1", "true", "yes",
 )
-GEMINI_CHAT_MODEL = os.getenv("GEMINI_CHAT_MODEL", "gemini-2.5-flash").strip()
+GEMINI_CHAT_MODEL = os.getenv("GEMINI_CHAT_MODEL", "gemini-flash-latest").strip()
 GEMINI_FALLBACK_MODELS = [
     m.strip()
-    for m in os.getenv("GEMINI_FALLBACK_MODELS", "gemini-2.0-flash,gemini-2.5-flash-lite").split(",")
+    for m in os.getenv("GEMINI_FALLBACK_MODELS", "gemini-2.5-flash,gemini-flash-lite-latest").split(",")
     if m.strip()
 ]
 DEEP_MODEL = os.getenv("DEEP_MODEL", "claude-haiku-4-5-20251001").strip()

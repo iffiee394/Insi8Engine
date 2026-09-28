@@ -79,6 +79,14 @@ class ProviderChainTests(unittest.TestCase):
         self.assertEqual(text, "from claude")
         claude.assert_called_once()
 
+    def test_model_missing_on_one_account_moves_to_next_key(self):
+        retired = RuntimeError("404 NOT_FOUND. {'error': {'message': 'This model is no longer available to new users.'}}")
+        text, claude = self.run_chain(
+            {"k1": lambda m: DAILY_429, "k2": lambda m: retired, "k3": lambda m: "from key 3"}, anthropic="a",
+        )
+        self.assertEqual(text, "from key 3")
+        claude.assert_not_called()
+
     def test_all_failing_gives_a_readable_step_by_step_error(self):
         with self.assertRaises(llm.ProviderChainError) as ctx:
             self.run_chain({"k1": lambda m: DAILY_429, "k2": lambda m: BAD_KEY})

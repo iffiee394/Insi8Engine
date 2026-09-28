@@ -388,9 +388,10 @@ def _prepare_legacy() -> None:
     try:
         load_legacy_processor()
         refresh_legacy_provider_config()
+        import llm
         import provider_state
 
-        provider_state.publish_slots()
+        provider_state.publish_slots(models=llm._gemini_model_chain())
     except Exception as exc:
         print(f"Could not publish AI key list: {exc}", flush=True)
 

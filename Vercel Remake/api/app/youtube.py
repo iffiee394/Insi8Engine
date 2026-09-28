@@ -59,3 +59,42 @@ def fetch_public_metadata(video_id: str) -> VideoMeta:
     except Exception:
         pass
     return VideoMeta(video_id=video_id, title=video_id, url=url)
+
+
+PLAYLIST_ID_RE = re.compile(r"^(PL|UU|FL|OL|LL|RD)[A-Za-z0-9_-]{10,}$")
+
+
+def parse_playlist_id(value: str) -> str:
+    raw = (value or "").strip()
+    if PLAYLIST_ID_RE.match(raw):
+        return raw
+    candidate = parse_qs(urlparse(raw).query).get("list", [""])[0]
+    return candidate if PLAYLIST_ID_RE.match(candidate) else ""
+
+
+@dataclass
+class PlaylistInfo:
+    playlist_id: str
+    title: str
+    channel_name: str
+    item_count: int
+
+
+def fetch_playlist_info(playlist_id: str, api_key: str) -> PlaylistInfo | None:
+    """Look the playlist up on YouTube. None means YouTube can't see it (missing or private)."""
+    response = requests.get(
+        "https://www.googleapis.com/youtube/v3/playlists",
+        params={"part": "snippet,contentDetails", "id": playlist_id, "key": api_key},
+        timeout=10,
+    )
+    response.raise_for_status()
+    items = response.json().get("items") or []
+    if not items:
+        return None
+    item = items[0]
+    return PlaylistInfo(
+        playlist_id=playlist_id,
+        title=item["snippet"].get("title") or playlist_id,
+        channel_name=item["snippet"].get("channelTitle") or "",
+        item_count=int(item.get("contentDetails", {}).get("itemCount") or 0),
+    )

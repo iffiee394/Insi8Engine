@@ -458,12 +458,43 @@ def list_playlists() -> list[dict[str, Any]]:
         cur = conn.cursor()
         cur.execute(
             """
-            SELECT playlist_id, name, description, kind, extraction_focus, enabled, created_at
-            FROM playlists
-            ORDER BY name
+            SELECT p.playlist_id, p.name, p.description, p.kind, p.extraction_focus, p.enabled, p.created_at,
+                   COUNT(v.video_id) AS video_count,
+                   COUNT(v.video_id) FILTER (WHERE v.status = 'done') AS done_count
+            FROM playlists p
+            LEFT JOIN videos v ON v.playlist_id = p.playlist_id
+            GROUP BY p.playlist_id
+            ORDER BY p.created_at, p.name
             """
         )
         return _rows(cur)
+
+
+def create_playlist(
+    playlist_id: str,
+    *,
+    name: str,
+    description: str,
+    kind: str,
+    extraction_focus: str,
+) -> dict[str, Any]:
+    with connect() as conn:
+        cur = conn.cursor()
+        cur.execute(
+            """
+            INSERT INTO playlists (playlist_id, name, description, kind, profile_json, extraction_focus, enabled, created_at)
+            VALUES (%s, %s, %s, %s, '{}', %s, 1, %s)
+            ON CONFLICT (playlist_id) DO UPDATE SET
+                name = EXCLUDED.name,
+                description = EXCLUDED.description,
+                kind = EXCLUDED.kind,
+                extraction_focus = EXCLUDED.extraction_focus,
+                enabled = 1
+            RETURNING playlist_id, name, description, kind, extraction_focus, enabled, created_at
+            """,
+            (playlist_id, name, description, kind, extraction_focus, utcnow()),
+        )
+        return dict(cur.fetchone())
 
 
 def update_playlist(
@@ -573,9 +604,10 @@ def worker_status() -> dict[str, Any]:
         )
         counts = dict(cur.fetchone() or {})
 
+    # A busy worker can go quiet during one long step (audio download, API retries).
     active = [
         worker for worker in workers
-        if int(worker.get("seconds_since_seen") or 999999) <= 30
+        if int(worker.get("seconds_since_seen") or 999999) <= (900 if worker.get("status") == "running" else 30)
     ]
     return {
         "ok": bool(active),
@@ -793,8 +825,11 @@ def upsert_video_pending(
             ON CONFLICT (video_id) DO UPDATE SET
                 title = COALESCE(NULLIF(EXCLUDED.title, ''), videos.title),
                 url = COALESCE(NULLIF(EXCLUDED.url, ''), videos.url),
-                playlist_type = EXCLUDED.playlist_type,
-                playlist_id = EXCLUDED.playlist_id,
+                playlist_type = CASE
+                    WHEN EXCLUDED.playlist_id <> '' THEN EXCLUDED.playlist_type
+                    ELSE videos.playlist_type
+                END,
+                playlist_id = COALESCE(NULLIF(EXCLUDED.playlist_id, ''), videos.playlist_id),
                 channel_name = COALESCE(NULLIF(EXCLUDED.channel_name, ''), videos.channel_name),
                 user_agenda = CASE
                     WHEN EXCLUDED.user_agenda <> '' THEN EXCLUDED.user_agenda
@@ -914,14 +949,22 @@ def usage_report() -> dict[str, Any]:
     today = _pacific_today()
     today_usage = usage.get(today, {})
 
+    models = state.get("_models") or []
+
     def status_for(slot: str) -> dict[str, Any]:
         entry = state.get(slot, {})
         invalid_until = entry.get("invalid_until")
         if invalid_until and datetime.fromisoformat(invalid_until) > now:
             return {"status": "rejected", "detail": entry.get("invalid_reason", ""), "until": invalid_until}
-        for scope, item in (entry.get("cooldowns") or {}).items():
-            if datetime.fromisoformat(item["until"]) > now:
-                return {"status": "resting", "detail": item.get("reason", ""), "until": item["until"], "model": scope}
+        active = {
+            scope: item for scope, item in (entry.get("cooldowns") or {}).items()
+            if datetime.fromisoformat(item["until"]) > now
+        }
+        scopes = models if slot.startswith("gemini_") and models else list(active)
+        if "*" in active or (active and all(model in active for model in scopes)):
+            limits = [item for item in active.values() if "not offered" not in item.get("reason", "")] or list(active.values())
+            soonest = min(limits, key=lambda item: item["until"])
+            return {"status": "resting", "detail": soonest.get("reason", ""), "until": soonest["until"]}
         if entry.get("last_used_at"):
             return {"status": "ready", "detail": "", "until": None}
         return {"status": "unused", "detail": "", "until": None}
@@ -929,8 +972,15 @@ def usage_report() -> dict[str, Any]:
     chain = []
     for index, slot in enumerate(state.get("_slots") or []):
         counts = today_usage.get(slot["slot"], {})
+        if slot["slot"] == "anthropic":
+            role = "Paid · last resort"
+        elif index == 0:
+            role = "Primary"
+        else:
+            role = f"Backup {index}"
         chain.append({
             **slot,
+            "role": role,
             "position": index + 1,
             "last_used_at": state.get(slot["slot"], {}).get("last_used_at"),
             "last_error": state.get(slot["slot"], {}).get("last_error", ""),

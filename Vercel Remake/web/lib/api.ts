@@ -26,7 +26,9 @@ export type Playlist = {
   description?: string;
   kind: string;
   extraction_focus?: string;
-  enabled?: boolean;
+  enabled?: boolean | number;
+  video_count?: number;
+  done_count?: number;
 };
 
 export type Profile = {
@@ -76,6 +78,7 @@ export type Job = {
 export type UsageSlot = {
   slot: string;
   label: string;
+  role: string;
   masked: string;
   position: number;
   status: "ready" | "resting" | "rejected" | "unused";
@@ -167,13 +170,18 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
 
 export const api = {
   health: () => request<Health>("/health"),
-  videos: () => request<{ items: Video[] }>("/videos?limit=100"),
+  videos: () => request<{ items: Video[] }>("/videos?limit=200"),
   video: (id: string) => request<{ item: Video; jobs: Job[]; agenda_lens: AgendaLens }>(`/videos/${id}`),
   playlists: () => request<{ items: Playlist[] }>("/playlists"),
   savePlaylist: (id: string, updates: Partial<Pick<Playlist, "name" | "description" | "kind" | "extraction_focus" | "enabled">>) =>
     request<{ ok: boolean; item: Playlist }>(`/playlists/${encodeURIComponent(id)}`, {
       method: "PATCH",
       body: JSON.stringify(updates)
+    }),
+  createPlaylist: (input: { url: string; name: string; kind: "general" | "podcast"; extraction_focus: string; process_now: number }) =>
+    request<{ ok: boolean; item: Playlist; video_count: number | null; job: Job }>("/playlists", {
+      method: "POST",
+      body: JSON.stringify(input)
     }),
   syncPlaylists: (maxProcess: number) =>
     request<{ ok: boolean; job: Job }>("/playlists/sync", {

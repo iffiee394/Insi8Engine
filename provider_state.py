@@ -162,7 +162,7 @@ def record_success(slot: str, model: str, tokens: int) -> None:
         _save()
 
 
-def publish_slots() -> None:
+def publish_slots(models: list[str] | None = None) -> None:
     """Record which keys exist (masked) so the dashboard can list them before first use."""
     with _lock:
         _load()
@@ -181,6 +181,7 @@ def publish_slots() -> None:
         if anthropic:
             slots.append({"slot": "anthropic", "label": "Claude", "masked": mask(anthropic)})
         _state["_slots"] = slots
+        _state["_models"] = models or []
         _state["_published_at"] = _now().isoformat()
         _save()
 

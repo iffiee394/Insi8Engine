@@ -6,8 +6,6 @@ import { videoInsights, videoResearch, videoSummary } from "../lib/insights";
 
 type Page = "library" | "add" | "queue" | "usage" | "settings";
 
-const DEFAULT_AGENDA = `The worker will generate the real agenda from your saved profile, selected playlist profile, and the video's transcript. Keep your profile current so the system knows which insights are important for you.`;
-
 const EMPTY_PROFILE: Profile = {
   display_name: "",
   email: "",
@@ -34,68 +32,6 @@ const nav: Array<{ page: Page; label: string; icon: React.ReactNode }> = [
 
 function thumbnailUrl(video: Video): string {
   return video.thumbnail_url || `https://i.ytimg.com/vi/${video.video_id}/mqdefault.jpg`;
-}
-
-const providerNames = ["youtube", "gemini", "anthropic", "groq", "tavily"] as const;
-
-const providerEnvToName: Record<string, string> = {
-  YOUTUBE_API_KEY: "youtube",
-  GEMINI_API_KEY: "gemini",
-  GOOGLE_API_KEY: "gemini",
-  ANTHROPIC_API_KEY: "anthropic",
-  GROQ_API_KEY: "groq",
-  TAVILY_API_KEY: "tavily"
-};
-
-function stripWrappingQuotes(value: string): string {
-  const trimmed = value.trim();
-  if (trimmed.length >= 2 && trimmed[0] === trimmed[trimmed.length - 1] && ["'", '"'].includes(trimmed[0])) {
-    return trimmed.slice(1, -1).trim();
-  }
-  return trimmed;
-}
-
-function parseProviderKeyBlock(input: string): Record<string, string> {
-  const parsed: Record<string, string> = {};
-  const trimmed = input.trim();
-  if (!trimmed) return parsed;
-
-  if (trimmed.startsWith("{")) {
-    try {
-      const data = JSON.parse(trimmed) as Record<string, unknown>;
-      for (const [key, rawValue] of Object.entries(data)) {
-        const provider = providerEnvToName[key.trim().toUpperCase()] || key.trim().toLowerCase();
-        if (providerNames.includes(provider as (typeof providerNames)[number]) && typeof rawValue === "string" && rawValue.trim()) {
-          parsed[provider] = stripWrappingQuotes(rawValue);
-        }
-      }
-      return parsed;
-    } catch {
-      // Fall back to .env parsing below.
-    }
-  }
-
-  for (const originalLine of input.replace(/\r\n/g, "\n").split("\n")) {
-    let line = originalLine.trim();
-    if (!line || line.startsWith("#")) continue;
-    if (line.toLowerCase().startsWith("export ")) line = line.slice(7).trim();
-    if (!line.includes("=")) continue;
-    const [rawName, ...rawParts] = line.split("=");
-    const provider = providerEnvToName[rawName.trim().toUpperCase()] || rawName.trim().toLowerCase();
-    const value = stripWrappingQuotes(rawParts.join("="));
-    if (providerNames.includes(provider as (typeof providerNames)[number]) && value) {
-      parsed[provider] = value;
-    }
-  }
-  return parsed;
-}
-
-function normalizeSingleProviderInput(value: string, provider: string): string {
-  const parsed = parseProviderKeyBlock(value);
-  if (parsed[provider]) return parsed[provider];
-  const keys = Object.values(parsed);
-  if (keys.length === 1) return keys[0];
-  return stripWrappingQuotes(value);
 }
 
 function profileHasText(profile: Profile): boolean {
@@ -271,7 +207,8 @@ export default function Home() {
     setError("");
     setNotice("");
     setLoading(true);
-    const form = new FormData(event.currentTarget);
+    const formElement = event.currentTarget;
+    const form = new FormData(formElement);
     try {
       const url = String(form.get("url") || "");
       const kind = String(form.get("kind") || "video");
@@ -283,7 +220,7 @@ export default function Home() {
       setPage("library");
       await loadVideos(result.video.video_id);
       await loadJobs();
-      event.currentTarget.reset();
+      formElement.reset();
     } catch (exc) {
       setError(exc instanceof Error ? exc.message : "Could not add this video.");
     } finally {
@@ -311,7 +248,8 @@ export default function Home() {
   async function processSelectedWithAgenda(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!selected) return;
-    const form = new FormData(event.currentTarget);
+    const formElement = event.currentTarget;
+    const form = new FormData(formElement);
     const agenda = String(form.get("agenda") || "").trim();
     setError("");
     setNotice("");
@@ -322,7 +260,7 @@ export default function Home() {
       if (result.video) setSelected(result.video);
       await loadVideo(selected.video_id);
       await loadJobs();
-      event.currentTarget.reset();
+      formElement.reset();
     } catch (exc) {
       setError(exc instanceof Error ? exc.message : "Could not queue this video with a custom agenda.");
     } finally {
@@ -336,13 +274,14 @@ export default function Home() {
     setLoading(true);
     setError("");
     setNotice("");
-    const form = new FormData(event.currentTarget);
+    const formElement = event.currentTarget;
+    const form = new FormData(formElement);
     try {
       await api.transcript(selected.video_id, String(form.get("transcript") || ""));
       setNotice("Transcript saved and processing queued.");
       await loadVideo(selected.video_id);
       await loadJobs();
-      event.currentTarget.reset();
+      formElement.reset();
     } catch (exc) {
       setError(exc instanceof Error ? exc.message : "Could not save transcript.");
     } finally {
@@ -359,14 +298,11 @@ export default function Home() {
     return result.item;
   }
 
-  async function applyStarterSetup(overwrite = false) {
-    const result = await api.applyStarterSetup(overwrite);
-    setProfile(result.profile);
-    setProfilePrompt(result.prompt_preview);
-    setPlaylists(result.playlists);
-    setReadiness(result.readiness);
-    if (selected) await loadVideo(selected.video_id);
-    return result;
+  async function reloadPlaylists() {
+    const [result, nextReadiness] = await Promise.all([api.playlists(), api.readiness()]);
+    setPlaylists(result.items);
+    setReadiness(nextReadiness);
+    await loadJobs();
   }
 
   return (
@@ -476,13 +412,7 @@ export default function Home() {
             ) : null}
 
             {page === "add" ? (
-              <AddPanel
-                loading={loading}
-                playlists={playlists}
-                profile={profile}
-                profilePrompt={profilePrompt}
-                onSubmit={submitAdd}
-              />
+              <AddPanel loading={loading} playlists={playlists} profile={profile} onSubmit={submitAdd} />
             ) : null}
 
             {page === "queue" ? (
@@ -494,17 +424,14 @@ export default function Home() {
             {page === "settings" ? (
               <SettingsPanel
                 health={health}
+                workerStatus={workerStatus}
                 readiness={readiness}
                 profile={profile}
                 profilePrompt={profilePrompt}
                 playlists={playlists}
                 onPlaylistSaved={savePlaylistFocus}
-                onReadinessRefresh={async () => {
-                  const result = await api.readiness();
-                  setReadiness(result);
-                  return result;
-                }}
-                onStarterSetup={applyStarterSetup}
+                onPlaylistsChanged={reloadPlaylists}
+                onOpenUsage={() => setPage("usage")}
                 onProfileSaved={(nextProfile, nextPrompt) => {
                   setProfile(nextProfile);
                   setProfilePrompt(nextPrompt);
@@ -535,7 +462,7 @@ function VideoDetail({
   onCustomProcess: (event: FormEvent<HTMLFormElement>) => Promise<void>;
   onTranscript: (event: FormEvent<HTMLFormElement>) => Promise<void>;
 }) {
-  const [toolsOpen, setToolsOpen] = useState(() => Boolean(video && video.status !== "done"));
+  const [toolsOpen, setToolsOpen] = useState(() => video?.status === "failed");
   const [toolTab, setToolTab] = useState<"default" | "agenda" | "transcript">(() =>
     video?.status === "failed" && /download|forbidden|403|no transcript/i.test(video.error_message || "") ? "transcript" : "default"
   );
@@ -739,101 +666,82 @@ function AddPanel({
   loading,
   playlists,
   profile,
-  profilePrompt,
   onSubmit
 }: {
   loading: boolean;
   playlists: Playlist[];
   profile: Profile;
-  profilePrompt: string;
   onSubmit: (event: FormEvent<HTMLFormElement>) => Promise<void>;
 }) {
   const [agendaMode, setAgendaMode] = useState<"default" | "custom">("default");
+  const [playlistId, setPlaylistId] = useState("");
+  const [kind, setKind] = useState("video");
   const hasProfile = profileHasText(profile);
+
+  function choosePlaylist(id: string) {
+    setPlaylistId(id);
+    const playlist = playlists.find((item) => item.playlist_id === id);
+    if (playlist) setKind(playlist.kind === "podcast" ? "podcast" : "video");
+  }
+
   return (
-    <section>
-      <p className="caps">New source</p>
+    <section className="page">
       <h1 className="detail-title">Add a video</h1>
-      <p className="summary">
-        This creates a queued job. The worker processes the video separately, so the dashboard stays fast.
+      <p className="lede small">
+        Paste a YouTube link. The worker gets the transcript and writes insights through your profile, usually within a
+        few minutes. Watch it in Queue.
       </p>
+      {!hasProfile ? (
+        <p className="notice">Your profile is empty, so insights won&apos;t be personal yet. Fill it in under Settings first.</p>
+      ) : null}
 
-      <section className="agenda-cockpit" aria-label="Agenda cockpit">
-        <div>
-          <p className="reader-label">Goal</p>
-          <h2>Extract what matters to you, not a generic summary.</h2>
-          <p>
-            Default processing builds the agenda from your saved profile, the selected playlist focus, and the transcript. Custom agenda adds a video-specific instruction on top of that profile.
-          </p>
-        </div>
-        <div className="cockpit-grid">
-          <div>
-            <strong>{hasProfile ? "Profile active" : "Profile needed"}</strong>
-            <span>{hasProfile ? "Default agendas will use your saved interests and style." : "Add your profile in Settings before serious processing."}</span>
-          </div>
-          <div>
-            <strong>Default agenda</strong>
-            <span>Best for normal videos and playlist automation.</span>
-          </div>
-          <div>
-            <strong>Custom agenda</strong>
-            <span>Best when this one video needs a special angle.</span>
-          </div>
-        </div>
-        {profilePrompt ? (
-          <details className="mini-preview">
-            <summary>Current profile lens</summary>
-            <pre>{profilePrompt}</pre>
-          </details>
-        ) : null}
-      </section>
-
-      <form className="form" onSubmit={onSubmit}>
+      <form className="form add-form" onSubmit={onSubmit}>
         <div className="field">
-          <label htmlFor="url">YouTube URL</label>
-          <input id="url" name="url" required placeholder="https://www.youtube.com/watch?v=..." />
+          <label htmlFor="url">YouTube link</label>
+          <input id="url" name="url" required placeholder="https://www.youtube.com/watch?v=…" />
         </div>
-        <div className="field">
-          <label htmlFor="kind">Type</label>
-          <select id="kind" name="kind" defaultValue="video">
-            <option value="video">Video</option>
-            <option value="podcast">Podcast</option>
-          </select>
-        </div>
-        <div className="field">
-          <label htmlFor="playlistId">Playlist profile</label>
-          <select id="playlistId" name="playlistId" defaultValue="">
-            <option value="">No specific playlist</option>
-            {playlists.map((playlist) => (
-              <option value={playlist.playlist_id} key={playlist.playlist_id}>
-                {playlist.name || playlist.playlist_id} · {playlist.kind}
-              </option>
-            ))}
-          </select>
-        </div>
-        <div className="field">
-          <label htmlFor="agendaMode">Agenda</label>
-          <select
-            id="agendaMode"
-            name="agendaMode"
-            value={agendaMode}
-            onChange={(event) => setAgendaMode(event.target.value === "custom" ? "custom" : "default")}
-          >
-            <option value="default">Default agenda</option>
-            <option value="custom">Custom agenda</option>
-          </select>
-        </div>
-        {agendaMode === "default" ? (
-          <p className="notice">{DEFAULT_AGENDA}</p>
-        ) : (
+        <div className="field-row">
           <div className="field">
-            <label htmlFor="agenda">Custom agenda</label>
-            <textarea id="agenda" name="agenda" required minLength={10} placeholder={CUSTOM_AGENDA_EXAMPLE} />
+            <label htmlFor="playlistId">Playlist</label>
+            <select id="playlistId" name="playlistId" value={playlistId} onChange={(event) => choosePlaylist(event.target.value)}>
+              <option value="">None — just this video</option>
+              {playlists.map((playlist) => (
+                <option value={playlist.playlist_id} key={playlist.playlist_id}>
+                  {playlist.name || playlist.playlist_id}
+                </option>
+              ))}
+            </select>
+            <small>Its focus is added to your profile when writing insights.</small>
           </div>
-        )}
-        <button className="button" disabled={loading}>
-          {loading ? "Adding..." : "Add and queue"}
-        </button>
+          <div className="field">
+            <label htmlFor="kind">Type</label>
+            <select id="kind" name="kind" value={kind} onChange={(event) => setKind(event.target.value)}>
+              <option value="video">Video</option>
+              <option value="podcast">Podcast</option>
+            </select>
+            <small>Podcasts get guest and topic research.</small>
+          </div>
+        </div>
+
+        <div className="field">
+          <span className="field-label">What to look for</span>
+          <input type="hidden" name="agendaMode" value={agendaMode} />
+          <div className="segmented" role="tablist" aria-label="Agenda">
+            <button type="button" role="tab" aria-selected={agendaMode === "default"} className={agendaMode === "default" ? "active" : ""} onClick={() => setAgendaMode("default")}>
+              Default agenda
+            </button>
+            <button type="button" role="tab" aria-selected={agendaMode === "custom"} className={agendaMode === "custom" ? "active" : ""} onClick={() => setAgendaMode("custom")}>
+              Custom agenda
+            </button>
+          </div>
+          {agendaMode === "default" ? (
+            <small>Uses your profile and the playlist&apos;s focus. Right for most videos.</small>
+          ) : (
+            <textarea id="agenda" name="agenda" required minLength={10} placeholder={CUSTOM_AGENDA_EXAMPLE} aria-label="Custom agenda" />
+          )}
+        </div>
+
+        <button className="button" disabled={loading}>{loading ? "Adding…" : "Add video"}</button>
       </form>
     </section>
   );
@@ -952,9 +860,32 @@ function formatTokens(tokens: number): string {
   return String(tokens);
 }
 
+function clockTime(iso: string | null | undefined): string {
+  if (!iso) return "";
+  const date = new Date(iso);
+  const time = date.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
+  const sameDay = date.toDateString() === new Date().toDateString();
+  return sameDay ? time : `${date.toLocaleDateString([], { weekday: "short" })} ${time}`;
+}
+
 function UsagePanel({ usage, onRefresh }: { usage: UsageReport | null; onRefresh: () => Promise<void> }) {
   const chain = usage?.chain || [];
-  const geminiCount = chain.filter((item) => item.slot.startsWith("gemini_")).length;
+  const gemini = chain.filter((item) => item.slot.startsWith("gemini_"));
+  const claude = chain.find((item) => item.slot === "anthropic");
+  const answering = chain.find((item) => item.status === "ready" || item.status === "unused");
+  const nextBack = chain
+    .filter((item) => item.status === "resting" && item.until)
+    .sort((a, b) => String(a.until).localeCompare(String(b.until)))[0];
+
+  let headline = "Waiting for the worker to report its keys.";
+  if (answering && answering.slot !== "anthropic") {
+    headline = `${answering.label} (${answering.role.toLowerCase()}) is answering.`;
+  } else if (answering) {
+    headline = "Every Gemini key is resting, so Claude is answering.";
+  } else if (chain.length) {
+    headline = `Every key is unavailable. The first one comes back at ${clockTime(nextBack?.until)}; jobs wait and retry then.`;
+  }
+
   return (
     <section className="page">
       <div className="page-head">
@@ -963,64 +894,69 @@ function UsagePanel({ usage, onRefresh }: { usage: UsageReport | null; onRefresh
           {iconRefresh()} Refresh
         </button>
       </div>
-      <p className="lede small">
-        Every AI step tries these keys from top to bottom. When a Gemini key runs out of its free daily quota it
-        rests until the quota resets and the next key takes over. Claude is only used when no Gemini key can answer.
-      </p>
 
-      {chain.length ? (
-        <ol className="index usage-chain">
-          {chain.map((item) => {
-            const isClaude = item.slot === "anthropic";
-            const tone = item.status === "rejected" ? "failed" : item.status === "resting" ? "pending" : item.status === "ready" ? "done" : "";
-            return (
-              <li className="usage-row" key={item.slot}>
-                <span className="usage-pos">{item.position}</span>
-                <div className="usage-body">
-                  <strong>
-                    {item.label} <span className="usage-mask">{item.masked}</span>
-                    {isClaude ? <span className="usage-tag">last resort</span> : null}
-                  </strong>
-                  <span className="usage-state">
-                    <i className={`dot ${tone}`} />
-                    {item.status === "resting"
-                      ? `Resting — ${item.detail}, back ${relativeTime(item.until)}`
-                      : item.status === "rejected"
-                        ? `Not working — ${item.detail}`
-                        : item.status === "ready"
-                          ? `Working · last used ${relativeTime(item.last_used_at)}`
-                          : isClaude
-                            ? "Not used yet"
-                            : "No calls yet"}
-                  </span>
-                </div>
-                <span className="usage-count">
-                  {item.calls_today} call{item.calls_today === 1 ? "" : "s"} today
-                  <br />≈ {formatTokens(item.tokens_today)} tokens
-                </span>
-              </li>
-            );
-          })}
-        </ol>
-      ) : (
-        <p className="summary">The worker hasn&apos;t reported its keys yet. It does this each time it starts.</p>
-      )}
-
-      {usage ? (
-        <p className="usage-note">
-          Groq (short agenda prompts): {usage.groq_today.calls} call{usage.groq_today.calls === 1 ? "" : "s"} today.
-          Days are counted in Pacific time, when Google resets free quotas.
+      <div className="usage-now">
+        <p className="eyebrow">Right now</p>
+        <p className="usage-headline">{headline}</p>
+        <p className="usage-claude">
+          Claude (paid) today: <strong>{claude?.calls_today ?? 0} calls</strong>
+          {claude && claude.calls_today === 0 ? " — your credits are untouched." : "."}
         </p>
-      ) : null}
+      </div>
+
+      <section className="block">
+        <h2 className="eyebrow">Order of use</h2>
+        {chain.length ? (
+          <ol className="index usage-chain">
+            {chain.map((item) => {
+              const isClaude = item.slot === "anthropic";
+              const inUse = answering?.slot === item.slot;
+              const tone = item.status === "rejected" ? "failed" : item.status === "resting" ? "pending" : "done";
+              let state = inUse ? "In use now" : isClaude ? "Standby — only if every Gemini key is resting" : "Ready as backup";
+              if (item.status === "resting") state = `Resting until ${clockTime(item.until)} — ${item.detail}`;
+              if (item.status === "rejected") state = `Not working — ${item.detail}. Replace this key.`;
+              return (
+                <li className={`usage-row ${inUse ? "current" : ""}`} key={item.slot}>
+                  <span className="usage-pos">{item.position}</span>
+                  <div className="usage-body">
+                    <strong>
+                      {item.label}
+                      <span className={`usage-tag ${isClaude ? "paid" : ""}`}>{item.role}</span>
+                      <span className="usage-mask">key {item.masked}</span>
+                    </strong>
+                    <span className="usage-state">
+                      <i className={`dot ${tone}`} />
+                      {state}
+                    </span>
+                  </div>
+                  <span className="usage-count">
+                    {item.calls_today} call{item.calls_today === 1 ? "" : "s"} today
+                    <br />≈ {formatTokens(item.tokens_today)} tokens
+                  </span>
+                </li>
+              );
+            })}
+          </ol>
+        ) : (
+          <p className="summary">The worker hasn&apos;t reported its keys yet. It does this each time it starts.</p>
+        )}
+      </section>
+
+      <dl className="usage-legend">
+        <div><dt>In use now</dt><dd>The key new AI steps go to first.</dd></div>
+        <div><dt>Ready as backup</dt><dd>Takes over when the keys above it are resting.</dd></div>
+        <div><dt>Resting</dt><dd>Used up its free daily quota (or is briefly overloaded). It comes back by itself at the time shown — Google resets free quotas at midnight Pacific.</dd></div>
+        <div><dt>Not working</dt><dd>Google rejected the key. Create a new one and replace it.</dd></div>
+      </dl>
 
       {usage?.days.length ? (
         <section className="block">
-          <h2 className="eyebrow">Last 7 days</h2>
+          <h2 className="eyebrow">Calls per day</h2>
           <table className="usage-table">
             <thead>
               <tr>
                 <th>Day</th>
-                <th>Gemini</th>
+                <th>Gemini ({gemini.length} keys)</th>
                 <th>Claude</th>
                 <th>Groq</th>
               </tr>
@@ -1036,17 +972,12 @@ function UsagePanel({ usage, onRefresh }: { usage: UsageReport | null; onRefresh
               ))}
             </tbody>
           </table>
+          <p className="usage-note">
+            Groq writes the short agenda prompts ({usage.groq_today.calls} today). Days follow Pacific time, matching
+            Google&apos;s quota reset.
+          </p>
         </section>
       ) : null}
-
-      <details className="card">
-        <summary>Add another Gemini key</summary>
-        <p>
-          You have {geminiCount} Gemini key{geminiCount === 1 ? "" : "s"} set. Create a free key at
-          aistudio.google.com (use a different Google account for a separate quota), then add it to the worker as
-          GEMINI_API_KEY_{geminiCount + 1}. It appears here after the worker restarts.
-        </p>
-      </details>
     </section>
   );
 }
@@ -1059,328 +990,222 @@ function iconUsage() {
   );
 }
 
+type PlaylistUpdate = Partial<Pick<Playlist, "name" | "description" | "kind" | "extraction_focus" | "enabled">>;
+
 function SettingsPanel({
   health,
+  workerStatus,
   readiness,
   profile,
   profilePrompt,
   playlists,
   onPlaylistSaved,
-  onReadinessRefresh,
-  onStarterSetup,
-  onProfileSaved
+  onPlaylistsChanged,
+  onProfileSaved,
+  onOpenUsage
 }: {
   health: Health | null;
+  workerStatus: WorkerStatus | null;
   readiness: Readiness | null;
   profile: Profile;
   profilePrompt: string;
   playlists: Playlist[];
-  onPlaylistSaved: (playlistId: string, updates: Partial<Pick<Playlist, "name" | "description" | "kind" | "extraction_focus" | "enabled">>) => Promise<Playlist>;
-  onReadinessRefresh: () => Promise<Readiness>;
-  onStarterSetup: (overwrite?: boolean) => Promise<{ profile: Profile; prompt_preview: string; playlists: Playlist[]; readiness: Readiness }>;
+  onPlaylistSaved: (playlistId: string, updates: PlaylistUpdate) => Promise<Playlist>;
+  onPlaylistsChanged: () => Promise<void>;
   onProfileSaved: (profile: Profile, prompt: string) => void;
+  onOpenUsage: () => void;
 }) {
-  const [services, setServices] = useState<Record<string, boolean>>(health?.services || {});
+  const [draft, setDraft] = useState<Profile>(profile);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState("");
-  const [bulkKeys, setBulkKeys] = useState("");
-  const [profileDraft, setProfileDraft] = useState<Profile>(profile);
-  const [profileSaving, setProfileSaving] = useState(false);
-  const [profileMessage, setProfileMessage] = useState("");
 
   useEffect(() => {
-    setServices(health?.services || {});
-  }, [health]);
-
-  useEffect(() => {
-    setProfileDraft(profile);
+    setDraft(profile);
   }, [profile]);
 
-  function updateProfileField<K extends keyof Profile>(key: K, value: Profile[K]) {
-    setProfileDraft((current) => ({ ...current, [key]: value }));
+  function update<K extends keyof Profile>(key: K, value: Profile[K]) {
+    setDraft((current) => ({ ...current, [key]: value }));
   }
 
   async function saveProfile(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    setProfileSaving(true);
-    setProfileMessage("");
-    try {
-      const result = await api.saveProfile(profileDraft);
-      onProfileSaved(result.profile, result.prompt_preview);
-      setProfileMessage("Profile saved. New agenda generation will use this profile.");
-    } catch (exc) {
-      setProfileMessage(exc instanceof Error ? exc.message : "Could not save profile.");
-    } finally {
-      setProfileSaving(false);
-    }
-  }
-
-  async function saveKeys(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    setMessage("");
-    const form = new FormData(event.currentTarget);
-    const keys: Record<string, string> = parseProviderKeyBlock(bulkKeys);
-    for (const name of providerNames) {
-      const value = String(form.get(name) || "").trim();
-      if (value) keys[name] = normalizeSingleProviderInput(value, name);
-    }
-    if (!Object.keys(keys).length) {
-      setMessage("Paste at least one key, either as a raw key or as NAME=value.");
-      return;
-    }
     setSaving(true);
+    setMessage("");
     try {
-      const result = await api.saveProviderKeys(keys);
-      setServices(result.services);
-      setMessage(`Saved ${Object.keys(keys).length} key${Object.keys(keys).length === 1 ? "" : "s"}. New jobs will use the updated provider keys.`);
-      setBulkKeys("");
-      event.currentTarget.reset();
+      const result = await api.saveProfile(draft);
+      onProfileSaved(result.profile, result.prompt_preview);
+      setMessage("Saved. New videos will be read through this profile.");
     } catch (exc) {
-      setMessage(exc instanceof Error ? exc.message : "Could not save keys.");
+      setMessage(exc instanceof Error ? exc.message : "Could not save the profile.");
     } finally {
       setSaving(false);
     }
   }
 
+  const issues = (readiness?.checks || []).filter((check) => !check.ok);
+  const workerOnline = Boolean(workerStatus?.ok);
+
   return (
-    <section>
-      <p className="caps">Configuration</p>
+    <section className="page">
       <h1 className="detail-title">Settings</h1>
-      <p className={health?.ok ? "notice" : "notice error"}>
-        API status: {health?.ok ? "connected" : health?.error || "not connected yet"}.
-      </p>
-      <div className="settings-grid">
-        {["youtube", "gemini", "anthropic", "groq", "tavily"].map((name) => (
-          <div className="service" key={name}>
-            <strong>{name[0].toUpperCase() + name.slice(1)}</strong>
-            <span>{services[name] ? "Configured" : "Missing"}</span>
-          </div>
-        ))}
-      </div>
 
-      <ReadinessPanel readiness={readiness} onRefresh={onReadinessRefresh} onStarterSetup={onStarterSetup} />
-
-      <details className="card" open>
-        <summary>Working goal</summary>
-        <p>
-          Build a fast Vercel-style knowledge system: save your profile once, add a video with a default or custom agenda, process it in the worker, then read expandable insights, research resources, and links in the dashboard.
-        </p>
-        <ol>
-          <li>Save your profile lens below. This is the stable part of every extraction.</li>
-          <li>Add a video. Use default agenda for normal processing, or custom agenda for one special angle.</li>
-          <li>Watch Queue until the processing job is done.</li>
-          <li>Open the video and read its Summary, Insights, Resources, and Links.</li>
-        </ol>
-        <p className="summary">Project plan file: <code>Vercel Remake/GOAL_PLAN.md</code></p>
-      </details>
-
-      <details className="card" open>
-        <summary>Profile-driven agenda</summary>
-        <p>
-          This profile is injected into default agenda generation and extraction. Custom agenda requests are combined with this profile, so write the profile as your stable lens and the custom agenda as the video-specific focus.
-        </p>
+      <section className="block settings-block">
+        <h2 className="section-title">Your profile</h2>
+        <p className="lede small">Every video is read through this. It decides which insights count as important to you.</p>
         <form className="settings-form" onSubmit={saveProfile}>
           <div className="field">
             <label htmlFor="profile-name">Name</label>
-            <input id="profile-name" value={profileDraft.display_name || ""} onChange={(event) => updateProfileField("display_name", event.target.value)} placeholder="Your name" />
+            <input id="profile-name" value={draft.display_name || ""} onChange={(event) => update("display_name", event.target.value)} placeholder="Your name" />
           </div>
           <div className="field">
             <label htmlFor="profile-email">Email</label>
-            <input id="profile-email" value={profileDraft.email || ""} onChange={(event) => updateProfileField("email", event.target.value)} placeholder="you@example.com" />
+            <input id="profile-email" type="email" value={draft.email || ""} onChange={(event) => update("email", event.target.value)} placeholder="you@example.com" />
           </div>
           <div className="field span-2">
-            <label htmlFor="profile-about">About me / background</label>
-            <textarea id="profile-about" value={profileDraft.about_me || ""} onChange={(event) => updateProfileField("about_me", event.target.value)} placeholder="Who you are, what you are building, your current goals..." />
+            <label htmlFor="profile-about">About you</label>
+            <textarea id="profile-about" value={draft.about_me || ""} onChange={(event) => update("about_me", event.target.value)} placeholder="Who you are, what you're building, what you're working towards…" />
           </div>
           <div className="field span-2">
-            <label htmlFor="profile-interests">What insights matter to me</label>
-            <textarea id="profile-interests" value={profileDraft.interests || ""} onChange={(event) => updateProfileField("interests", event.target.value)} placeholder="Markets, automation, SaaS, coding, client delivery, content systems, research angles..." />
+            <label htmlFor="profile-interests">Insights that matter to you</label>
+            <textarea id="profile-interests" value={draft.interests || ""} onChange={(event) => update("interests", event.target.value)} placeholder="Tools and workflows I can use, pricing, client delivery, automation ideas…" />
           </div>
           <div className="field span-2">
-            <label htmlFor="profile-style">Insight style</label>
-            <textarea id="profile-style" value={profileDraft.insight_style || ""} onChange={(event) => updateProfileField("insight_style", event.target.value)} placeholder="Prefer specific examples, workflows, steps, links, practical playbooks, avoid generic summaries..." />
+            <label htmlFor="profile-style">How insights should be written</label>
+            <textarea id="profile-style" value={draft.insight_style || ""} onChange={(event) => update("insight_style", event.target.value)} placeholder="Specific and practical: steps, numbers, links, examples. No generic summaries." />
           </div>
           <div className="field span-2">
-            <label htmlFor="profile-known">Things I already know</label>
-            <textarea id="profile-known" value={profileDraft.known_topics || ""} onChange={(event) => updateProfileField("known_topics", event.target.value)} placeholder="Topics to skip unless the video gives a new angle..." />
+            <label htmlFor="profile-known">What you already know</label>
+            <textarea id="profile-known" value={draft.known_topics || ""} onChange={(event) => update("known_topics", event.target.value)} placeholder="Topics to skip unless the video adds something new…" />
           </div>
           <label className="check-row span-2">
             <input
               type="checkbox"
-              checked={profileDraft.personalize_extractions !== false}
-              onChange={(event) => updateProfileField("personalize_extractions", event.target.checked)}
+              checked={draft.personalize_extractions !== false}
+              onChange={(event) => update("personalize_extractions", event.target.checked)}
             />
-            Personalize agendas and insights using this profile
+            Use this profile when writing insights
           </label>
-          <button className="button" disabled={profileSaving}>{profileSaving ? "Saving..." : "Save profile"}</button>
+          <div className="form-actions span-2">
+            <button className="button" disabled={saving}>{saving ? "Saving…" : "Save profile"}</button>
+            {message ? <span className="form-message">{message}</span> : null}
+          </div>
         </form>
-        {profileMessage ? <p className="notice">{profileMessage}</p> : null}
         {profilePrompt ? (
-          <details className="card nested-card">
-            <summary>Profile prompt preview</summary>
+          <details className="card">
+            <summary>See exactly what the AI is told about you</summary>
             <pre>{profilePrompt}</pre>
           </details>
-        ) : (
-          <p className="summary">No profile lens is active yet. Add interests and an insight style to make default agendas more personal.</p>
-        )}
-      </details>
+        ) : null}
+      </section>
 
-      <details className="card" open>
-        <summary>Playlist agenda profiles</summary>
-        <p>
-          Playlist focus is added to the default agenda when a video belongs to that playlist. Use this for recurring streams such as AI tools, podcasts, or client research.
+      <section className="block settings-block">
+        <h2 className="section-title">Playlists</h2>
+        <p className="lede small">
+          New videos in these YouTube playlists are pulled in every morning and processed automatically. Each playlist&apos;s
+          focus is added to your profile for its videos.
         </p>
-        <div className="playlist-editor-list">
-          {playlists.length ? (
-            playlists.map((playlist) => (
-              <PlaylistEditor playlist={playlist} onSave={onPlaylistSaved} key={playlist.playlist_id} />
-            ))
-          ) : (
-            <p className="summary">No playlists found yet. Sync or add a playlist in the existing database first.</p>
-          )}
+        <div className="index">
+          {playlists.map((playlist) => (
+            <PlaylistEditor playlist={playlist} onSave={onPlaylistSaved} key={playlist.playlist_id} />
+          ))}
         </div>
-      </details>
+        <AddPlaylistForm onAdded={onPlaylistsChanged} />
+      </section>
 
-      <details className="card" open>
-        <summary>Provider API keys</summary>
-        <p>
-          Paste only the keys you want to add or replace. Blank fields keep the current key. Stored keys are used by the API and worker, but are never shown back in the dashboard.
-        </p>
-        <p className="summary">Runtime key file: <code>Vercel Remake/runtime/provider_keys.json</code></p>
-        <pre>{`YOUTUBE_API_KEY=your_new_youtube_key
-GEMINI_API_KEY=your_gemini_key
-ANTHROPIC_API_KEY=your_anthropic_key
-GROQ_API_KEY=your_groq_key
-TAVILY_API_KEY=your_tavily_key`}</pre>
-        <form className="settings-form" onSubmit={saveKeys}>
-          <div className="field span-2">
-            <label htmlFor="bulk-provider-keys">Paste .env key block</label>
-            <textarea
-              id="bulk-provider-keys"
-              value={bulkKeys}
-              onChange={(event) => setBulkKeys(event.target.value)}
-              rows={6}
-              spellCheck={false}
-              placeholder="YOUTUBE_API_KEY=..."
-            />
-            <small>You can paste one line or the full block. JSON also works, for example {`{"youtube":"..."}`}.</small>
-          </div>
-          <div className="field">
-            <label htmlFor="youtube-key">YouTube API key</label>
-            <input id="youtube-key" name="youtube" type="password" autoComplete="off" placeholder="Raw key or YOUTUBE_API_KEY=..." />
-          </div>
-          <div className="field">
-            <label htmlFor="gemini-key">Gemini API key</label>
-            <input id="gemini-key" name="gemini" type="password" autoComplete="off" placeholder="Paste new Gemini key" />
-          </div>
-          <div className="field">
-            <label htmlFor="anthropic-key">Anthropic API key</label>
-            <input id="anthropic-key" name="anthropic" type="password" autoComplete="off" placeholder="Paste new Anthropic key" />
-          </div>
-          <div className="field">
-            <label htmlFor="groq-key">Groq API key</label>
-            <input id="groq-key" name="groq" type="password" autoComplete="off" placeholder="Paste new Groq key" />
-          </div>
-          <div className="field">
-            <label htmlFor="tavily-key">Tavily API key</label>
-            <input id="tavily-key" name="tavily" type="password" autoComplete="off" placeholder="Paste new Tavily key" />
-          </div>
-          <button className="button" disabled={saving}>{saving ? "Saving..." : "Save keys"}</button>
-        </form>
-        {message ? <p className="notice">{message}</p> : null}
-      </details>
-
-      <details className="card">
-        <summary>Deployment variables</summary>
-        <p>For hosted production, set stable keys as environment variables on the API/worker host. The dashboard key form is best for this remake runtime and local testing.</p>
-        <pre>
-{`DATABASE_URL=postgresql://...
-NEXT_PUBLIC_API_BASE_URL=https://your-api-host
-APP_ALLOWED_ORIGINS=https://your-vercel-app.vercel.app
-YOUTUBE_API_KEY=...
-GEMINI_API_KEY=...
-ANTHROPIC_API_KEY=...
-GROQ_API_KEY=...
-TAVILY_API_KEY=...`}
-        </pre>
-      </details>
+      <section className="block settings-block">
+        <h2 className="section-title">System</h2>
+        <ul className="system-list">
+          <li><i className={`dot ${health?.ok ? "done" : "failed"}`} />API {health?.ok ? "connected" : `not reachable${health?.error ? ` — ${health.error}` : ""}`}</li>
+          <li><i className={`dot ${workerOnline ? "done" : "failed"}`} />Worker {workerOnline ? "online" : "offline — new videos wait until it's back"}</li>
+          <li><i className={`dot ${health?.services?.youtube ? "done" : "failed"}`} />YouTube access {health?.services?.youtube ? "set up" : "missing — playlist sync can't run"}</li>
+          <li>
+            <i className="dot done" />AI keys live on the worker —{" "}
+            <button className="text-button" onClick={onOpenUsage}>see Usage</button> for which one is in use
+          </li>
+          {issues.map((check) => (
+            <li key={check.id}><i className="dot pending" />{check.label}: {check.detail}</li>
+          ))}
+        </ul>
+      </section>
     </section>
   );
 }
 
-function ReadinessPanel({
-  readiness,
-  onRefresh,
-  onStarterSetup
-}: {
-  readiness: Readiness | null;
-  onRefresh: () => Promise<Readiness>;
-  onStarterSetup: (overwrite?: boolean) => Promise<{ profile: Profile; prompt_preview: string; playlists: Playlist[]; readiness: Readiness }>;
-}) {
-  const [refreshing, setRefreshing] = useState(false);
-  const [applying, setApplying] = useState(false);
-  const [message, setMessage] = useState("");
+function AddPlaylistForm({ onAdded }: { onAdded: () => Promise<void> }) {
+  const [open, setOpen] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [message, setMessage] = useState<{ tone: string; text: string } | null>(null);
 
-  async function refresh() {
-    setRefreshing(true);
+  async function submit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const formElement = event.currentTarget;
+    const form = new FormData(formElement);
+    setBusy(true);
+    setMessage(null);
     try {
-      await onRefresh();
+      const processNow = Number(form.get("processNow") || 3);
+      const result = await api.createPlaylist({
+        url: String(form.get("url") || ""),
+        name: String(form.get("name") || ""),
+        kind: String(form.get("kind") || "general") as "general" | "podcast",
+        extraction_focus: String(form.get("focus") || ""),
+        process_now: processNow
+      });
+      await onAdded();
+      formElement.reset();
+      const count = result.video_count != null ? ` (${result.video_count} videos)` : "";
+      setMessage({
+        tone: "",
+        text: `Added “${result.item.name}”${count}. Syncing now — ${processNow ? `the first ${processNow} will be processed` : "videos are only being listed"}; the rest follow in the daily sync.`
+      });
+    } catch (exc) {
+      setMessage({ tone: "error", text: exc instanceof Error ? exc.message : "Could not add the playlist." });
     } finally {
-      setRefreshing(false);
+      setBusy(false);
     }
   }
 
-  async function applyStarter() {
-    setApplying(true);
-    setMessage("");
-    try {
-      const result = await onStarterSetup(false);
-      setMessage(result.readiness.ok ? "Starter setup applied. The system is ready for a real processing test." : "Starter setup applied. Check the remaining readiness items below.");
-    } catch (exc) {
-      setMessage(exc instanceof Error ? exc.message : "Could not apply starter setup.");
-    } finally {
-      setApplying(false);
-    }
+  if (!open) {
+    return (
+      <button className="ghost add-playlist-toggle" onClick={() => setOpen(true)}>
+        {iconPlus()} Add a playlist
+      </button>
+    );
   }
 
   return (
-    <section className="readiness-card">
-      <div className="section-heading">
-        <div>
-          <p className="reader-label">System readiness</p>
-          <h2>{readiness?.ok ? "Ready for normal processing" : "Needs setup before serious processing"}</h2>
-        </div>
-        <div className="main-actions">
-          <button className="ghost" onClick={() => void refresh()} disabled={refreshing || applying}>
-            {refreshing ? "Checking..." : "Refresh"}
-          </button>
-          <button className="button" onClick={() => void applyStarter()} disabled={applying}>
-            {applying ? "Applying..." : "Apply starter setup"}
-          </button>
-        </div>
+    <form className="settings-form add-playlist" onSubmit={submit}>
+      <div className="field span-2">
+        <label htmlFor="pl-url">YouTube playlist link</label>
+        <input id="pl-url" name="url" required placeholder="https://www.youtube.com/playlist?list=PL…" />
+        <small>The playlist must be Public or Unlisted.</small>
       </div>
-
-      <div className="readiness-grid">
-        {(readiness?.checks || []).map((check) => (
-          <div className={check.ok ? "ready" : "needs-work"} key={check.id}>
-            <strong>{check.ok ? "✓" : "!"} {check.label}</strong>
-            <span>{check.detail}</span>
-          </div>
-        ))}
+      <div className="field">
+        <label htmlFor="pl-name">Name</label>
+        <input id="pl-name" name="name" placeholder="Leave blank to use YouTube's title" />
       </div>
-
-      {readiness?.next_actions.length ? (
-        <div className="reader-block compact">
-          <p className="reader-label">Next setup steps</p>
-          <ul>
-            {readiness.next_actions.map((action) => (
-              <li key={action}>{action}</li>
-            ))}
-          </ul>
-        </div>
-      ) : null}
-      {message ? <p className="notice">{message}</p> : null}
-    </section>
+      <div className="field">
+        <label htmlFor="pl-kind">Type</label>
+        <select id="pl-kind" name="kind" defaultValue="general">
+          <option value="general">Videos</option>
+          <option value="podcast">Podcasts</option>
+        </select>
+      </div>
+      <div className="field span-2">
+        <label htmlFor="pl-focus">Focus for this playlist (optional)</label>
+        <textarea id="pl-focus" name="focus" placeholder="For this playlist, prioritize…" />
+      </div>
+      <div className="field">
+        <label htmlFor="pl-now">Process right away</label>
+        <input id="pl-now" name="processNow" type="number" min="0" max="20" defaultValue="3" />
+        <small>Oldest videos first. 0 only lists them.</small>
+      </div>
+      <div className="form-actions span-2">
+        <button className="button" disabled={busy}>{busy ? "Checking the playlist…" : "Add playlist"}</button>
+        <button type="button" className="text-button" onClick={() => { setOpen(false); setMessage(null); }}>Cancel</button>
+      </div>
+      {message ? <p className={`notice span-2 ${message.tone}`}>{message.text}</p> : null}
+    </form>
   );
 }
 
@@ -1389,7 +1214,7 @@ function PlaylistEditor({
   onSave
 }: {
   playlist: Playlist;
-  onSave: (playlistId: string, updates: Partial<Pick<Playlist, "name" | "description" | "kind" | "extraction_focus" | "enabled">>) => Promise<Playlist>;
+  onSave: (playlistId: string, updates: PlaylistUpdate) => Promise<Playlist>;
 }) {
   const [draft, setDraft] = useState(playlist);
   const [saving, setSaving] = useState(false);
@@ -1406,57 +1231,59 @@ function PlaylistEditor({
     try {
       const saved = await onSave(playlist.playlist_id, {
         name: draft.name || "",
-        description: draft.description || "",
         kind: draft.kind,
         extraction_focus: draft.extraction_focus || "",
         enabled: draft.enabled !== false
       });
       setDraft(saved);
-      setMessage("Playlist focus saved. New default agenda jobs will use it.");
+      setMessage("Saved.");
     } catch (exc) {
-      setMessage(exc instanceof Error ? exc.message : "Could not save playlist focus.");
+      setMessage(exc instanceof Error ? exc.message : "Could not save the playlist.");
     } finally {
       setSaving(false);
     }
   }
 
+  const paused = playlist.enabled === false || Number(playlist.enabled) === 0;
   return (
-    <details className="playlist-editor" open>
+    <details className="entry">
       <summary>
-        <span>{draft.name || draft.playlist_id}</span>
-        <small>{draft.kind} · {draft.enabled === false ? "disabled" : "enabled"}</small>
+        <span className="entry-title">{playlist.name || playlist.playlist_id}</span>
+        <span className="leader" aria-hidden="true" />
+        <span className="entry-count">
+          {playlist.kind === "podcast" ? "podcasts" : "videos"} · {playlist.done_count ?? 0}/{playlist.video_count ?? 0} done{paused ? " · paused" : ""}
+        </span>
+        {iconChevron()}
       </summary>
-      <form className="settings-form" onSubmit={submit}>
+      <form className="settings-form entry-body" onSubmit={submit}>
         <div className="field">
           <label htmlFor={`${playlist.playlist_id}-name`}>Name</label>
           <input id={`${playlist.playlist_id}-name`} value={draft.name || ""} onChange={(event) => setDraft((current) => ({ ...current, name: event.target.value }))} />
         </div>
         <div className="field">
-          <label htmlFor={`${playlist.playlist_id}-kind`}>Kind</label>
+          <label htmlFor={`${playlist.playlist_id}-kind`}>Type</label>
           <select id={`${playlist.playlist_id}-kind`} value={draft.kind} onChange={(event) => setDraft((current) => ({ ...current, kind: event.target.value }))}>
-            <option value="general">General</option>
-            <option value="podcast">Podcast</option>
+            <option value="general">Videos</option>
+            <option value="podcast">Podcasts</option>
           </select>
         </div>
         <div className="field span-2">
-          <label htmlFor={`${playlist.playlist_id}-desc`}>Description</label>
-          <textarea id={`${playlist.playlist_id}-desc`} value={draft.description || ""} onChange={(event) => setDraft((current) => ({ ...current, description: event.target.value }))} placeholder="What this playlist is for..." />
-        </div>
-        <div className="field span-2">
-          <label htmlFor={`${playlist.playlist_id}-focus`}>Extraction focus</label>
-          <textarea id={`${playlist.playlist_id}-focus`} value={draft.extraction_focus || ""} onChange={(event) => setDraft((current) => ({ ...current, extraction_focus: event.target.value }))} placeholder="For this playlist, prioritize tools, workflows, pricing, deployment steps, examples, links, and ideas I can reuse..." />
+          <label htmlFor={`${playlist.playlist_id}-focus`}>Focus for this playlist</label>
+          <textarea id={`${playlist.playlist_id}-focus`} value={draft.extraction_focus || ""} onChange={(event) => setDraft((current) => ({ ...current, extraction_focus: event.target.value }))} placeholder="For this playlist, prioritize…" />
         </div>
         <label className="check-row span-2">
           <input
             type="checkbox"
-            checked={draft.enabled !== false}
+            checked={draft.enabled !== false && Number(draft.enabled) !== 0}
             onChange={(event) => setDraft((current) => ({ ...current, enabled: event.target.checked }))}
           />
-          Include this playlist in sync
+          Include in the daily sync
         </label>
-        <button className="button" disabled={saving}>{saving ? "Saving..." : "Save playlist focus"}</button>
+        <div className="form-actions span-2">
+          <button className="button" disabled={saving}>{saving ? "Saving…" : "Save playlist"}</button>
+          {message ? <span className="form-message">{message}</span> : null}
+        </div>
       </form>
-      {message ? <p className="notice">{message}</p> : null}
     </details>
   );
 }

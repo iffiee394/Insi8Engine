@@ -233,9 +233,9 @@ def _transcribe_youtube_url_with_gemini(video_id: str) -> str:
     """Let Gemini fetch the public video itself, so cloud IPs blocked by YouTube still work."""
     from google.genai import types
 
-    def call(client):
+    def call(client, model):
         return client.models.generate_content(
-            model=config.GEMINI_CHAT_MODEL,
+            model=model,
             contents=types.Content(parts=[
                 types.Part(file_data=types.FileData(file_uri=f"https://www.youtube.com/watch?v={video_id}")),
                 types.Part(text=_TRANSCRIBE_PROMPT),
@@ -243,7 +243,7 @@ def _transcribe_youtube_url_with_gemini(video_id: str) -> str:
             config=types.GenerateContentConfig(media_resolution=types.MediaResolution.MEDIA_RESOLUTION_LOW),
         )
 
-    response = run_with_gemini(call, model=config.GEMINI_CHAT_MODEL, purpose="Getting transcript: Gemini reading the video")
+    response = run_with_gemini(call, purpose="Getting transcript: Gemini reading the video")
     return (response.text or "").strip()
 
 
@@ -264,11 +264,10 @@ def _transcribe_downloaded_audio(video_id: str, steps: list[str]) -> tuple[str, 
         if provider_state.gemini_keys():
             try:
                 response = run_with_gemini(
-                    lambda client: client.models.generate_content(
-                        model=config.GEMINI_CHAT_MODEL,
+                    lambda client, model: client.models.generate_content(
+                        model=model,
                         contents=[_TRANSCRIBE_PROMPT, client.files.upload(file=str(audio_path))],
                     ),
-                    model=config.GEMINI_CHAT_MODEL,
                     purpose="Getting transcript: Gemini listening to the audio",
                 )
                 text = (response.text or "").strip()

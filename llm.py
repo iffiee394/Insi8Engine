@@ -206,7 +206,9 @@ def _is_invalid_key_error(exc: Exception) -> bool:
 def _gemini_failure(slot: str, model: str, exc: Exception, attempt: int) -> tuple[str, str]:
     """Classify a Gemini error, update key state, and return (kind, readable reason)."""
     if _is_invalid_model_error(exc):
-        return "model", "model not available"
+        reason = f"{model} not offered to this account"
+        provider_state.mark_limited(slot, model, reason, datetime.now(timezone.utc) + timedelta(days=7))
+        return "model", reason
     if _is_invalid_key_error(exc):
         reason = f"key rejected by Google ({_describe(exc)})"
         provider_state.mark_invalid(slot, reason)
@@ -231,6 +233,10 @@ def _summarize(attempts: list[tuple[str, str, str]]) -> str:
         reasons = by_slot.setdefault(slot, [])
         if reason not in reasons:
             reasons.append(reason)
+    for slot, reasons in by_slot.items():
+        useful = [r for r in reasons if "not offered to this account" not in r]
+        if useful:
+            by_slot[slot] = useful
     return " · ".join(
         f"{provider_state.slot_label(slot)}: {'; '.join(reasons)}" for slot, reasons in by_slot.items()
     )
@@ -256,7 +262,6 @@ def _call_gemini(
         raise _NoGeminiAvailable()
 
     for model in _gemini_model_chain():
-        model_missing = False
         for slot, key in keys:
             blocked = provider_state.blocked_reason(slot, model)
             if blocked:
@@ -288,40 +293,44 @@ def _call_gemini(
                         continue
                     logger.warning("[llm] %s %s failed: %s", slot, model, reason)
                     attempts.append((slot, model, reason))
-                    model_missing = kind == "model"
                     break
-            if model_missing:
-                break
     raise _NoGeminiAvailable()
 
 
-def run_with_gemini(fn: Callable[[Any], Any], *, model: str, purpose: str) -> Any:
-    """Run fn(client) on the first usable Gemini key, moving to the next key on quota/key errors."""
+def run_with_gemini(
+    fn: Callable[[Any, str], Any],
+    *,
+    purpose: str,
+    models: list[str] | None = None,
+) -> Any:
+    """Run fn(client, model) on the first usable key/model, moving on after quota, key or model errors."""
     from google import genai
 
     attempts: list[tuple[str, str, str]] = []
     keys = provider_state.gemini_keys()
     if not keys:
         raise ProviderChainError(f"{purpose} needs a Gemini key (GEMINI_API_KEY is not set)")
-    for slot, key in keys:
-        blocked = provider_state.blocked_reason(slot, model)
-        if blocked:
-            attempts.append((slot, "", blocked))
-            continue
-        progress.report(f"{purpose} with {provider_state.slot_label(slot)}")
-        try:
-            result = fn(genai.Client(api_key=key))
-        except Exception as exc:
-            if type(exc).__name__ == "AudioDownloadError":
-                raise
-            kind, reason = _gemini_failure(slot, model, exc, LLM_MAX_RETRIES)
-            attempts.append((slot, "", reason))
-            if kind in ("model", "error"):
-                break
-            continue
-        meta = getattr(result, "usage_metadata", None)
-        provider_state.record_success(slot, model, getattr(meta, "total_token_count", None) or 0)
-        return result
+    for model in models or _gemini_model_chain():
+        for slot, key in keys:
+            blocked = provider_state.blocked_reason(slot, model)
+            if blocked:
+                attempts.append((slot, model, blocked))
+                continue
+            progress.report(f"{purpose} with {provider_state.slot_label(slot)}")
+            client = genai.Client(api_key=key)
+            try:
+                result = fn(client, model)
+            except Exception as exc:
+                if type(exc).__name__ == "AudioDownloadError":
+                    raise
+                kind, reason = _gemini_failure(slot, model, exc, LLM_MAX_RETRIES)
+                attempts.append((slot, model, reason))
+                if kind == "error":
+                    raise ProviderChainError(f"{purpose} failed — {_summarize(attempts)}") from exc
+                continue
+            meta = getattr(result, "usage_metadata", None)
+            provider_state.record_success(slot, model, getattr(meta, "total_token_count", None) or 0)
+            return result
     raise ProviderChainError(f"{purpose} failed — {_summarize(attempts)}")
 
 

@@ -79,7 +79,7 @@ def _embed_texts(texts: list[str], *, task_type: str = _TASK_DOCUMENT) -> list[l
         return []
     embed_cfg = _embed_config(task_type)
 
-    def embed_all(client) -> list[list[float]]:
+    def embed_all(client, _model) -> list[list[float]]:
         try:
             out = _embed_once(client, texts, embed_cfg)
             if len(out) == len(texts):
@@ -102,7 +102,7 @@ def _embed_texts(texts: list[str], *, task_type: str = _TASK_DOCUMENT) -> list[l
             out.append(values[0])
         return out
 
-    return run_with_gemini(embed_all, model=config.EMBEDDING_MODEL, purpose="Indexing for search")
+    return run_with_gemini(embed_all, models=[config.EMBEDDING_MODEL], purpose="Indexing for search")
 
 
 def normalize_insight_text(ins: dict) -> str:

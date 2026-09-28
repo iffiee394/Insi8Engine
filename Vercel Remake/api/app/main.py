@@ -12,7 +12,7 @@ from pydantic import BaseModel, Field
 from . import db
 from .runtime_settings import provider_status, save_provider_keys
 from .settings import get_settings
-from .youtube import fetch_public_metadata, parse_video_id
+from .youtube import fetch_playlist_info, fetch_public_metadata, parse_playlist_id, parse_video_id
 
 settings = get_settings()
 
@@ -55,6 +55,14 @@ class PlaylistUpdateRequest(BaseModel):
     kind: Literal["general", "podcast"] | None = None
     extraction_focus: str | None = None
     enabled: bool | None = None
+
+
+class PlaylistCreateRequest(BaseModel):
+    url: str
+    name: str = ""
+    kind: Literal["general", "podcast"] = "general"
+    extraction_focus: str = ""
+    process_now: int = Field(default=3, ge=0, le=20)
 
 
 class ProviderKeysRequest(BaseModel):
@@ -146,6 +154,44 @@ def video(video_id: str) -> dict:
 @app.get("/playlists")
 def playlists() -> dict:
     return {"items": db.list_playlists()}
+
+
+@app.post("/playlists")
+def create_playlist(req: PlaylistCreateRequest) -> dict:
+    playlist_id = parse_playlist_id(req.url)
+    if not playlist_id:
+        raise HTTPException(
+            status_code=400,
+            detail="That isn't a YouTube playlist link. Open the playlist on YouTube and copy the address — it contains list=PL…",
+        )
+    existing = next((p for p in db.list_playlists() if p["playlist_id"] == playlist_id), None)
+    if existing:
+        raise HTTPException(
+            status_code=409,
+            detail=f"This playlist is already added as “{existing['name'] or playlist_id}”. Edit it in the list above.",
+        )
+    api_key = get_settings().youtube_api_key
+    title, count = "", None
+    if api_key:
+        try:
+            info = fetch_playlist_info(playlist_id, api_key)
+        except Exception as exc:
+            raise HTTPException(status_code=502, detail=f"Couldn't reach YouTube to check the playlist: {exc}") from exc
+        if not info:
+            raise HTTPException(
+                status_code=400,
+                detail="YouTube can't see this playlist. Set its visibility to Public or Unlisted — private playlists can't be read.",
+            )
+        title, count = info.title, info.item_count
+    item = db.create_playlist(
+        playlist_id,
+        name=req.name.strip() or title or playlist_id,
+        description="",
+        kind=req.kind,
+        extraction_focus=req.extraction_focus.strip(),
+    )
+    job = db.enqueue_playlist_sync(req.process_now)
+    return {"ok": True, "item": item, "video_count": count, "job": job}
 
 
 @app.patch("/playlists/{playlist_id}")
