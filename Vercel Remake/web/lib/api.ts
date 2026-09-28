@@ -67,6 +67,32 @@ export type Job = {
   created_at: string;
   updated_at: string;
   finished_at?: string | null;
+  run_after?: string | null;
+  progress?: string;
+  max_attempts?: number;
+  video_title?: string;
+};
+
+export type UsageSlot = {
+  slot: string;
+  label: string;
+  masked: string;
+  position: number;
+  status: "ready" | "resting" | "rejected" | "unused";
+  detail: string;
+  until: string | null;
+  last_used_at?: string | null;
+  last_error?: string;
+  calls_today: number;
+  tokens_today: number;
+};
+
+export type UsageReport = {
+  chain: UsageSlot[];
+  groq_today: { calls: number; tokens: number };
+  days: Array<{ date: string; gemini: number; claude: number; groq: number }>;
+  day: string;
+  published_at?: string | null;
 };
 
 export type WorkerStatus = {
@@ -167,6 +193,7 @@ export const api = {
     }),
   jobs: () => request<{ items: Job[] }>("/jobs?limit=30"),
   workerStatus: () => request<WorkerStatus>("/worker/status"),
+  usage: () => request<UsageReport>("/usage"),
   readiness: () => request<Readiness>("/readiness"),
   search: (q: string) => request<{ items: Video[] }>(`/search?q=${encodeURIComponent(q)}&limit=12`),
   ingest: (input: { url: string; kind: string; agendaMode: "default" | "custom"; agenda: string; playlistId: string }) =>

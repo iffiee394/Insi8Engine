@@ -134,13 +134,15 @@ def transcribe_youtube_audio(video_id: str) -> tuple[str, str]:
     with tempfile.TemporaryDirectory() as tmp:
         tmp_path = Path(tmp)
         audio_path = download_youtube_audio(video_id, tmp_path)
+        return transcribe_audio_path(audio_path, tmp_path)
 
-        if _ffmpeg_available() and audio_path.stat().st_size > 20 * 1024 * 1024:
-            chunk_dir = tmp_path / "chunks"
-            chunk_dir.mkdir()
-            chunks = _split_audio(audio_path, chunk_dir)
-            parts = [transcribe_file(chunk) for chunk in chunks]
-            return "\n".join(p for p in parts if p.strip()), "groq_whisper_chunked"
 
-        transcript = transcribe_file(audio_path)
-        return transcript, "groq_whisper"
+def transcribe_audio_path(audio_path: Path, work_dir: Path) -> tuple[str, str]:
+    """Groq Whisper on an already-downloaded file, chunking large files."""
+    if _ffmpeg_available() and audio_path.stat().st_size > 20 * 1024 * 1024:
+        chunk_dir = work_dir / "chunks"
+        chunk_dir.mkdir(exist_ok=True)
+        chunks = _split_audio(audio_path, chunk_dir)
+        parts = [transcribe_file(chunk) for chunk in chunks]
+        return "\n".join(p for p in parts if p.strip()), "groq_whisper_chunked"
+    return transcribe_file(audio_path), "groq_whisper"

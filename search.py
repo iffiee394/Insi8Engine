@@ -70,32 +70,39 @@ def _embed_once(client: Any, texts: list[str] | str, embed_cfg: dict[str, Any]) 
 
 
 def _embed_texts(texts: list[str], *, task_type: str = _TASK_DOCUMENT) -> list[list[float]]:
-    if not config.GEMINI_API_KEY or not texts:
+    if not texts:
         return []
-    from google import genai
+    import provider_state
+    from llm import run_with_gemini
 
-    client = genai.Client(api_key=config.GEMINI_API_KEY)
+    if not provider_state.gemini_keys():
+        return []
     embed_cfg = _embed_config(task_type)
 
-    try:
-        out = _embed_once(client, texts, embed_cfg)
-        if len(out) == len(texts):
-            return out
-        logger.warning(
-            "[search] Batch embedding count mismatch (%s vs %s) — retrying one-by-one",
-            len(out),
-            len(texts),
-        )
-    except Exception as exc:
-        logger.warning("[search] Batch embed failed (%s) — retrying one-by-one", str(exc)[:160])
+    def embed_all(client) -> list[list[float]]:
+        try:
+            out = _embed_once(client, texts, embed_cfg)
+            if len(out) == len(texts):
+                return out
+            logger.warning(
+                "[search] Batch embedding count mismatch (%s vs %s) — retrying one-by-one",
+                len(out),
+                len(texts),
+            )
+        except Exception as exc:
+            if "429" in str(exc) or "quota" in str(exc).lower():
+                raise
+            logger.warning("[search] Batch embed failed (%s) — retrying one-by-one", str(exc)[:160])
 
-    out = []
-    for text in texts:
-        values = _embed_once(client, text, embed_cfg)
-        if not values:
-            raise RuntimeError("Empty embedding response")
-        out.append(values[0])
-    return out
+        out = []
+        for text in texts:
+            values = _embed_once(client, text, embed_cfg)
+            if not values:
+                raise RuntimeError("Empty embedding response")
+            out.append(values[0])
+        return out
+
+    return run_with_gemini(embed_all, model=config.EMBEDDING_MODEL, purpose="Indexing for search")
 
 
 def normalize_insight_text(ins: dict) -> str:

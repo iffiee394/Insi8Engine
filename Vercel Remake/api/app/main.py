@@ -187,6 +187,11 @@ def cron_sync_playlists(request: Request) -> dict:
     return {"ok": True, "skipped": False, "job": job}
 
 
+@app.get("/usage")
+def usage() -> dict:
+    return db.usage_report()
+
+
 @app.get("/worker/status")
 def worker_status() -> dict:
     return db.worker_status()

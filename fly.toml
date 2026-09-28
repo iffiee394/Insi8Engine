@@ -7,6 +7,9 @@ primary_region = "sin"
 [env]
   WORKER_POLL_SECONDS = "5"
   LEGACY_APP_ROOT = "/app"
+  LLM_PRIMARY = "gemini"
+  FALLBACK_TO_ANTHROPIC = "true"
+  BATCH_USE_ANTHROPIC = "false"
 
 [[vm]]
   size = "shared-cpu-1x"

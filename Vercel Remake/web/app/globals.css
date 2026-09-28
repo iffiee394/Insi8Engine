@@ -372,11 +372,6 @@ details.card[open] > summary::after { content: "−"; }
 .settings-form .button { align-self: end; justify-self: start; }
 
 .queue-list { display: grid; max-width: 860px; margin-top: 24px; border-top: 1px solid var(--seam); }
-.job {
-  display: grid; grid-template-columns: 110px minmax(0, 1fr) 150px; gap: 16px; align-items: center;
-  padding: 14px 2px; border-bottom: 1px solid var(--seam); color: var(--fog); font-size: 13px;
-}
-.job .notice { grid-column: 1 / -1; margin: 0; }
 .status-strip {
   display: grid; grid-template-columns: minmax(220px, 1.4fr) repeat(3, minmax(0, 1fr));
   gap: 1px; margin: 0 0 16px; max-width: 860px;
@@ -415,6 +410,49 @@ pre {
   font-family: var(--mono); font-size: 12px; line-height: 1.6; white-space: pre-wrap;
 }
 
+/* ---------- queue & usage ---------- */
+
+.page { max-width: 860px; }
+.page-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; }
+.lede.small { font-size: 15px; margin-top: 18px; color: var(--fog); }
+.worker-line { display: flex; align-items: center; gap: 10px; margin-top: 22px; font-size: 14px; color: var(--paper-2); }
+.notice.live { border-color: rgba(165, 150, 255, 0.3); background: var(--iris-soft); color: var(--paper-2); }
+.tool-copy { margin: 0; color: var(--fog); line-height: 1.6; }
+
+.queue-index { margin-top: 28px; }
+.queue-row {
+  display: grid; grid-template-columns: 120px minmax(0, 1fr) auto; gap: 16px; align-items: start;
+  padding: 16px 2px; border-bottom: 1px solid var(--seam);
+}
+.queue-row .pill { justify-self: start; }
+.queue-body { display: grid; gap: 5px; min-width: 0; }
+.queue-body strong { font-weight: 500; color: var(--paper); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.queue-step { color: var(--iris); font-size: 13px; }
+.queue-step.muted { color: var(--fog-2); }
+.queue-error { color: #f0b3b3; font-size: 13px; line-height: 1.55; overflow-wrap: anywhere; }
+.queue-meta { font-family: var(--mono); font-size: 11px; color: var(--fog-2); text-align: right; line-height: 1.7; white-space: nowrap; }
+
+.usage-chain { list-style: none; margin: 28px 0 0; padding: 0; }
+.usage-row {
+  display: grid; grid-template-columns: 32px minmax(0, 1fr) auto; gap: 16px; align-items: center;
+  padding: 18px 2px; border-bottom: 1px solid var(--seam);
+}
+.usage-pos { font-family: var(--mono); font-size: 12px; color: var(--iris); }
+.usage-body { display: grid; gap: 6px; min-width: 0; }
+.usage-body strong { font-weight: 500; font-size: 16px; }
+.usage-mask { font-family: var(--mono); font-size: 12px; color: var(--fog-2); margin-left: 6px; font-weight: 400; }
+.usage-tag {
+  margin-left: 10px; padding: 2px 8px; border-radius: 999px; border: 1px solid var(--seam-2);
+  font-family: var(--mono); font-size: 10px; color: var(--fog); font-weight: 400; text-transform: uppercase; letter-spacing: 0.05em;
+}
+.usage-state { display: flex; align-items: center; gap: 8px; color: var(--fog); font-size: 13px; }
+.usage-count { font-family: var(--mono); font-size: 12px; color: var(--paper-2); text-align: right; line-height: 1.6; }
+.usage-note { margin: 16px 0 0; color: var(--fog-2); font-size: 13px; line-height: 1.6; }
+.usage-table { width: 100%; max-width: 520px; border-collapse: collapse; font-family: var(--mono); font-size: 12px; }
+.usage-table th { text-align: left; font-weight: 400; color: var(--fog-2); padding: 0 0 10px; border-bottom: 1px solid var(--seam); }
+.usage-table td { padding: 10px 0; border-bottom: 1px solid var(--seam); color: var(--paper-2); }
+.usage-table td.warn { color: var(--amber); }
+
 /* ---------- small screens ---------- */
 
 @media (max-width: 900px) {
@@ -437,7 +475,11 @@ pre {
   .lede { font-size: 16px; }
   .entry-body { padding-right: 4px; }
   .settings-grid, .settings-form, .cockpit-grid, .status-strip, .readiness-grid { grid-template-columns: 1fr; }
-  .job { grid-template-columns: 1fr; gap: 6px; }
+  .queue-row { grid-template-columns: 1fr; gap: 8px; }
+  .queue-meta { text-align: left; }
+  .usage-row { grid-template-columns: 24px minmax(0, 1fr); }
+  .usage-count { grid-column: 2; text-align: left; }
+  .segmented { flex-wrap: wrap; border-radius: 14px; }
 }
 
 @media (prefers-reduced-motion: reduce) {

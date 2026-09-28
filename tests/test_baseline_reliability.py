@@ -10,21 +10,38 @@ from errors import classify_error
 
 
 class TranscriptReliabilityTests(unittest.TestCase):
-    def test_blocked_download_does_not_try_second_ai_downloader(self):
+    def test_blocked_download_reports_every_step_and_skips_whisper(self):
         with patch.object(pipeline, "_fetch_caption_segment_dicts", return_value=None), \
-             patch.object(pipeline.config, "GEMINI_API_KEY", "test-key"), \
-             patch.object(pipeline, "_transcribe_with_gemini", side_effect=transcriber.AudioDownloadError("blocked")), \
-             patch.object(transcriber, "transcribe_youtube_audio") as groq:
-            with self.assertRaises(transcriber.AudioDownloadError):
-                pipeline.fetch_transcript_data("abcdefghijk", persist=False)
+             patch.object(pipeline, "_last_caption_error", "YouTube blocked this server (cloud IP)"), \
+             patch.object(pipeline.provider_state, "gemini_keys", return_value=[("gemini_1", "k")]), \
+             patch.object(pipeline, "_transcribe_youtube_url_with_gemini",
+                          side_effect=pipeline.ProviderChainError("x failed — Gemini key 1: daily quota used up")), \
+             patch.object(transcriber, "download_youtube_audio", side_effect=transcriber.AudioDownloadError("YouTube download blocked (403)")), \
+             patch.object(transcriber, "transcribe_audio_path") as groq:
+            with self.assertRaises(pipeline.TranscriptUnavailable) as ctx:
+                pipeline.fetch_transcript_data("abcdefghijk", persist=False, refresh=True)
             groq.assert_not_called()
+            message = str(ctx.exception)
+            self.assertIn("YouTube captions: YouTube blocked this server", message)
+            self.assertIn("Gemini reading the video: Gemini key 1: daily quota used up", message)
+            self.assertIn("audio download: YouTube download blocked (403)", message)
+            self.assertEqual(pipeline.friendly_llm_error(ctx.exception), message)
+
+    def test_gemini_url_transcript_used_when_captions_fail(self):
+        with patch.object(pipeline, "_fetch_caption_segment_dicts", return_value=None), \
+             patch.object(pipeline.provider_state, "gemini_keys", return_value=[("gemini_1", "k")]), \
+             patch.object(pipeline, "_transcribe_youtube_url_with_gemini", return_value="word " * 60), \
+             patch.object(transcriber, "download_youtube_audio") as download:
+            result = pipeline.fetch_transcript_data("abcdefghijk", persist=False, refresh=True)
+            self.assertEqual(result["source"], "gemini_youtube")
+            download.assert_not_called()
 
     def test_stored_transcript_skips_youtube_and_ai_transcription(self):
         with patch("knowledge_store.get_transcript", return_value={
             "plain_text": "User supplied transcript", "source": "user_transcript",
             "timing_quality": "unknown", "timed_segments_json": "[]",
         }), patch.object(pipeline, "_fetch_caption_segment_dicts") as captions, \
-             patch.object(pipeline, "_transcribe_with_gemini") as gemini:
+             patch.object(pipeline, "_transcribe_youtube_url_with_gemini") as gemini:
             result = pipeline.fetch_transcript_data("abcdefghijk")
             self.assertEqual(result["source"], "user_transcript")
             captions.assert_not_called()

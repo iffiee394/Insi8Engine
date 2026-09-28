@@ -1,10 +1,10 @@
 "use client";
 
 import { FormEvent, useEffect, useMemo, useState } from "react";
-import { api, type Health, type Job, type Playlist, type Profile, type Readiness, type Video, type WorkerStatus } from "../lib/api";
+import { api, type Health, type Job, type Playlist, type Profile, type Readiness, type UsageReport, type Video, type WorkerStatus } from "../lib/api";
 import { videoInsights, videoResearch, videoSummary } from "../lib/insights";
 
-type Page = "library" | "add" | "queue" | "settings";
+type Page = "library" | "add" | "queue" | "usage" | "settings";
 
 const DEFAULT_AGENDA = `The worker will generate the real agenda from your saved profile, selected playlist profile, and the video's transcript. Keep your profile current so the system knows which insights are important for you.`;
 
@@ -28,12 +28,9 @@ const nav: Array<{ page: Page; label: string; icon: React.ReactNode }> = [
   { page: "library", label: "Library", icon: iconLibrary() },
   { page: "add", label: "Add", icon: iconPlus() },
   { page: "queue", label: "Queue", icon: iconQueue() },
+  { page: "usage", label: "Usage", icon: iconUsage() },
   { page: "settings", label: "Settings", icon: iconSettings() }
 ];
-
-function statusClass(status: string | undefined) {
-  return `pill ${status || "pending"}`;
-}
 
 function thumbnailUrl(video: Video): string {
   return video.thumbnail_url || `https://i.ytimg.com/vi/${video.video_id}/mqdefault.jpg`;
@@ -122,6 +119,22 @@ export default function Home() {
   const [readiness, setReadiness] = useState<Readiness | null>(null);
   const [query, setQuery] = useState("");
   const [playlistFilter, setPlaylistFilter] = useState("all");
+  const [usage, setUsage] = useState<UsageReport | null>(null);
+
+  async function loadUsage() {
+    try {
+      setUsage(await api.usage());
+    } catch (exc) {
+      setError(exc instanceof Error ? exc.message : "Could not load usage.");
+    }
+  }
+
+  useEffect(() => {
+    if (page !== "usage") return;
+    void loadUsage();
+    const timer = window.setInterval(() => void loadUsage(), 15000);
+    return () => window.clearInterval(timer);
+  }, [page]);
   const [notice, setNotice] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -476,6 +489,8 @@ export default function Home() {
               <QueuePanel jobs={jobs} workerStatus={workerStatus} loading={loading} onRefresh={loadJobs} onSync={syncPlaylists} />
             ) : null}
 
+            {page === "usage" ? <UsagePanel usage={usage} onRefresh={loadUsage} /> : null}
+
             {page === "settings" ? (
               <SettingsPanel
                 health={health}
@@ -521,8 +536,8 @@ function VideoDetail({
   onTranscript: (event: FormEvent<HTMLFormElement>) => Promise<void>;
 }) {
   const [toolsOpen, setToolsOpen] = useState(() => Boolean(video && video.status !== "done"));
-  const [toolTab, setToolTab] = useState<"agenda" | "transcript">(() =>
-    video?.status === "failed" && /download|forbidden|403/i.test(video.error_message || "") ? "transcript" : "agenda"
+  const [toolTab, setToolTab] = useState<"default" | "agenda" | "transcript">(() =>
+    video?.status === "failed" && /download|forbidden|403|no transcript/i.test(video.error_message || "") ? "transcript" : "default"
   );
 
   if (!video) {
@@ -539,6 +554,10 @@ function VideoDetail({
   const research = videoResearch(video);
   const failed = video.status === "failed";
   const activeJob = jobs.find((job) => job.status === "queued" || job.status === "running");
+  const retryScheduled = Boolean(
+    activeJob?.status === "queued" && activeJob.run_after && new Date(activeJob.run_after).getTime() > Date.now()
+  );
+  const liveLabel = !activeJob ? video.status : retryScheduled ? "retry scheduled" : activeJob.status === "running" ? "processing" : "queued";
   const lastJob = jobs[0];
 
   return (
@@ -550,8 +569,8 @@ function VideoDetail({
       <header className="video-head">
         <p className="eyebrow">
           <span className="eyebrow-status">
-            <i className={`dot ${activeJob ? "processing" : video.status}`} />
-            {activeJob ? "processing" : video.status}
+            <i className={`dot ${activeJob && !retryScheduled ? "processing" : retryScheduled ? "pending" : video.status}`} />
+            {liveLabel}
           </span>
           <span>{video.channel_name || "Unknown channel"}</span>
           {playlistName ? <span>{playlistName}</span> : null}
@@ -571,9 +590,14 @@ function VideoDetail({
         </div>
       </header>
 
-      {failed ? (
-        <p className="notice error">
-          <strong>Extraction failed.</strong> {video.error_message || "The worker recorded a failure."}
+      {activeJob?.status === "running" && activeJob.progress ? (
+        <p className="notice live">
+          <strong>Working on it.</strong> {activeJob.progress}
+        </p>
+      ) : failed ? (
+        <p className={`notice ${retryScheduled ? "" : "error"}`}>
+          <strong>{retryScheduled ? `Couldn't finish yet — retrying ${relativeTime(activeJob?.run_after)}.` : "Extraction failed."}</strong>{" "}
+          {video.error_message || "The worker recorded a failure."}
         </p>
       ) : null}
 
@@ -581,6 +605,9 @@ function VideoDetail({
         <section className="tools" aria-label="Reprocess this video">
           <div className="tools-head">
             <div className="segmented" role="tablist" aria-label="Reprocess method">
+              <button role="tab" aria-selected={toolTab === "default"} className={toolTab === "default" ? "active" : ""} onClick={() => setToolTab("default")}>
+                Default agenda
+              </button>
               <button role="tab" aria-selected={toolTab === "agenda"} className={toolTab === "agenda" ? "active" : ""} onClick={() => setToolTab("agenda")}>
                 Custom agenda
               </button>
@@ -588,12 +615,18 @@ function VideoDetail({
                 Paste transcript
               </button>
             </div>
-            <button className="text-button" onClick={() => void onProcess()} disabled={loading}>
-              Rerun with my profile
-            </button>
           </div>
 
-          {toolTab === "agenda" ? (
+          {toolTab === "default" ? (
+            <div className="form">
+              <p className="tool-copy">
+                Extracts insights using your profile and this playlist&apos;s focus. This is what normally runs for new videos.
+              </p>
+              <button className="button" onClick={() => void onProcess()} disabled={loading}>
+                Rerun with default agenda
+              </button>
+            </div>
+          ) : toolTab === "agenda" ? (
             <form className="form" onSubmit={onCustomProcess}>
               <textarea name="agenda" required minLength={10} placeholder={CUSTOM_AGENDA_EXAMPLE} defaultValue={video.user_agenda || ""} />
               <button className="button" disabled={loading}>Rerun with this agenda</button>
@@ -806,6 +839,21 @@ function AddPanel({
   );
 }
 
+function relativeTime(iso: string | null | undefined): string {
+  if (!iso) return "";
+  const minutes = Math.round((new Date(iso).getTime() - Date.now()) / 60000);
+  const abs = Math.abs(minutes);
+  const span = abs < 1 ? "under a minute" : abs < 60 ? `${abs} min` : abs < 48 * 60 ? `${Math.round(abs / 60)} h` : `${Math.round(abs / 1440)} days`;
+  return minutes >= 0 ? `in ${span}` : `${span} ago`;
+}
+
+function jobState(job: Job): { label: string; tone: string } {
+  if (job.status === "queued" && job.run_after && new Date(job.run_after).getTime() > Date.now()) {
+    return { label: "retry scheduled", tone: "queued" };
+  }
+  return { label: job.status, tone: job.status };
+}
+
 function QueuePanel({
   jobs,
   workerStatus,
@@ -820,70 +868,194 @@ function QueuePanel({
   onSync: (event: FormEvent<HTMLFormElement>) => Promise<void>;
 }) {
   const newestWorker = workerStatus?.workers[0] || null;
+  const online = Boolean(workerStatus?.ok);
   return (
-    <section>
-      <div className="main-actions" style={{ justifyContent: "space-between", marginBottom: 18 }}>
-        <div>
-          <p className="caps">Worker queue</p>
-          <h1 className="detail-title">Queue</h1>
-        </div>
+    <section className="page">
+      <div className="page-head">
+        <h1 className="detail-title">Queue</h1>
         <button className="ghost" onClick={() => void onRefresh()}>
-          Refresh
+          {iconRefresh()} Refresh
         </button>
       </div>
 
-      <section className="status-strip" aria-label="Worker status">
-        <div>
-          <strong>{workerStatus?.ok ? "Worker online" : "Worker not seen"}</strong>
-          <span>
-            {newestWorker
-              ? `${newestWorker.status} · seen ${newestWorker.seconds_since_seen}s ago`
-              : "Start the worker so queued videos can process."}
-          </span>
-        </div>
-        <div>
-          <strong>{workerStatus?.queue.queued ?? 0}</strong>
-          <span>queued</span>
-        </div>
-        <div>
-          <strong>{workerStatus?.queue.running ?? 0}</strong>
-          <span>running</span>
-        </div>
-        <div>
-          <strong>{workerStatus?.queue.failed ?? 0}</strong>
-          <span>failed</span>
-        </div>
-      </section>
+      <div className="worker-line">
+        <i className={`dot ${online ? (newestWorker?.status === "running" ? "processing" : "done") : "failed"}`} />
+        <span>
+          {online
+            ? newestWorker?.status === "running"
+              ? `Worker busy — ${newestWorker.note || "processing"}`
+              : "Worker online and waiting for jobs"
+            : "Worker offline — queued videos will wait until it's back"}
+        </span>
+      </div>
 
-      <details className="card" open>
-        <summary>Sync enabled playlists</summary>
+      <p className="lede small">
+        When a step fails, the next one takes over: captions, then Gemini reading the video, then the audio;
+        Gemini key 1, 2, 3… and Claude last. If a whole job still fails it retries by itself after 2 min, 10 min,
+        1 h, 6 h and 24 h, then every 12 h. Every error below is the real reason from that step.
+      </p>
+
+      <div className="index queue-index">
+        {jobs.length ? (
+          jobs.map((job, index) => {
+            const resolved =
+              job.status === "failed" &&
+              jobs.slice(0, index).some((later) => later.video_id === job.video_id && later.status === "done");
+            const state = resolved ? { label: "resolved", tone: "" } : jobState(job);
+            const title = job.kind === "sync_playlists" ? "Playlist sync" : job.video_title || job.video_id;
+            return (
+              <div className="queue-row" key={job.id}>
+                <span className={`pill ${state.tone}`}>{state.label}</span>
+                <div className="queue-body">
+                  <strong>{title}</strong>
+                  {job.status === "running" && job.progress ? <span className="queue-step">{job.progress}</span> : null}
+                  {state.label === "retry scheduled" ? (
+                    <span className="queue-step">Next try {relativeTime(job.run_after)}</span>
+                  ) : null}
+                  {job.error && job.status !== "done" && !resolved ? <span className="queue-error">{job.error}</span> : null}
+                  {resolved ? <span className="queue-step muted">A later run finished this video.</span> : null}
+                </div>
+                <span className="queue-meta">
+                  {job.kind === "sync_playlists" ? "sync" : "video"} · try {job.attempts || 0}/{job.max_attempts || 6}
+                  <br />
+                  {relativeTime(job.updated_at)}
+                </span>
+              </div>
+            );
+          })
+        ) : (
+          <p className="summary">No jobs yet. Add a video or sync your playlists.</p>
+        )}
+      </div>
+
+      <details className="card">
+        <summary>Sync playlists now</summary>
         <p>
-          Pulls new videos from the enabled playlist profiles, stores them in the library, and processes the oldest pending videos with the default profile-driven agenda. Use 0 to register videos only.
+          Pulls new videos from your enabled playlists and processes the oldest waiting ones. This also runs by
+          itself every morning. Use 0 to only add the videos without processing them.
         </p>
         <form className="settings-form" onSubmit={onSync}>
           <div className="field">
-            <label htmlFor="maxProcess">Max videos to process now</label>
+            <label htmlFor="maxProcess">Videos to process now</label>
             <input id="maxProcess" name="maxProcess" type="number" min="0" max="50" defaultValue="3" />
           </div>
           <button className="button" disabled={loading}>{loading ? "Queueing..." : "Sync playlists"}</button>
         </form>
       </details>
-
-      <div className="queue-list">
-        {jobs.length ? (
-          jobs.map((job) => (
-            <div className="job" key={job.id}>
-              <span className={statusClass(job.status)}>{job.status}</span>
-              <span>{job.kind === "sync_playlists" ? "Enabled playlists" : job.video_id}</span>
-              <span>{job.kind} · {job.attempts} attempt{job.attempts === 1 ? "" : "s"}</span>
-              {job.error ? <span className="notice error">{job.error}</span> : null}
-            </div>
-          ))
-        ) : (
-          <p className="summary">No jobs yet.</p>
-        )}
-      </div>
     </section>
+  );
+}
+
+function formatTokens(tokens: number): string {
+  if (tokens >= 1_000_000) return `${(tokens / 1_000_000).toFixed(1)}M`;
+  if (tokens >= 1000) return `${Math.round(tokens / 1000)}k`;
+  return String(tokens);
+}
+
+function UsagePanel({ usage, onRefresh }: { usage: UsageReport | null; onRefresh: () => Promise<void> }) {
+  const chain = usage?.chain || [];
+  const geminiCount = chain.filter((item) => item.slot.startsWith("gemini_")).length;
+  return (
+    <section className="page">
+      <div className="page-head">
+        <h1 className="detail-title">Usage</h1>
+        <button className="ghost" onClick={() => void onRefresh()}>
+          {iconRefresh()} Refresh
+        </button>
+      </div>
+      <p className="lede small">
+        Every AI step tries these keys from top to bottom. When a Gemini key runs out of its free daily quota it
+        rests until the quota resets and the next key takes over. Claude is only used when no Gemini key can answer.
+      </p>
+
+      {chain.length ? (
+        <ol className="index usage-chain">
+          {chain.map((item) => {
+            const isClaude = item.slot === "anthropic";
+            const tone = item.status === "rejected" ? "failed" : item.status === "resting" ? "pending" : item.status === "ready" ? "done" : "";
+            return (
+              <li className="usage-row" key={item.slot}>
+                <span className="usage-pos">{item.position}</span>
+                <div className="usage-body">
+                  <strong>
+                    {item.label} <span className="usage-mask">{item.masked}</span>
+                    {isClaude ? <span className="usage-tag">last resort</span> : null}
+                  </strong>
+                  <span className="usage-state">
+                    <i className={`dot ${tone}`} />
+                    {item.status === "resting"
+                      ? `Resting — ${item.detail}, back ${relativeTime(item.until)}`
+                      : item.status === "rejected"
+                        ? `Not working — ${item.detail}`
+                        : item.status === "ready"
+                          ? `Working · last used ${relativeTime(item.last_used_at)}`
+                          : isClaude
+                            ? "Not used yet"
+                            : "No calls yet"}
+                  </span>
+                </div>
+                <span className="usage-count">
+                  {item.calls_today} call{item.calls_today === 1 ? "" : "s"} today
+                  <br />≈ {formatTokens(item.tokens_today)} tokens
+                </span>
+              </li>
+            );
+          })}
+        </ol>
+      ) : (
+        <p className="summary">The worker hasn&apos;t reported its keys yet. It does this each time it starts.</p>
+      )}
+
+      {usage ? (
+        <p className="usage-note">
+          Groq (short agenda prompts): {usage.groq_today.calls} call{usage.groq_today.calls === 1 ? "" : "s"} today.
+          Days are counted in Pacific time, when Google resets free quotas.
+        </p>
+      ) : null}
+
+      {usage?.days.length ? (
+        <section className="block">
+          <h2 className="eyebrow">Last 7 days</h2>
+          <table className="usage-table">
+            <thead>
+              <tr>
+                <th>Day</th>
+                <th>Gemini</th>
+                <th>Claude</th>
+                <th>Groq</th>
+              </tr>
+            </thead>
+            <tbody>
+              {usage.days.map((day) => (
+                <tr key={day.date}>
+                  <td>{day.date}</td>
+                  <td>{day.gemini}</td>
+                  <td className={day.claude ? "warn" : ""}>{day.claude}</td>
+                  <td>{day.groq}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </section>
+      ) : null}
+
+      <details className="card">
+        <summary>Add another Gemini key</summary>
+        <p>
+          You have {geminiCount} Gemini key{geminiCount === 1 ? "" : "s"} set. Create a free key at
+          aistudio.google.com (use a different Google account for a separate quota), then add it to the worker as
+          GEMINI_API_KEY_{geminiCount + 1}. It appears here after the worker restarts.
+        </p>
+      </details>
+    </section>
+  );
+}
+
+function iconUsage() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path d="M5 19V11M12 19V5M19 19v-6" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+    </svg>
   );
 }
 

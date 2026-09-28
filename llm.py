@@ -2,9 +2,14 @@
 
 from __future__ import annotations
 
+import re
 import time
+from datetime import datetime, timedelta, timezone
+from typing import Any, Callable
 
 import config
+import progress
+import provider_state
 import usage_tracker
 from logutil import get_logger
 
@@ -16,7 +21,10 @@ BATCH_POLL_SEC = config.BATCH_POLL_SEC
 BATCH_TIMEOUT_SEC = config.BATCH_TIMEOUT_SEC
 
 _last_provider: str = ""
-_gemini_quota_exhausted: bool = False
+
+
+class ProviderChainError(RuntimeError):
+    """Every key/provider was tried; the message says what happened to each."""
 
 
 def _gemini_model() -> str:
@@ -57,7 +65,7 @@ def last_llm_provider() -> str:
 
 
 def _has_gemini() -> bool:
-    return bool(config.GEMINI_API_KEY)
+    return bool(provider_state.gemini_keys())
 
 
 def _has_anthropic() -> bool:
@@ -104,9 +112,11 @@ def friendly_llm_error(exc: Exception) -> str:
     msg = str(exc)
     lower = msg.lower()
 
-    # Download errors already explain themselves and mention "Gemini ... API key",
-    # which the key check below would otherwise misreport.
-    if type(exc).__name__ == "AudioDownloadError":
+    # These already explain each step in plain words; the keyword checks below
+    # would otherwise rewrite them (e.g. any mention of "Gemini ... API key").
+    if type(exc).__name__ in ("AudioDownloadError", "ProviderChainError", "TranscriptUnavailable"):
+        return msg
+    if msg.startswith(("All AI providers failed", "No transcript", "No AI provider")):
         return msg
 
     if "anthropic:" in lower:
@@ -167,48 +177,152 @@ def friendly_llm_error(exc: Exception) -> str:
     return msg[:500]
 
 
-def _call_gemini(prompt: str, *, json_mode: bool = True) -> str:
+def _describe(exc: BaseException) -> str:
+    """One readable line from a provider error (Google errors embed a JSON 'message')."""
+    msg = str(exc)
+    match = re.search(r"""['"]message['"]\s*:\s*['"](.+?)['"]\s*[,}]""", msg)
+    text = match.group(1) if match else (msg.splitlines()[0] if msg else type(exc).__name__)
+    code = re.match(r"\s*(\d{3})\b", msg)
+    if code and not text.startswith(code.group(1)):
+        text = f"{code.group(1)} {text}"
+    return text.strip()[:200]
+
+
+def _until_text(until: datetime) -> str:
+    minutes = max(1, int((until - datetime.now(timezone.utc)).total_seconds() // 60))
+    if minutes < 60:
+        return f"retry in {minutes} min"
+    return f"resets in about {round(minutes / 60)} h"
+
+
+def _is_invalid_key_error(exc: Exception) -> bool:
+    msg = str(exc).lower()
+    return any(
+        token in msg
+        for token in ("api_key_invalid", "api key not valid", "api key expired", "permission_denied", "unauthenticated")
+    ) or bool(re.match(r"\s*(401|403)\b", msg))
+
+
+def _gemini_failure(slot: str, model: str, exc: Exception, attempt: int) -> tuple[str, str]:
+    """Classify a Gemini error, update key state, and return (kind, readable reason)."""
+    if _is_invalid_model_error(exc):
+        return "model", "model not available"
+    if _is_invalid_key_error(exc):
+        reason = f"key rejected by Google ({_describe(exc)})"
+        provider_state.mark_invalid(slot, reason)
+        return "key", reason
+    if _is_quota_error(exc):
+        reason, until = provider_state.quota_cooldown(str(exc))
+        provider_state.mark_limited(slot, model, reason, until)
+        return "quota", f"{reason}, {_until_text(until)}"
+    if _is_retryable(exc):
+        if attempt < LLM_MAX_RETRIES - 1:
+            return "retry", ""
+        until = datetime.now(timezone.utc) + timedelta(seconds=90)
+        provider_state.mark_limited(slot, model, "Google servers overloaded", until)
+        return "busy", "Google servers overloaded"
+    return "error", _describe(exc)
+
+
+def _summarize(attempts: list[tuple[str, str, str]]) -> str:
+    """[(slot, model, reason)] -> 'Gemini key 1: daily quota used up · Claude: ...'"""
+    by_slot: dict[str, list[str]] = {}
+    for slot, _model, reason in attempts:
+        reasons = by_slot.setdefault(slot, [])
+        if reason not in reasons:
+            reasons.append(reason)
+    return " · ".join(
+        f"{provider_state.slot_label(slot)}: {'; '.join(reasons)}" for slot, reasons in by_slot.items()
+    )
+
+
+class _NoGeminiAvailable(Exception):
+    pass
+
+
+def _call_gemini(
+    prompt: str,
+    *,
+    json_mode: bool = True,
+    attempts: list[tuple[str, str, str]] | None = None,
+) -> tuple[str, str, str]:
+    """Try each model on each key (best model first). Returns (text, slot, model)."""
     from google import genai
     from google.genai import types as genai_types
 
-    if not config.GEMINI_API_KEY:
-        raise RuntimeError("GEMINI_API_KEY is not set.")
-
-    client = genai.Client(api_key=config.GEMINI_API_KEY)
-    last_error: Exception | None = None
+    attempts = attempts if attempts is not None else []
+    keys = provider_state.gemini_keys()
+    if not keys:
+        raise _NoGeminiAvailable()
 
     for model in _gemini_model_chain():
-        for attempt in range(LLM_MAX_RETRIES):
-            try:
-                kwargs: dict = {"model": model, "contents": prompt}
-                if json_mode:
-                    kwargs["config"] = genai_types.GenerateContentConfig(
-                        response_mime_type="application/json",
-                    )
-                response = client.models.generate_content(**kwargs)
-                text = (response.text or "").strip()
-                if text:
-                    if model != _gemini_model():
-                        logger.info("[llm] Gemini fallback model succeeded: %s", model)
-                    return text
-                raise ValueError("Empty Gemini response")
-            except Exception as exc:
-                last_error = exc
-                if _is_invalid_model_error(exc):
-                    logger.info("[llm] Gemini model %s unavailable, trying next", model)
+        model_missing = False
+        for slot, key in keys:
+            blocked = provider_state.blocked_reason(slot, model)
+            if blocked:
+                attempts.append((slot, model, blocked))
+                continue
+            progress.report(f"Writing insights with {provider_state.slot_label(slot)} ({model})")
+            client = genai.Client(api_key=key)
+            for attempt in range(LLM_MAX_RETRIES):
+                try:
+                    kwargs: dict = {"model": model, "contents": prompt}
+                    if json_mode:
+                        kwargs["config"] = genai_types.GenerateContentConfig(
+                            response_mime_type="application/json",
+                        )
+                    response = client.models.generate_content(**kwargs)
+                    text = (response.text or "").strip()
+                    if not text:
+                        raise ValueError("Gemini returned an empty response")
+                    meta = getattr(response, "usage_metadata", None)
+                    tokens = getattr(meta, "total_token_count", None) or usage_tracker._est_tokens(prompt + text)
+                    provider_state.record_success(slot, model, tokens)
+                    return text, slot, model
+                except Exception as exc:
+                    kind, reason = _gemini_failure(slot, model, exc, attempt)
+                    if kind == "retry":
+                        wait = LLM_RETRY_BASE_SEC * (2 ** attempt)
+                        logger.info("[llm] %s %s retry in %.0fs (%s)", slot, model, wait, str(exc)[:80])
+                        time.sleep(wait)
+                        continue
+                    logger.warning("[llm] %s %s failed: %s", slot, model, reason)
+                    attempts.append((slot, model, reason))
+                    model_missing = kind == "model"
                     break
-                if _is_retryable(exc) and attempt < LLM_MAX_RETRIES - 1:
-                    wait = LLM_RETRY_BASE_SEC * (2 ** attempt)
-                    logger.info("[llm] Gemini %s retry in %.0fs (%s)", model, wait, str(exc)[:80])
-                    time.sleep(wait)
-                    continue
-                if _is_retryable(exc):
-                    logger.info("[llm] Gemini %s exhausted, trying next model", model)
-                    break
-                raise
+            if model_missing:
+                break
+    raise _NoGeminiAvailable()
 
-    err = last_error or RuntimeError("Gemini failed")
-    raise RuntimeError(str(err)) from err
+
+def run_with_gemini(fn: Callable[[Any], Any], *, model: str, purpose: str) -> Any:
+    """Run fn(client) on the first usable Gemini key, moving to the next key on quota/key errors."""
+    from google import genai
+
+    attempts: list[tuple[str, str, str]] = []
+    keys = provider_state.gemini_keys()
+    if not keys:
+        raise ProviderChainError(f"{purpose} needs a Gemini key (GEMINI_API_KEY is not set)")
+    for slot, key in keys:
+        blocked = provider_state.blocked_reason(slot, model)
+        if blocked:
+            attempts.append((slot, "", blocked))
+            continue
+        progress.report(f"{purpose} with {provider_state.slot_label(slot)}")
+        try:
+            result = fn(genai.Client(api_key=key))
+        except Exception as exc:
+            if type(exc).__name__ == "AudioDownloadError":
+                raise
+            kind, reason = _gemini_failure(slot, model, exc, LLM_MAX_RETRIES)
+            attempts.append((slot, "", reason))
+            if kind in ("model", "error"):
+                break
+            continue
+        meta = getattr(result, "usage_metadata", None)
+        provider_state.record_success(slot, model, getattr(meta, "total_token_count", None) or 0)
+        return result
+    raise ProviderChainError(f"{purpose} failed — {_summarize(attempts)}")
 
 
 def _call_anthropic(prompt: str, *, json_mode: bool = True) -> str:
@@ -249,80 +363,61 @@ def _call_anthropic(prompt: str, *, json_mode: bool = True) -> str:
 
 
 def call_deep_llm(prompt: str, *, json_mode: bool = True, operation: str = "llm") -> str:
-    global _last_provider, _gemini_quota_exhausted
-    primary = _llm_primary()
-    errors: list[str] = []
+    """Gemini keys first (each key, best model first), Claude only when none can answer."""
+    global _last_provider
+    attempts: list[tuple[str, str, str]] = []
+    order = ["anthropic", "gemini"] if _llm_primary() == "anthropic" else ["gemini", "anthropic"]
 
-    skip_gemini = _gemini_quota_exhausted and _has_anthropic() and _fallback_to_anthropic()
-    if skip_gemini:
-        logger.info("[llm] Gemini quota exhausted this run — using Anthropic directly")
-
-    if primary == "gemini" and _has_gemini() and not skip_gemini:
-        try:
-            text = _call_gemini(prompt, json_mode=json_mode)
+    for position, provider in enumerate(order):
+        if provider == "gemini":
+            if not _has_gemini():
+                continue
+            try:
+                text, _slot, model = _call_gemini(prompt, json_mode=json_mode, attempts=attempts)
+            except _NoGeminiAvailable:
+                continue
             _last_provider = "gemini"
             usage_tracker.record_llm(
-                provider="gemini",
-                model=_gemini_model(),
-                operation=operation,
-                prompt=prompt,
-                response=text,
+                provider="gemini", model=model, operation=operation, prompt=prompt, response=text,
             )
             return text
-        except Exception as exc:
-            if _is_quota_error(exc):
-                _gemini_quota_exhausted = True
-            errors.append(f"Gemini: {exc}")
-            logger.warning("[llm] Gemini failed — %s", str(exc)[:120])
-            if _fallback_to_anthropic() and _has_anthropic():
-                logger.info("[llm] Falling back to Anthropic Haiku")
-            elif not _has_anthropic():
-                raise RuntimeError(friendly_llm_error(exc)) from exc
-            else:
-                logger.info("[llm] Anthropic fallback disabled (FALLBACK_TO_ANTHROPIC=false)")
 
-    if _has_anthropic() and (
-        primary == "anthropic" or _fallback_to_anthropic() or not _has_gemini()
-    ):
+        if not _has_anthropic():
+            continue
+        if position > 0 and not _fallback_to_anthropic():
+            attempts.append(("anthropic", "", "not used (FALLBACK_TO_ANTHROPIC=false)"))
+            continue
+        blocked = provider_state.blocked_reason("anthropic", "*")
+        if blocked:
+            attempts.append(("anthropic", "", blocked))
+            continue
+        progress.report(
+            "Writing insights with Claude (no Gemini key available)" if position > 0 else "Writing insights with Claude"
+        )
         try:
             text = _call_anthropic(prompt, json_mode=json_mode)
-            _last_provider = "anthropic"
-            usage_tracker.record_llm(
-                provider="anthropic",
-                model=_deep_model(),
-                operation=operation,
-                prompt=prompt,
-                response=text,
-            )
-            logger.info("[llm] Anthropic fallback succeeded")
-            return text
         except Exception as exc:
-            errors.append(f"Anthropic: {exc}")
-            logger.warning("[llm] Anthropic failed — %s", str(exc)[:200])
-            if primary == "anthropic" and _has_gemini() and _fallback_to_anthropic():
-                logger.info("[llm] Anthropic failed — trying Gemini")
-                try:
-                    text = _call_gemini(prompt, json_mode=json_mode)
-                    _last_provider = "gemini"
-                    usage_tracker.record_llm(
-                        provider="gemini",
-                        model=_gemini_model(),
-                        operation=operation,
-                        prompt=prompt,
-                        response=text,
-                    )
-                    return text
-                except Exception as exc2:
-                    errors.append(f"Gemini: {exc2}")
-
-    if not _has_gemini() and not _has_anthropic():
-        raise RuntimeError(
-            "No LLM configured. Set GEMINI_API_KEY and/or ANTHROPIC_API_KEY in .env."
+            reason = _describe(exc)
+            lower = reason.lower()
+            if "credit" in lower or "billing" in lower:
+                provider_state.mark_limited(
+                    "anthropic", "*", "no credits left",
+                    datetime.now(timezone.utc) + timedelta(hours=6),
+                )
+                reason = "no credits left"
+            attempts.append(("anthropic", "", reason))
+            logger.warning("[llm] Claude failed — %s", reason)
+            continue
+        provider_state.record_success("anthropic", _deep_model(), usage_tracker._est_tokens(prompt + text))
+        _last_provider = "anthropic"
+        usage_tracker.record_llm(
+            provider="anthropic", model=_deep_model(), operation=operation, prompt=prompt, response=text,
         )
+        return text
 
-    raise RuntimeError(
-        friendly_llm_error(RuntimeError(" | ".join(errors) or "All LLM providers failed"))
-    )
+    if not attempts:
+        raise ProviderChainError("No AI provider configured — add a Gemini key (GEMINI_API_KEY).")
+    raise ProviderChainError(f"All AI providers failed — {_summarize(attempts)}")
 
 
 def batch_uses_anthropic() -> bool:

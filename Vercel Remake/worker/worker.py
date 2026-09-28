@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import re
 import os
 import socket
 import sys
@@ -29,6 +30,22 @@ WORKER_ID = f"{socket.gethostname()}:{os.getpid()}"
 POLL_SECONDS = int(os.getenv("WORKER_POLL_SECONDS", "5"))
 LEGACY_APP_ROOT = os.getenv("LEGACY_APP_ROOT", str(LEGACY_ROOT)).strip()
 
+# Minutes to wait before each automatic retry; a job gets len + 1 tries in total.
+RETRY_DELAYS_MIN = [2, 10, 60, 360, 1440]
+MAX_ATTEMPTS = len(RETRY_DELAYS_MIN) + 1
+STALE_RUNNING_MIN = 45
+HEAL_EVERY_SEC = 30 * 60
+HEAL_AFTER_HOURS = 12
+HEAL_MAX_RUNS_PER_VIDEO = 10
+PERMANENT_ERRORS = (
+    "video is unavailable",
+    "private video",
+    "has been removed",
+    "unknown video",
+    "missing an agenda",
+    "unsupported job kind",
+)
+
 
 @contextmanager
 def connect() -> Iterator[Any]:
@@ -54,8 +71,9 @@ def claim_job() -> dict[str, Any] | None:
             WITH next_job AS (
                 SELECT id
                 FROM knowledge_jobs
-                WHERE status = 'queued'
-                ORDER BY created_at
+                WHERE (status = 'queued' AND (run_after IS NULL OR run_after <= now()))
+                   OR (status = 'running' AND locked_at < now() - make_interval(mins => %s))
+                ORDER BY COALESCE(run_after, created_at)
                 FOR UPDATE SKIP LOCKED
                 LIMIT 1
             )
@@ -65,12 +83,14 @@ def claim_job() -> dict[str, Any] | None:
                 locked_at = now(),
                 locked_by = %s,
                 updated_at = now(),
-                error = ''
+                run_after = NULL,
+                progress = 'Starting',
+                max_attempts = %s
             FROM next_job
             WHERE j.id = next_job.id
             RETURNING j.*
             """,
-            (WORKER_ID,),
+            (STALE_RUNNING_MIN, WORKER_ID, MAX_ATTEMPTS),
         )
         row = cur.fetchone()
         return dict(row) if row else None
@@ -83,6 +103,8 @@ def finish_job(job_id: str) -> None:
             """
             UPDATE knowledge_jobs
             SET status = 'done',
+                error = '',
+                progress = '',
                 updated_at = now(),
                 finished_at = now(),
                 locked_by = '',
@@ -93,8 +115,28 @@ def finish_job(job_id: str) -> None:
         )
 
 
-def fail_job(job: dict[str, Any], error: str) -> None:
-    next_status = "failed" if job["attempts"] >= job["max_attempts"] else "queued"
+def _is_permanent(error: str) -> bool:
+    lower = error.lower()
+    return any(marker in lower for marker in PERMANENT_ERRORS)
+
+
+def fail_job(job: dict[str, Any], error: str) -> str:
+    """Schedule the next automatic retry, or give up. Returns the message stored on the job."""
+    attempts = int(job.get("attempts") or 1)
+    permanent = _is_permanent(error)
+    retry = attempts < MAX_ATTEMPTS and not permanent
+    delay = 0
+    if retry:
+        delay = RETRY_DELAYS_MIN[min(attempts - 1, len(RETRY_DELAYS_MIN) - 1)]
+        quota_reset = re.search(r"resets in about (\d+) h", error)
+        if quota_reset:
+            delay = max(delay, int(quota_reset.group(1)) * 60 + 10)
+        when = f"{delay} min" if delay < 60 else f"{delay // 60} h"
+        stored = f"{error} — automatic retry in {when} (attempt {attempts + 1} of {MAX_ATTEMPTS})"
+    elif permanent:
+        stored = f"{error} — not retrying: this needs a manual fix"
+    else:
+        stored = f"{error} — gave up after {attempts} attempts; the worker will try again in {HEAL_AFTER_HOURS} h"
     with connect() as conn:
         cur = conn.cursor()
         cur.execute(
@@ -102,14 +144,77 @@ def fail_job(job: dict[str, Any], error: str) -> None:
             UPDATE knowledge_jobs
             SET status = %s,
                 error = %s,
+                progress = '',
+                run_after = CASE WHEN %s THEN now() + make_interval(mins => %s) ELSE NULL END,
                 updated_at = now(),
-                finished_at = CASE WHEN %s = 'failed' THEN now() ELSE finished_at END,
+                finished_at = CASE WHEN %s THEN finished_at ELSE now() END,
                 locked_by = '',
                 locked_at = NULL
             WHERE id = %s
             """,
-            (next_status, error[:1000], next_status, job["id"]),
+            ("queued" if retry else "failed", stored[:2000], retry, delay, retry, job["id"]),
         )
+    if job.get("kind") == "process_video":
+        _set_video_error(job["video_id"], stored)
+    return stored
+
+
+def _set_video_error(video_id: str, message: str) -> None:
+    with connect() as conn:
+        cur = conn.cursor()
+        cur.execute(
+            "UPDATE videos SET status = 'failed', error_message = %s WHERE video_id = %s AND status <> 'done'",
+            (message[:2000], video_id),
+        )
+
+
+def _set_progress(job_id: str, step: str) -> None:
+    with connect() as conn:
+        cur = conn.cursor()
+        cur.execute(
+            "UPDATE knowledge_jobs SET progress = %s, updated_at = now() WHERE id = %s",
+            (step[:300], job_id),
+        )
+
+
+def heal_failed_videos() -> int:
+    """Re-queue failed videos whose last attempt is old, so failures resolve without a click."""
+    with connect() as conn:
+        cur = conn.cursor(cursor_factory=RealDictCursor)
+        cur.execute(
+            """
+            SELECT v.video_id,
+                   (SELECT j.payload FROM knowledge_jobs j
+                     WHERE j.video_id = v.video_id AND j.kind = 'process_video'
+                     ORDER BY j.created_at DESC LIMIT 1) AS last_payload
+            FROM videos v
+            WHERE v.status = 'failed'
+              AND NOT EXISTS (
+                  SELECT 1 FROM knowledge_jobs j
+                  WHERE j.video_id = v.video_id AND j.status IN ('queued', 'running'))
+              AND NOT EXISTS (
+                  SELECT 1 FROM knowledge_jobs j
+                  WHERE j.video_id = v.video_id AND j.kind = 'process_video'
+                    AND COALESCE(j.finished_at, j.updated_at) > now() - make_interval(hours => %s))
+              AND (SELECT COUNT(*) FROM knowledge_jobs j
+                   WHERE j.video_id = v.video_id AND j.kind = 'process_video') < %s
+              AND position('not retrying' in COALESCE(v.error_message, '')) = 0
+            LIMIT 3
+            """,
+            (HEAL_AFTER_HOURS, HEAL_MAX_RUNS_PER_VIDEO),
+        )
+        rows = [dict(row) for row in cur.fetchall()]
+    for row in rows:
+        payload = row.get("last_payload") or {}
+        if isinstance(payload, str):
+            try:
+                payload = json.loads(payload)
+            except json.JSONDecodeError:
+                payload = {}
+        payload = {**(payload if isinstance(payload, dict) else {}), "source": "auto-heal"}
+        api_db.enqueue_process(row["video_id"], payload)
+        print(f"Auto-heal queued {row['video_id']}", flush=True)
+    return len(rows)
 
 
 def refresh_legacy_provider_config() -> None:
@@ -244,7 +349,10 @@ def handle_job(job: dict[str, Any]) -> None:
     refresh_legacy_provider_config()
     code = process_one(job["video_id"], manual_regenerate=False)
     if code != 0:
-        raise RuntimeError(f"process_one exited with code {code}")
+        import db as legacy_db
+
+        video = legacy_db.get_video(job["video_id"]) or {}
+        raise RuntimeError(video.get("error_message") or f"processing stopped (exit code {code})")
 
 
 def heartbeat(status: str, job: dict[str, Any] | None = None, note: str = "") -> None:
@@ -260,27 +368,82 @@ def heartbeat(status: str, job: dict[str, Any] | None = None, note: str = "") ->
         print(f"Heartbeat failed: {exc}", flush=True)
 
 
+def _start_reporting(job: dict[str, Any]) -> None:
+    import progress
+
+    def report(step: str) -> None:
+        _set_progress(job["id"], step)
+        heartbeat("running", job, step)
+
+    progress.set_reporter(report)
+
+
+def _stop_reporting() -> None:
+    import progress
+
+    progress.set_reporter(None)
+
+
+def _prepare_legacy() -> None:
+    try:
+        load_legacy_processor()
+        refresh_legacy_provider_config()
+        import provider_state
+
+        provider_state.publish_slots()
+    except Exception as exc:
+        print(f"Could not publish AI key list: {exc}", flush=True)
+
+
+def requeue_interrupted_jobs() -> None:
+    """Jobs this machine was running when it restarted go straight back to the queue."""
+    with connect() as conn:
+        cur = conn.cursor()
+        cur.execute(
+            """
+            UPDATE knowledge_jobs
+            SET status = 'queued', run_after = NULL, locked_by = '', locked_at = NULL,
+                progress = '', error = 'Worker restarted during this job — resuming', updated_at = now()
+            WHERE status = 'running' AND locked_by LIKE %s
+            """,
+            (f"{socket.gethostname()}:%",),
+        )
+
+
 def main() -> None:
     print(f"InsightEngine worker started as {WORKER_ID}", flush=True)
+    api_db.ensure_job_schema()
+    requeue_interrupted_jobs()
+    _prepare_legacy()
     heartbeat("starting", note="worker booted")
+    last_heal = 0.0
     while True:
+        if time.time() - last_heal > HEAL_EVERY_SEC:
+            last_heal = time.time()
+            try:
+                heal_failed_videos()
+            except Exception as exc:
+                print(f"Auto-heal sweep failed: {exc}", flush=True)
         job = claim_job()
         if not job:
             heartbeat("idle")
             time.sleep(POLL_SECONDS)
             continue
-        print(f"Claimed {job['id']} for {job['video_id']}", flush=True)
+        print(f"Claimed {job['id']} for {job['video_id']} (attempt {job['attempts']})", flush=True)
         heartbeat("running", job, f"handling {job['kind']}")
+        _start_reporting(job)
         try:
             handle_job(job)
         except Exception as exc:
-            print(f"Job failed: {job['id']} {exc}", flush=True)
-            fail_job(job, str(exc))
-            heartbeat("idle", note=f"last failure: {str(exc)[:180]}")
+            stored = fail_job(job, str(exc))
+            print(f"Job failed: {job['id']} {stored}", flush=True)
+            heartbeat("idle", note=f"last failure: {stored[:300]}")
         else:
             finish_job(job["id"])
             print(f"Job done: {job['id']}", flush=True)
-            heartbeat("idle", note=f"finished {job['id']}")
+            heartbeat("idle", note=f"finished {job['kind']} for {job['video_id']}")
+        finally:
+            _stop_reporting()
 
 
 if __name__ == "__main__":

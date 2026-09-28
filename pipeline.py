@@ -14,7 +14,9 @@ from transcriber import AudioDownloadError
 
 import config
 import db
-from llm import call_deep_llm, friendly_llm_error
+from llm import ProviderChainError, _describe, call_deep_llm, friendly_llm_error, run_with_gemini
+import progress
+import provider_state
 import usage_tracker
 from logutil import get_logger
 
@@ -23,6 +25,22 @@ logger = get_logger(__name__)
 GROQ_MODEL = config.GROQ_CHAT_MODEL
 MAX_FULL_TRANSCRIPT_CHARS = 320000
 URL_PATTERN = re.compile(r"https?://[^\s\]\)<>\"']+")
+
+
+class TranscriptUnavailable(RuntimeError):
+    """Every transcript source was tried; the message lists why each one failed."""
+
+
+_CAPTION_REASONS = {
+    "RequestBlocked": "YouTube blocked this server (cloud IP)",
+    "IpBlocked": "YouTube blocked this server (cloud IP)",
+    "TranscriptsDisabled": "captions are turned off for this video",
+    "NoTranscriptFound": "no captions exist for this video",
+    "VideoUnavailable": "video is unavailable (private or removed)",
+    "AgeRestricted": "video is age-restricted",
+    "ConnectionError": "could not reach YouTube (connection error)",
+}
+_last_caption_error = ""
 
 
 def _friendly_api_error(exc: Exception) -> str:
@@ -45,6 +63,8 @@ def _fetch_caption_segments(video_id: str) -> list[tuple[float, str]] | None:
 
 
 def _fetch_caption_segment_dicts(video_id: str) -> list[dict] | None:
+    global _last_caption_error
+    _last_caption_error = ""
     try:
         api = YouTubeTranscriptApi()
         transcript = None
@@ -74,7 +94,9 @@ def _fetch_caption_segment_dicts(video_id: str) -> list[dict] | None:
             segments.append({"start": start, "end": end, "text": text.strip()})
         return segments or None
     except Exception as exc:
-        logger.warning("Caption retrieval failed for %s (%s)", video_id, type(exc).__name__)
+        name = type(exc).__name__
+        _last_caption_error = _CAPTION_REASONS.get(name) or f"{name}: {str(exc).splitlines()[0][:160] if str(exc) else ''}"
+        logger.warning("Caption retrieval failed for %s (%s)", video_id, name)
         return None
 
 
@@ -119,6 +141,8 @@ def fetch_transcript_data(video_id: str, *, persist: bool = True, refresh: bool 
         except Exception:
             pass
 
+    steps: list[str] = []
+    progress.report("Getting transcript: YouTube captions")
     segments = _fetch_caption_segment_dicts(video_id)
     if segments:
         plain = " ".join(s["text"] for s in segments).strip()
@@ -127,75 +151,63 @@ def fetch_transcript_data(video_id: str, *, persist: bool = True, refresh: bool 
                 f"[{_format_timestamp_label(s['start'])}] {s['text']}" for s in segments
             )
             last_start = segments[-1]["start"]
-            duration = int(last_start) + 60
-            data = {
-                "text": plain,
-                "source": "youtube_captions",
-                "timed_text": timed,
-                "duration_seconds": duration,
-                "segments": segments,
-                "timing_quality": "exact",
-                "from_store": False,
-            }
+            data = _transcript_data(
+                plain, "youtube_captions", timed_text=timed, duration_seconds=int(last_start) + 60,
+                segments=segments, timing_quality="exact",
+            )
             if persist:
                 _persist_transcript(video_id, data)
             return data
+        steps.append("YouTube captions: too short to use")
+    else:
+        steps.append(f"YouTube captions: {_last_caption_error or 'none returned'}")
+        if _last_caption_error == _CAPTION_REASONS["VideoUnavailable"]:
+            raise TranscriptUnavailable(f"No transcript — {steps[0]}")
 
-    if config.GEMINI_API_KEY:
+    if provider_state.gemini_keys():
         try:
             text = _transcribe_youtube_url_with_gemini(video_id)
-            if text and len(text.strip()) > 100:
-                data = {
-                    "text": text.strip(),
-                    "source": "gemini_youtube",
-                    "timed_text": text.strip(),
-                    "duration_seconds": 0,
-                    "segments": [],
-                    "timing_quality": "unknown",
-                    "from_store": False,
-                }
+            if len(text) > 100:
+                data = _transcript_data(text, "gemini_youtube")
                 if persist:
                     _persist_transcript(video_id, data)
                 return data
+            steps.append("Gemini reading the video: returned almost no text")
         except Exception as exc:
-            logger.warning("Gemini YouTube-URL transcription failed for %s (%s)", video_id, str(exc)[:200])
+            steps.append(f"Gemini reading the video: {_step_error(exc)}")
 
-        try:
-            text = _transcribe_with_gemini(video_id)
-            if text and len(text.strip()) > 100:
-                data = {
-                    "text": text.strip(),
-                    "source": "gemini_audio",
-                    "timed_text": text.strip(),
-                    "duration_seconds": 0,
-                    "segments": [],
-                    "timing_quality": "unknown",
-                    "from_store": False,
-                }
-                if persist:
-                    _persist_transcript(video_id, data)
-                return data
-        except AudioDownloadError:
-            # Both providers need the same source audio; do not download twice.
-            raise
-        except Exception:
-            pass
+    text, source = _transcribe_downloaded_audio(video_id, steps)
+    if text:
+        data = _transcript_data(text, source)
+        if persist:
+            _persist_transcript(video_id, data)
+        return data
 
-    from transcriber import transcribe_youtube_audio
+    raise TranscriptUnavailable(
+        "No transcript — " + " · ".join(steps)
+        + ". Fix: paste the transcript under Reprocess, or wait for the automatic retry."
+    )
 
-    text, source = transcribe_youtube_audio(video_id)
+
+def _transcript_data(text: str, source: str, **extra) -> dict:
     data = {
-        "text": text,
+        "text": text.strip(),
         "source": source,
-        "timed_text": text,
+        "timed_text": text.strip(),
         "duration_seconds": 0,
         "segments": [],
         "timing_quality": "unknown",
         "from_store": False,
     }
-    if persist and (text or "").strip():
-        _persist_transcript(video_id, data)
+    data.update(extra)
     return data
+
+
+def _step_error(exc: Exception) -> str:
+    msg = str(exc)
+    if isinstance(exc, ProviderChainError) and " failed — " in msg:
+        return msg.split(" failed — ", 1)[1]
+    return _describe(exc)
 
 
 def get_transcript(video_id: str) -> tuple[str, str]:
@@ -211,52 +223,74 @@ def _fetch_youtube_captions(video_id: str) -> str | None:
     return None
 
 
+_TRANSCRIBE_PROMPT = (
+    "Transcribe the spoken audio completely. Output ONLY the transcript text. "
+    "Urdu in Roman Urdu; keep English in English."
+)
+
+
 def _transcribe_youtube_url_with_gemini(video_id: str) -> str:
     """Let Gemini fetch the public video itself, so cloud IPs blocked by YouTube still work."""
-    from google import genai
     from google.genai import types
 
-    client = genai.Client(api_key=config.GEMINI_API_KEY)
-    response = client.models.generate_content(
-        model=config.GEMINI_CHAT_MODEL,
-        contents=types.Content(parts=[
-            types.Part(file_data=types.FileData(file_uri=f"https://www.youtube.com/watch?v={video_id}")),
-            types.Part(text=(
-                "Transcribe the spoken audio of this video completely. Output ONLY the transcript text. "
-                "Urdu in Roman Urdu; keep English in English."
-            )),
-        ]),
-        config=types.GenerateContentConfig(media_resolution=types.MediaResolution.MEDIA_RESOLUTION_LOW),
-    )
+    def call(client):
+        return client.models.generate_content(
+            model=config.GEMINI_CHAT_MODEL,
+            contents=types.Content(parts=[
+                types.Part(file_data=types.FileData(file_uri=f"https://www.youtube.com/watch?v={video_id}")),
+                types.Part(text=_TRANSCRIBE_PROMPT),
+            ]),
+            config=types.GenerateContentConfig(media_resolution=types.MediaResolution.MEDIA_RESOLUTION_LOW),
+        )
+
+    response = run_with_gemini(call, model=config.GEMINI_CHAT_MODEL, purpose="Getting transcript: Gemini reading the video")
     return (response.text or "").strip()
 
 
-def _transcribe_with_gemini(video_id: str) -> str:
-    """Optional: transcribe via Gemini when captions are missing."""
+def _transcribe_downloaded_audio(video_id: str, steps: list[str]) -> tuple[str, str]:
+    """Download the audio once, then try Gemini and Groq Whisper on it. Appends each failure to steps."""
     import tempfile
-    from google import genai
 
-    from transcriber import download_youtube_audio
+    from transcriber import download_youtube_audio, transcribe_audio_path
 
-    api_key = config.GEMINI_API_KEY
-    if not api_key:
-        return ""
-
-    client = genai.Client(api_key=api_key)
-    prompt = (
-        "Transcribe this audio completely. Output ONLY the transcript text. "
-        "Urdu in Roman Urdu; keep English in English."
-    )
-    model = config.GEMINI_CHAT_MODEL
-
+    progress.report("Getting transcript: downloading audio")
     with tempfile.TemporaryDirectory() as tmp:
-        audio_path = download_youtube_audio(video_id, Path(tmp))
-        uploaded = client.files.upload(file=str(audio_path))
-        response = client.models.generate_content(
-            model=model,
-            contents=[prompt, uploaded],
-        )
-        return (response.text or "").strip()
+        try:
+            audio_path = download_youtube_audio(video_id, Path(tmp))
+        except AudioDownloadError as exc:
+            steps.append(f"audio download: {exc}")
+            return "", ""
+
+        if provider_state.gemini_keys():
+            try:
+                response = run_with_gemini(
+                    lambda client: client.models.generate_content(
+                        model=config.GEMINI_CHAT_MODEL,
+                        contents=[_TRANSCRIBE_PROMPT, client.files.upload(file=str(audio_path))],
+                    ),
+                    model=config.GEMINI_CHAT_MODEL,
+                    purpose="Getting transcript: Gemini listening to the audio",
+                )
+                text = (response.text or "").strip()
+                if len(text) > 100:
+                    return text, "gemini_audio"
+                steps.append("Gemini audio transcription: returned almost no text")
+            except Exception as exc:
+                steps.append(f"Gemini audio transcription: {_step_error(exc)}")
+
+        if not config.GROQ_API_KEY:
+            steps.append("Groq Whisper: GROQ_API_KEY not set")
+            return "", ""
+        progress.report("Getting transcript: Groq Whisper")
+        try:
+            text, source = transcribe_audio_path(audio_path, Path(tmp))
+        except Exception as exc:
+            steps.append(f"Groq Whisper: {_describe(exc)}")
+            return "", ""
+        if len((text or "").strip()) > 100:
+            return text.strip(), source
+        steps.append("Groq Whisper: returned almost no text")
+        return "", ""
 
 
 # ── LLM Callers ──────────────────────────────────────────────────────────────
@@ -280,6 +314,7 @@ def _call_groq(prompt: str, *, json_mode: bool = False, operation: str = "groq")
         logger.warning("[pipeline] Groq failed (%s) — using deep LLM fallback", str(exc)[:100])
         return call_deep_llm(prompt, json_mode=json_mode, operation=operation)
     text = response.choices[0].message.content or ""
+    provider_state.record_success("groq", GROQ_MODEL, usage_tracker._est_tokens(prompt + text))
     usage_tracker.record_groq(
         model=GROQ_MODEL,
         operation=operation,

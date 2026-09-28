@@ -144,6 +144,8 @@ def ensure_job_schema() -> None:
             )
             """
         )
+        cur.execute("ALTER TABLE knowledge_jobs ADD COLUMN IF NOT EXISTS run_after TIMESTAMPTZ")
+        cur.execute("ALTER TABLE knowledge_jobs ADD COLUMN IF NOT EXISTS progress TEXT NOT NULL DEFAULT ''")
         cur.execute(
             "CREATE INDEX IF NOT EXISTS knowledge_jobs_status_created_idx "
             "ON knowledge_jobs(status, created_at)"
@@ -665,25 +667,19 @@ def list_jobs(video_id: str | None = None, limit: int = 50) -> list[dict[str, An
     limit = max(1, min(limit, 100))
     with connect() as conn:
         cur = conn.cursor()
-        if video_id:
-            cur.execute(
-                """
-                SELECT * FROM knowledge_jobs
-                WHERE video_id = %s
-                ORDER BY created_at DESC
-                LIMIT %s
-                """,
-                (video_id, limit),
-            )
-        else:
-            cur.execute(
-                """
-                SELECT * FROM knowledge_jobs
-                ORDER BY created_at DESC
-                LIMIT %s
-                """,
-                (limit,),
-            )
+        where = "WHERE j.video_id = %s" if video_id else ""
+        params: list[Any] = [video_id] if video_id else []
+        cur.execute(
+            f"""
+            SELECT j.*, COALESCE(v.title, '') AS video_title
+            FROM knowledge_jobs j
+            LEFT JOIN videos v ON v.video_id = j.video_id
+            {where}
+            ORDER BY j.updated_at DESC
+            LIMIT %s
+            """,
+            [*params, limit],
+        )
         return _rows(cur)
 
 
@@ -734,6 +730,10 @@ def enqueue_process(video_id: str, payload: dict[str, Any] | None = None) -> dic
                 payload = CASE
                     WHEN knowledge_jobs.status = 'queued' THEN EXCLUDED.payload
                     ELSE knowledge_jobs.payload
+                END,
+                run_after = CASE
+                    WHEN knowledge_jobs.status = 'queued' THEN NULL
+                    ELSE knowledge_jobs.run_after
                 END,
                 updated_at = now()
             RETURNING *
@@ -880,3 +880,80 @@ def lexical_search(query: str, limit: int = 12) -> list[dict[str, Any]]:
             (needle, needle, needle, max(1, min(limit, 30))),
         )
         return _rows(cur)
+
+
+def _pacific_today() -> str:
+    try:
+        from zoneinfo import ZoneInfo
+
+        tz: Any = ZoneInfo("America/Los_Angeles")
+    except Exception:
+        from datetime import timedelta
+
+        tz = timezone(timedelta(hours=-7))
+    return datetime.now(timezone.utc).astimezone(tz).date().isoformat()
+
+
+def usage_report() -> dict[str, Any]:
+    with connect() as conn:
+        cur = conn.cursor()
+        try:
+            cur.execute(
+                "SELECT key, value FROM meta WHERE key IN ('llm_provider_state', 'llm_usage_daily')"
+            )
+            rows = {row["key"]: row["value"] for row in cur.fetchall()}
+        except Exception:
+            rows = {}
+    try:
+        state = json.loads(rows.get("llm_provider_state") or "{}")
+        usage = json.loads(rows.get("llm_usage_daily") or "{}")
+    except json.JSONDecodeError:
+        state, usage = {}, {}
+
+    now = datetime.now(timezone.utc)
+    today = _pacific_today()
+    today_usage = usage.get(today, {})
+
+    def status_for(slot: str) -> dict[str, Any]:
+        entry = state.get(slot, {})
+        invalid_until = entry.get("invalid_until")
+        if invalid_until and datetime.fromisoformat(invalid_until) > now:
+            return {"status": "rejected", "detail": entry.get("invalid_reason", ""), "until": invalid_until}
+        for scope, item in (entry.get("cooldowns") or {}).items():
+            if datetime.fromisoformat(item["until"]) > now:
+                return {"status": "resting", "detail": item.get("reason", ""), "until": item["until"], "model": scope}
+        if entry.get("last_used_at"):
+            return {"status": "ready", "detail": "", "until": None}
+        return {"status": "unused", "detail": "", "until": None}
+
+    chain = []
+    for index, slot in enumerate(state.get("_slots") or []):
+        counts = today_usage.get(slot["slot"], {})
+        chain.append({
+            **slot,
+            "position": index + 1,
+            "last_used_at": state.get(slot["slot"], {}).get("last_used_at"),
+            "last_error": state.get(slot["slot"], {}).get("last_error", ""),
+            "calls_today": counts.get("calls", 0),
+            "tokens_today": counts.get("tokens", 0),
+            **status_for(slot["slot"]),
+        })
+
+    days = []
+    for day in sorted(usage)[-7:]:
+        by_slot = usage[day]
+        days.append({
+            "date": day,
+            "gemini": sum(v.get("calls", 0) for k, v in by_slot.items() if k.startswith("gemini_")),
+            "claude": by_slot.get("anthropic", {}).get("calls", 0),
+            "groq": by_slot.get("groq", {}).get("calls", 0),
+        })
+
+    groq_today = today_usage.get("groq", {})
+    return {
+        "chain": chain,
+        "groq_today": {"calls": groq_today.get("calls", 0), "tokens": groq_today.get("tokens", 0)},
+        "days": days,
+        "day": today,
+        "published_at": state.get("_published_at"),
+    }
