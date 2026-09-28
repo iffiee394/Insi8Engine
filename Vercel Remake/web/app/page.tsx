@@ -122,6 +122,7 @@ export default function Home() {
   const [health, setHealth] = useState<Health | null>(null);
   const [readiness, setReadiness] = useState<Readiness | null>(null);
   const [query, setQuery] = useState("");
+  const [playlistFilter, setPlaylistFilter] = useState("all");
   const [notice, setNotice] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -208,15 +209,38 @@ export default function Home() {
     return () => window.clearInterval(timer);
   }, [page]);
 
+  const playlistNames = useMemo(
+    () => new Map(playlists.map((playlist) => [playlist.playlist_id, playlist.name || playlist.kind])),
+    [playlists]
+  );
+
+  const playlistTabs = useMemo(() => {
+    const counts = new Map<string, number>();
+    for (const video of videos) {
+      const key = video.playlist_id && playlistNames.has(video.playlist_id) ? video.playlist_id : "none";
+      counts.set(key, (counts.get(key) || 0) + 1);
+    }
+    const tabs = [{ id: "all", label: "All", count: videos.length }];
+    for (const playlist of playlists) {
+      tabs.push({ id: playlist.playlist_id, label: playlist.name || playlist.kind, count: counts.get(playlist.playlist_id) || 0 });
+    }
+    if (counts.get("none")) tabs.push({ id: "none", label: "Manual", count: counts.get("none") || 0 });
+    return tabs;
+  }, [videos, playlists, playlistNames]);
+
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
-    if (!q) return videos;
-    return videos.filter((video) =>
-      [video.title, video.channel_name, video.status].some((value) =>
+    return videos.filter((video) => {
+      if (playlistFilter !== "all") {
+        const key = video.playlist_id && playlistNames.has(video.playlist_id) ? video.playlist_id : "none";
+        if (key !== playlistFilter) return false;
+      }
+      if (!q) return true;
+      return [video.title, video.channel_name, video.status].some((value) =>
         (value || "").toLowerCase().includes(q)
-      )
-    );
-  }, [videos, query]);
+      );
+    });
+  }, [videos, query, playlistFilter, playlistNames]);
 
   const doneCount = videos.filter((video) => video.status === "done").length;
   const activeJobs = jobs.filter((job) => ["queued", "running"].includes(job.status)).length;
@@ -374,6 +398,19 @@ export default function Home() {
                 placeholder="Title, channel, status..."
               />
             </div>
+            <div className="playlist-tabs" role="tablist" aria-label="Filter by playlist">
+              {playlistTabs.map((tab) => (
+                <button
+                  key={tab.id}
+                  role="tab"
+                  aria-selected={playlistFilter === tab.id}
+                  className={playlistFilter === tab.id ? "active" : ""}
+                  onClick={() => setPlaylistFilter(tab.id)}
+                >
+                  {tab.label} <span>{tab.count}</span>
+                </button>
+              ))}
+            </div>
           </div>
 
           <div className="list" aria-label="Videos">
@@ -389,7 +426,12 @@ export default function Home() {
                 </span>
                 <span className="row-body">
                   <strong>{video.title || video.video_id}</strong>
-                  <span>{video.channel_name || "Unknown channel"}</span>
+                  <span>
+                    {video.channel_name || "Unknown channel"}
+                    {playlistFilter === "all" && video.playlist_id && playlistNames.has(video.playlist_id)
+                      ? ` · ${playlistNames.get(video.playlist_id)}`
+                      : ""}
+                  </span>
                 </span>
               </button>
             ))}

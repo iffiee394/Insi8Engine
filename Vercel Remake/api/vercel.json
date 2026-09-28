@@ -1,0 +1,8 @@
+{
+  "rewrites": [
+    { "source": "/(.*)", "destination": "/api" }
+  ],
+  "crons": [
+    { "path": "/cron/sync-playlists", "schedule": "0 1 * * *" }
+  ]
+}

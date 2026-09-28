@@ -1,5 +1,8 @@
 from __future__ import annotations
 
+import hmac
+import os
+
 from typing import Literal
 
 from fastapi import FastAPI, HTTPException, Query, Request
@@ -166,6 +169,22 @@ def update_playlist(playlist_id: str, req: PlaylistUpdateRequest) -> dict:
 def sync_playlists(req: PlaylistSyncRequest) -> dict:
     job = db.enqueue_playlist_sync(req.max_process)
     return {"ok": True, "job": job}
+
+
+@app.get("/cron/sync-playlists")
+def cron_sync_playlists(request: Request) -> dict:
+    secret = os.getenv("CRON_SECRET", "").strip()
+    if not secret:
+        raise HTTPException(status_code=503, detail="CRON_SECRET is not configured")
+    supplied = request.headers.get("authorization", "")
+    if not hmac.compare_digest(supplied, f"Bearer {secret}"):
+        raise HTTPException(status_code=401, detail="Unauthorized")
+    existing = db.active_playlist_sync()
+    if existing:
+        return {"ok": True, "skipped": True, "job": existing}
+    max_process = int(os.getenv("CRON_SYNC_MAX_PROCESS", "3"))
+    job = db.enqueue_playlist_sync(max_process, source="cron")
+    return {"ok": True, "skipped": False, "job": job}
 
 
 @app.get("/worker/status")

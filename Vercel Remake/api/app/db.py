@@ -743,8 +743,24 @@ def enqueue_process(video_id: str, payload: dict[str, Any] | None = None) -> dic
         return dict(cur.fetchone())
 
 
-def enqueue_playlist_sync(max_process: int | None = None) -> dict[str, Any]:
-    payload: dict[str, Any] = {"source": "dashboard"}
+def active_playlist_sync() -> dict[str, Any] | None:
+    ensure_job_schema()
+    with connect() as conn:
+        cur = conn.cursor()
+        cur.execute(
+            """
+            SELECT * FROM knowledge_jobs
+            WHERE kind = 'sync_playlists' AND status IN ('queued', 'running')
+            ORDER BY created_at DESC
+            LIMIT 1
+            """
+        )
+        row = cur.fetchone()
+        return dict(row) if row else None
+
+
+def enqueue_playlist_sync(max_process: int | None = None, source: str = "dashboard") -> dict[str, Any]:
+    payload: dict[str, Any] = {"source": source}
     if max_process is not None:
         payload["max_process"] = max(0, min(int(max_process), 50))
     return enqueue_job(kind="sync_playlists", video_id="__playlist_sync__", payload=payload)

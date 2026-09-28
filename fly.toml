@@ -1,0 +1,13 @@
+app = "insightengine-worker"
+primary_region = "sin"
+
+[build]
+  dockerfile = "Vercel Remake/worker/Dockerfile"
+
+[env]
+  WORKER_POLL_SECONDS = "5"
+  LEGACY_APP_ROOT = "/app"
+
+[[vm]]
+  size = "shared-cpu-1x"
+  memory = "256mb"

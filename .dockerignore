@@ -1,0 +1,19 @@
+.git
+.env
+*.pyc
+__pycache__
+.venv
+node_modules
+Vercel Remake/web/node_modules
+Vercel Remake/web/.next
+*.zip
+*.png
+*.html
+.streamlit
+englewood-client-package
+englewood-client-package/
+data/
+site/
+docs/
+fly.toml
+.dockerignore
