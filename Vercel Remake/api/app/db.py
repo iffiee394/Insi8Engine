@@ -607,7 +607,8 @@ def worker_status() -> dict[str, Any]:
     # A busy worker can go quiet during one long step (audio download, API retries).
     active = [
         worker for worker in workers
-        if int(worker.get("seconds_since_seen") or 999999) <= (900 if worker.get("status") == "running" else 30)
+        if worker.get("seconds_since_seen") is not None
+        and int(worker["seconds_since_seen"]) <= (900 if worker.get("status") == "running" else 30)
     ]
     return {
         "ok": bool(active),
