@@ -7,6 +7,7 @@ import socket
 import sys
 import time
 from contextlib import contextmanager
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Iterator
 
@@ -71,9 +72,13 @@ def claim_job() -> dict[str, Any] | None:
             WITH next_job AS (
                 SELECT id
                 FROM knowledge_jobs
-                WHERE (status = 'queued' AND (run_after IS NULL OR run_after <= now()))
-                   OR (status = 'running' AND locked_at < now() - make_interval(mins => %s))
-                ORDER BY COALESCE(run_after, created_at)
+                WHERE ((status = 'queued' AND (run_after IS NULL OR run_after <= now()))
+                       OR (status = 'running' AND locked_at < now() - make_interval(mins => %s)))
+                  AND NOT (kind = 'process_video' AND EXISTS (
+                      SELECT 1 FROM videos v
+                      JOIN playlists p ON p.playlist_id = v.playlist_id
+                      WHERE v.video_id = knowledge_jobs.video_id AND COALESCE(p.queue_paused, 0) = 1))
+                ORDER BY CASE WHEN kind = 'sync_playlists' THEN 0 ELSE 1 END, COALESCE(run_after, created_at)
                 FOR UPDATE SKIP LOCKED
                 LIMIT 1
             )
@@ -96,7 +101,7 @@ def claim_job() -> dict[str, Any] | None:
         return dict(row) if row else None
 
 
-def finish_job(job_id: str) -> None:
+def finish_job(job_id: str, result: str = "") -> None:
     with connect() as conn:
         cur = conn.cursor()
         cur.execute(
@@ -104,14 +109,14 @@ def finish_job(job_id: str) -> None:
             UPDATE knowledge_jobs
             SET status = 'done',
                 error = '',
-                progress = '',
+                progress = %s,
                 updated_at = now(),
                 finished_at = now(),
                 locked_by = '',
                 locked_at = NULL
             WHERE id = %s
             """,
-            (job_id,),
+            (result[:300], job_id),
         )
 
 
@@ -307,29 +312,51 @@ def _process_custom_agenda(video_id: str, agenda: str) -> None:
         raise RuntimeError(err) from exc
 
 
-def _sync_playlists(job: dict[str, Any]) -> None:
+def _videos_with_active_jobs() -> set[str]:
+    with connect() as conn:
+        cur = conn.cursor()
+        cur.execute(
+            "SELECT video_id FROM knowledge_jobs WHERE kind = 'process_video' AND status IN ('queued', 'running')"
+        )
+        return {row["video_id"] for row in cur.fetchall()}
+
+
+def _sync_playlists(job: dict[str, Any]) -> str:
+    """Pull every enabled playlist, then queue each waiting video as its own job."""
     payload = _payload(job)
-    max_process_raw = payload.get("max_process", 3)
+    limit = payload.get("max_process")
     try:
-        max_process = int(max_process_raw) if max_process_raw is not None else None
+        limit = int(limit) if limit is not None else None
     except (TypeError, ValueError):
-        max_process = 3
-    if max_process is not None:
-        max_process = max(0, min(max_process, 50))
+        limit = None
 
     refresh_legacy_provider_config()
     load_legacy_processor()
+    import db as legacy_db
     from poll import run_poll
 
-    code = run_poll(max_process=max_process)
-    if code != 0:
-        raise RuntimeError(f"playlist sync exited with code {code}")
+    code = run_poll(max_process=0)
+    problem = legacy_db.get_meta("last_poll_error", "") if code != 0 else ""
+
+    busy = _videos_with_active_jobs()
+    waiting = sorted(
+        (v for v in legacy_db.list_videos(status=legacy_db.STATUS_PENDING) if v["video_id"] not in busy),
+        key=lambda v: v.get("added_at", ""),
+    )
+    if limit is not None:
+        waiting = waiting[: max(0, limit)]
+    for video in waiting:
+        api_db.enqueue_process(video["video_id"], {"mode": "default", "source": "playlist-sync"})
+
+    if problem and not waiting:
+        raise RuntimeError(f"Playlist sync couldn't read YouTube — {problem}")
+    result = f"Queued {len(waiting)} new video{'' if len(waiting) == 1 else 's'}"
+    return f"{result} · {problem}" if problem else result
 
 
-def handle_job(job: dict[str, Any]) -> None:
+def handle_job(job: dict[str, Any]) -> str:
     if job["kind"] == "sync_playlists":
-        _sync_playlists(job)
-        return
+        return _sync_playlists(job)
     if job["kind"] != "process_video":
         raise RuntimeError(f"Unsupported job kind: {job['kind']}")
     refresh_legacy_provider_config()
@@ -411,6 +438,25 @@ def requeue_interrupted_jobs() -> None:
         )
 
 
+def maybe_schedule_sync() -> None:
+    """Queue a playlist sync every N hours (N is set on the Playlists page; 0 turns it off)."""
+    try:
+        hours = float(api_db.get_meta("sync_every_hours", "8") or 8)
+    except ValueError:
+        hours = 8
+    if hours <= 0:
+        return
+    last = api_db.get_meta("last_auto_sync_at", "")
+    if last:
+        elapsed = time.time() - datetime.fromisoformat(last).timestamp()
+        if elapsed < hours * 3600:
+            return
+    if not api_db.active_playlist_sync():
+        api_db.enqueue_playlist_sync(None, source="schedule")
+        print("Scheduled playlist sync queued", flush=True)
+    api_db.set_meta("last_auto_sync_at", datetime.now(timezone.utc).isoformat())
+
+
 def main() -> None:
     print(f"InsightEngine worker started as {WORKER_ID}", flush=True)
     api_db.ensure_job_schema()
@@ -418,7 +464,14 @@ def main() -> None:
     _prepare_legacy()
     heartbeat("starting", note="worker booted")
     last_heal = 0.0
+    last_schedule_check = 0.0
     while True:
+        if time.time() - last_schedule_check > 60:
+            last_schedule_check = time.time()
+            try:
+                maybe_schedule_sync()
+            except Exception as exc:
+                print(f"Scheduled sync check failed: {exc}", flush=True)
         if time.time() - last_heal > HEAL_EVERY_SEC:
             last_heal = time.time()
             try:
@@ -434,13 +487,13 @@ def main() -> None:
         heartbeat("running", job, f"handling {job['kind']}")
         _start_reporting(job)
         try:
-            handle_job(job)
+            result = handle_job(job) or ""
         except Exception as exc:
             stored = fail_job(job, str(exc))
             print(f"Job failed: {job['id']} {stored}", flush=True)
             heartbeat("idle", note=f"last failure: {stored[:300]}")
         else:
-            finish_job(job["id"])
+            finish_job(job["id"], result)
             print(f"Job done: {job['id']}", flush=True)
             heartbeat("idle", note=f"finished {job['kind']} for {job['video_id']}")
         finally:

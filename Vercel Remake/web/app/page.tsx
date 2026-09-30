@@ -1,10 +1,10 @@
 "use client";
 
 import { FormEvent, useEffect, useMemo, useState } from "react";
-import { api, type Health, type Job, type Playlist, type Profile, type Readiness, type UsageReport, type Video, type WorkerStatus } from "../lib/api";
+import { api, type Automation, type Health, type Job, type Playlist, type Profile, type Readiness, type UsageReport, type Video, type WorkerStatus } from "../lib/api";
 import { videoInsights, videoResearch, videoSummary } from "../lib/insights";
 
-type Page = "library" | "add" | "queue" | "usage" | "settings";
+type Page = "library" | "add" | "queue" | "playlists" | "usage" | "profile";
 
 const EMPTY_PROFILE: Profile = {
   display_name: "",
@@ -26,8 +26,9 @@ const nav: Array<{ page: Page; label: string; icon: React.ReactNode }> = [
   { page: "library", label: "Library", icon: iconLibrary() },
   { page: "add", label: "Add", icon: iconPlus() },
   { page: "queue", label: "Queue", icon: iconQueue() },
+  { page: "playlists", label: "Playlists", icon: iconPlaylists() },
   { page: "usage", label: "Usage", icon: iconUsage() },
-  { page: "settings", label: "Settings", icon: iconSettings() }
+  { page: "profile", label: "My profile", icon: iconProfile() }
 ];
 
 function thumbnailUrl(video: Video): string {
@@ -56,6 +57,45 @@ export default function Home() {
   const [query, setQuery] = useState("");
   const [playlistFilter, setPlaylistFilter] = useState("all");
   const [usage, setUsage] = useState<UsageReport | null>(null);
+  const [automation, setAutomation] = useState<Automation | null>(null);
+
+  async function loadAutomation() {
+    try {
+      setAutomation(await api.automation());
+    } catch {
+      setAutomation(null);
+    }
+  }
+
+  useEffect(() => {
+    if (page === "queue" || page === "playlists") void loadAutomation();
+  }, [page]);
+
+  async function syncNow() {
+    setError("");
+    setNotice("");
+    setLoading(true);
+    try {
+      await api.syncPlaylists();
+      setNotice("Syncing playlists — every new video will show up in Queue.");
+      setPage("queue");
+      await loadJobs();
+    } catch (exc) {
+      setError(exc instanceof Error ? exc.message : "Could not start the sync.");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function togglePause(playlistId: string, paused: boolean) {
+    const result = await api.savePlaylist(playlistId, { queue_paused: paused });
+    setPlaylists((items) => items.map((item) => (item.playlist_id === playlistId ? { ...item, ...result.item } : item)));
+    setNotice(paused ? `Paused “${result.item.name}”. Its videos wait while the rest go first.` : `Resumed “${result.item.name}”.`);
+  }
+
+  async function saveAutomation(hours: number) {
+    setAutomation(await api.saveAutomation(hours));
+  }
 
   async function loadUsage() {
     try {
@@ -96,26 +136,6 @@ export default function Home() {
     setError("");
     setJobs(result.items);
     setWorkerStatus(worker);
-  }
-
-  async function syncPlaylists(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    setError("");
-    setNotice("");
-    setLoading(true);
-    const form = new FormData(event.currentTarget);
-    const raw = Number(form.get("maxProcess") || 3);
-    const maxProcess = Number.isFinite(raw) ? Math.max(0, Math.min(raw, 50)) : 3;
-    try {
-      await api.syncPlaylists(maxProcess);
-      setNotice(maxProcess === 0 ? "Playlist sync queued. It will register new videos without processing them." : `Playlist sync queued. It will process up to ${maxProcess} pending video${maxProcess === 1 ? "" : "s"}.`);
-      setPage("queue");
-      await loadJobs();
-    } catch (exc) {
-      setError(exc instanceof Error ? exc.message : "Could not queue playlist sync.");
-    } finally {
-      setLoading(false);
-    }
   }
 
   useEffect(() => {
@@ -289,7 +309,7 @@ export default function Home() {
     }
   }
 
-  async function savePlaylistFocus(playlistId: string, updates: Partial<Pick<Playlist, "name" | "description" | "kind" | "extraction_focus" | "enabled">>) {
+  async function savePlaylistFocus(playlistId: string, updates: PlaylistUpdate) {
     const result = await api.savePlaylist(playlistId, updates);
     setPlaylists((items) => items.map((playlist) => playlist.playlist_id === playlistId ? result.item : playlist));
     if (selected?.playlist_id === playlistId) {
@@ -416,21 +436,41 @@ export default function Home() {
             ) : null}
 
             {page === "queue" ? (
-              <QueuePanel jobs={jobs} workerStatus={workerStatus} loading={loading} onRefresh={loadJobs} onSync={syncPlaylists} />
+              <QueuePanel
+                jobs={jobs}
+                playlists={playlists}
+                workerStatus={workerStatus}
+                automation={automation}
+                loading={loading}
+                onRefresh={async () => {
+                  await Promise.all([loadJobs(), loadAutomation()]);
+                }}
+                onSyncNow={syncNow}
+                onTogglePause={togglePause}
+              />
+            ) : null}
+
+            {page === "playlists" ? (
+              <PlaylistsPanel
+                playlists={playlists}
+                automation={automation}
+                loading={loading}
+                onPlaylistSaved={savePlaylistFocus}
+                onPlaylistsChanged={reloadPlaylists}
+                onAutomationSaved={saveAutomation}
+                onSyncNow={syncNow}
+              />
             ) : null}
 
             {page === "usage" ? <UsagePanel usage={usage} onRefresh={loadUsage} /> : null}
 
-            {page === "settings" ? (
-              <SettingsPanel
+            {page === "profile" ? (
+              <ProfilePanel
                 health={health}
                 workerStatus={workerStatus}
                 readiness={readiness}
                 profile={profile}
                 profilePrompt={profilePrompt}
-                playlists={playlists}
-                onPlaylistSaved={savePlaylistFocus}
-                onPlaylistsChanged={reloadPlaylists}
                 onOpenUsage={() => setPage("usage")}
                 onProfileSaved={(nextProfile, nextPrompt) => {
                   setProfile(nextProfile);
@@ -463,6 +503,7 @@ function VideoDetail({
   onTranscript: (event: FormEvent<HTMLFormElement>) => Promise<void>;
 }) {
   const [toolsOpen, setToolsOpen] = useState(() => video?.status === "failed");
+  const [expanded, setExpanded] = useState(true);
   const [toolTab, setToolTab] = useState<"default" | "agenda" | "transcript">(() =>
     video?.status === "failed" && /download|forbidden|403|no transcript/i.test(video.error_message || "") ? "transcript" : "default"
   );
@@ -583,10 +624,15 @@ function VideoDetail({
 
       {insights.length ? (
         <section className="block">
-          <h2 className="eyebrow">Insights <span className="count">{insights.length}</span></h2>
-          <div className="index">
+          <div className="block-head">
+            <h2 className="eyebrow">Insights <span className="count">{insights.length}</span></h2>
+            <button className="text-button" onClick={() => setExpanded((open) => !open)}>
+              {expanded ? "Collapse all" : "Expand all"}
+            </button>
+          </div>
+          <div className="index" key={expanded ? "open" : "closed"}>
             {insights.map((insight, index) => (
-              <details className="entry" key={`${insight.title}-${index}`}>
+              <details className="entry" open={expanded} key={`${insight.title}-${index}`}>
                 <summary>
                   <span className="entry-title">{insight.title}</span>
                   <span className="leader" aria-hidden="true" />
@@ -612,9 +658,9 @@ function VideoDetail({
       {research.resources.length ? (
         <section className="block">
           <h2 className="eyebrow">Resources <span className="count">{research.resources.length}</span></h2>
-          <div className="index">
+          <div className="index" key={expanded ? "open" : "closed"}>
             {research.resources.map((resource, index) => (
-              <details className="entry" key={`${resource.name}-${index}`}>
+              <details className="entry" open={expanded} key={`${resource.name}-${index}`}>
                 <summary>
                   <span className="entry-title">{resource.name}</span>
                   <span className="leader" aria-hidden="true" />
@@ -638,8 +684,8 @@ function VideoDetail({
       {research.links.length ? (
         <section className="block">
           <h2 className="eyebrow">Links <span className="count">{research.links.length}</span></h2>
-          <div className="index">
-            <details className="entry">
+          <div className="index" key={expanded ? "open" : "closed"}>
+            <details className="entry" open={expanded}>
               <summary>
                 <span className="entry-title">Links from the video, description and research</span>
                 <span className="leader" aria-hidden="true" />
@@ -692,7 +738,7 @@ function AddPanel({
         few minutes. Watch it in Queue.
       </p>
       {!hasProfile ? (
-        <p className="notice">Your profile is empty, so insights won&apos;t be personal yet. Fill it in under Settings first.</p>
+        <p className="notice">Your profile is empty, so insights won&apos;t be personal yet. Fill it in under My profile first.</p>
       ) : null}
 
       <form className="form add-form" onSubmit={onSubmit}>
@@ -759,96 +805,178 @@ function jobState(job: Job): { label: string; tone: string } {
   if (job.status === "queued" && job.run_after && new Date(job.run_after).getTime() > Date.now()) {
     return { label: "retry scheduled", tone: "queued" };
   }
+  if (job.status === "queued") return { label: "waiting", tone: "" };
   return { label: job.status, tone: job.status };
+}
+
+function syncScheduleText(automation: Automation | null): string {
+  if (!automation) return "";
+  if (!automation.sync_every_hours) return "Automatic sync is off.";
+  const every = `every ${automation.sync_every_hours} h`;
+  if (!automation.last_auto_sync_at) return `Playlists sync automatically ${every}.`;
+  const next = new Date(new Date(automation.last_auto_sync_at).getTime() + automation.sync_every_hours * 3600000);
+  return `Playlists sync automatically ${every} — last ${clockTime(automation.last_auto_sync_at)}, next around ${clockTime(next.toISOString())}.`;
 }
 
 function QueuePanel({
   jobs,
+  playlists,
   workerStatus,
+  automation,
   loading,
   onRefresh,
-  onSync
+  onSyncNow,
+  onTogglePause
 }: {
   jobs: Job[];
+  playlists: Playlist[];
   workerStatus: WorkerStatus | null;
+  automation: Automation | null;
   loading: boolean;
   onRefresh: () => Promise<void>;
-  onSync: (event: FormEvent<HTMLFormElement>) => Promise<void>;
+  onSyncNow: () => Promise<void>;
+  onTogglePause: (playlistId: string, paused: boolean) => Promise<void>;
 }) {
-  const newestWorker = workerStatus?.workers[0] || null;
+  const worker = workerStatus?.workers[0] || null;
   const online = Boolean(workerStatus?.ok);
+  const busy = online && worker?.status === "running";
+  const syncing = jobs.some((job) => job.kind === "sync_playlists" && (job.status === "queued" || job.status === "running"));
+
+  const waiting = jobs
+    .filter((job) => job.kind === "process_video" && (job.status === "queued" || job.status === "running"))
+    .sort((a, b) =>
+      a.status === b.status
+        ? String(a.run_after || a.created_at).localeCompare(String(b.run_after || b.created_at))
+        : a.status === "running" ? -1 : 1
+    );
+
+  const groups = [
+    ...playlists.map((playlist) => ({
+      id: playlist.playlist_id,
+      name: playlist.name || playlist.playlist_id,
+      paused: Boolean(Number(playlist.queue_paused || 0)),
+      jobs: waiting.filter((job) => job.playlist_id === playlist.playlist_id)
+    })),
+    {
+      id: "",
+      name: "Single videos",
+      paused: false,
+      jobs: waiting.filter((job) => !job.playlist_id || !playlists.some((p) => p.playlist_id === job.playlist_id))
+    }
+  ].filter((group) => group.jobs.length || (group.id && group.paused));
+
+  const history = jobs.filter((job) => job.status === "done" || job.status === "failed").slice(0, 25);
+
   return (
     <section className="page">
       <div className="page-head">
         <h1 className="detail-title">Queue</h1>
-        <button className="ghost" onClick={() => void onRefresh()}>
-          {iconRefresh()} Refresh
-        </button>
+        <div className="head-actions">
+          <button className="ghost" onClick={() => void onRefresh()}>
+            {iconRefresh()} Refresh
+          </button>
+          <button className="button" onClick={() => void onSyncNow()} disabled={loading || syncing}>
+            {syncing ? "Syncing…" : "Sync playlists now"}
+          </button>
+        </div>
       </div>
 
       <div className="worker-line">
-        <i className={`dot ${online ? (newestWorker?.status === "running" ? "processing" : "done") : "failed"}`} />
+        <i className={`dot ${online ? (busy ? "processing" : "done") : "failed"}`} />
         <span>
-          {online
-            ? newestWorker?.status === "running"
-              ? `Worker busy — ${newestWorker.note || "processing"}`
-              : "Worker online and waiting for jobs"
-            : "Worker offline — queued videos will wait until it's back"}
+          {!online
+            ? "Worker offline — videos wait here until it's back"
+            : busy
+              ? `Working: ${worker?.note || "processing"}`
+              : "Worker online and waiting for jobs"}
         </span>
       </div>
-
-      <p className="lede small">
-        When a step fails, the next one takes over: captions, then Gemini reading the video, then the audio;
-        Gemini key 1, 2, 3… and Claude last. If a whole job still fails it retries by itself after 2 min, 10 min,
-        1 h, 6 h and 24 h, then every 12 h. Every error below is the real reason from that step.
+      <p className="queue-schedule">
+        {syncScheduleText(automation)} A sync adds every new video in your playlists here, and they're processed one at a time.
       </p>
 
-      <div className="index queue-index">
-        {jobs.length ? (
-          jobs.map((job, index) => {
-            const resolved =
-              job.status === "failed" &&
-              jobs.slice(0, index).some((later) => later.video_id === job.video_id && later.status === "done");
-            const state = resolved ? { label: "resolved", tone: "" } : jobState(job);
-            const title = job.kind === "sync_playlists" ? "Playlist sync" : job.video_title || job.video_id;
-            return (
-              <div className="queue-row" key={job.id}>
-                <span className={`pill ${state.tone}`}>{state.label}</span>
-                <div className="queue-body">
-                  <strong>{title}</strong>
-                  {job.status === "running" && job.progress ? <span className="queue-step">{job.progress}</span> : null}
-                  {state.label === "retry scheduled" ? (
-                    <span className="queue-step">Next try {relativeTime(job.run_after)}</span>
-                  ) : null}
-                  {job.error && job.status !== "done" && !resolved ? <span className="queue-error">{job.error}</span> : null}
-                  {resolved ? <span className="queue-step muted">A later run finished this video.</span> : null}
-                </div>
-                <span className="queue-meta">
-                  {job.kind === "sync_playlists" ? "sync" : "video"} · try {job.attempts || 0}/{job.max_attempts || 6}
-                  <br />
-                  {relativeTime(job.updated_at)}
+      <section className="block">
+        <h2 className="eyebrow">Up next <span className="count">{waiting.length}</span></h2>
+        {syncing ? <p className="queue-step">Syncing playlists — new videos will appear here in a moment.</p> : null}
+        {groups.length ? (
+          groups.map((group) => (
+            <div className={`queue-group ${group.paused ? "paused" : ""}`} key={group.id || "single"}>
+              <div className="queue-group-head">
+                <strong>{group.name}</strong>
+                <span>
+                  {group.jobs.length} video{group.jobs.length === 1 ? "" : "s"}
+                  {group.paused ? " · paused" : ""}
                 </span>
+                {group.id ? (
+                  <button className="ghost small" onClick={() => void onTogglePause(group.id, !group.paused)}>
+                    {group.paused ? "Resume" : "Pause"}
+                  </button>
+                ) : null}
               </div>
-            );
-          })
+              {group.paused ? (
+                <p className="queue-note">Paused — these wait so other playlists go first. Resume to process them.</p>
+              ) : null}
+              <ol className="queue-items">
+                {group.jobs.map((job) => {
+                  const state = jobState(job);
+                  return (
+                    <li key={job.id}>
+                      <span className={`pill ${state.tone}`}>{group.paused && job.status === "queued" ? "paused" : state.label}</span>
+                      <div className="queue-body">
+                        <strong>{job.video_title || job.video_id}</strong>
+                        {job.status === "running" && job.progress ? <span className="queue-step">{job.progress}</span> : null}
+                        {state.label === "retry scheduled" ? (
+                          <span className="queue-step">Next try {relativeTime(job.run_after)} · try {job.attempts}/{job.max_attempts || 6}</span>
+                        ) : null}
+                        {job.error && job.status !== "running" ? <span className="queue-error">{job.error}</span> : null}
+                      </div>
+                    </li>
+                  );
+                })}
+              </ol>
+            </div>
+          ))
         ) : (
-          <p className="summary">No jobs yet. Add a video or sync your playlists.</p>
+          <p className="summary">Nothing waiting. New videos arrive with the next sync, or add one from Add.</p>
         )}
-      </div>
+      </section>
+
+      <section className="block">
+        <h2 className="eyebrow">Recent</h2>
+        <div className="index queue-index">
+          {history.length ? (
+            history.map((job, index) => {
+              const resolved =
+                job.status === "failed" &&
+                history.slice(0, index).some((later) => later.video_id === job.video_id && later.status === "done");
+              const title = job.kind === "sync_playlists" ? "Playlist sync" : job.video_title || job.video_id;
+              return (
+                <div className="queue-row" key={job.id}>
+                  <span className={`pill ${resolved ? "" : job.status}`}>{resolved ? "resolved" : job.status}</span>
+                  <div className="queue-body">
+                    <strong>{title}</strong>
+                    {job.kind === "sync_playlists" && job.progress ? <span className="queue-step muted">{job.progress}</span> : null}
+                    {job.kind !== "sync_playlists" && job.playlist_name ? <span className="queue-step muted">{job.playlist_name}</span> : null}
+                    {job.error && job.status === "failed" && !resolved ? <span className="queue-error">{job.error}</span> : null}
+                    {resolved ? <span className="queue-step muted">A later run finished this video.</span> : null}
+                  </div>
+                  <span className="queue-meta">{relativeTime(job.finished_at || job.updated_at)}</span>
+                </div>
+              );
+            })
+          ) : (
+            <p className="summary">No finished jobs yet.</p>
+          )}
+        </div>
+      </section>
 
       <details className="card">
-        <summary>Sync playlists now</summary>
+        <summary>How the queue handles problems</summary>
         <p>
-          Pulls new videos from your enabled playlists and processes the oldest waiting ones. This also runs by
-          itself every morning. Use 0 to only add the videos without processing them.
+          Each step has a fallback: captions, then Gemini reading the video, then the audio; Gemini key 1, 2, 3, 4, and
+          Claude last. A job that still fails retries by itself after 2 min, 10 min, 1 h, 6 h and 24 h, then every 12 h.
+          The error shown is the real reason from each step. The full rules are in PLAYBOOK.md.
         </p>
-        <form className="settings-form" onSubmit={onSync}>
-          <div className="field">
-            <label htmlFor="maxProcess">Videos to process now</label>
-            <input id="maxProcess" name="maxProcess" type="number" min="0" max="50" defaultValue="3" />
-          </div>
-          <button className="button" disabled={loading}>{loading ? "Queueing..." : "Sync playlists"}</button>
-        </form>
       </details>
     </section>
   );
@@ -990,17 +1118,90 @@ function iconUsage() {
   );
 }
 
-type PlaylistUpdate = Partial<Pick<Playlist, "name" | "description" | "kind" | "extraction_focus" | "enabled">>;
+type PlaylistUpdate = Partial<Pick<Playlist, "name" | "description" | "kind" | "extraction_focus" | "enabled" | "queue_paused">>;
 
-function SettingsPanel({
+const SYNC_CHOICES = [
+  { value: 2, label: "Every 2 hours" },
+  { value: 4, label: "Every 4 hours" },
+  { value: 8, label: "Every 8 hours (3 times a day)" },
+  { value: 12, label: "Every 12 hours" },
+  { value: 24, label: "Once a day" },
+  { value: 0, label: "Off — only when I press Sync" }
+];
+
+function PlaylistsPanel({
+  playlists,
+  automation,
+  loading,
+  onPlaylistSaved,
+  onPlaylistsChanged,
+  onAutomationSaved,
+  onSyncNow
+}: {
+  playlists: Playlist[];
+  automation: Automation | null;
+  loading: boolean;
+  onPlaylistSaved: (playlistId: string, updates: PlaylistUpdate) => Promise<Playlist>;
+  onPlaylistsChanged: () => Promise<void>;
+  onAutomationSaved: (hours: number) => Promise<void>;
+  onSyncNow: () => Promise<void>;
+}) {
+  const [savingSchedule, setSavingSchedule] = useState(false);
+
+  async function changeSchedule(hours: number) {
+    setSavingSchedule(true);
+    try {
+      await onAutomationSaved(hours);
+    } finally {
+      setSavingSchedule(false);
+    }
+  }
+
+  return (
+    <section className="page">
+      <div className="page-head">
+        <h1 className="detail-title">Playlists</h1>
+        <button className="button" onClick={() => void onSyncNow()} disabled={loading}>
+          Sync playlists now
+        </button>
+      </div>
+      <p className="lede small">
+        Each playlist gets its own tab in the Library. Add videos to a playlist on YouTube and they&apos;re pulled in on the
+        next sync, then processed through your profile plus that playlist&apos;s focus.
+      </p>
+
+      <div className="schedule-row">
+        <label htmlFor="sync-every">Automatic sync</label>
+        <select
+          id="sync-every"
+          value={automation ? String(automation.sync_every_hours) : "8"}
+          disabled={savingSchedule}
+          onChange={(event) => void changeSchedule(Number(event.target.value))}
+        >
+          {SYNC_CHOICES.map((choice) => (
+            <option key={choice.value} value={String(choice.value)}>{choice.label}</option>
+          ))}
+        </select>
+        <span className="schedule-note">{syncScheduleText(automation)}</span>
+      </div>
+
+      <AddPlaylistForm onAdded={onPlaylistsChanged} />
+
+      <div className="playlist-cards">
+        {playlists.map((playlist) => (
+          <PlaylistEditor playlist={playlist} onSave={onPlaylistSaved} key={playlist.playlist_id} />
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function ProfilePanel({
   health,
   workerStatus,
   readiness,
   profile,
   profilePrompt,
-  playlists,
-  onPlaylistSaved,
-  onPlaylistsChanged,
   onProfileSaved,
   onOpenUsage
 }: {
@@ -1009,9 +1210,6 @@ function SettingsPanel({
   readiness: Readiness | null;
   profile: Profile;
   profilePrompt: string;
-  playlists: Playlist[];
-  onPlaylistSaved: (playlistId: string, updates: PlaylistUpdate) => Promise<Playlist>;
-  onPlaylistsChanged: () => Promise<void>;
   onProfileSaved: (profile: Profile, prompt: string) => void;
   onOpenUsage: () => void;
 }) {
@@ -1047,70 +1245,53 @@ function SettingsPanel({
 
   return (
     <section className="page">
-      <h1 className="detail-title">Settings</h1>
+      <h1 className="detail-title">My profile</h1>
+      <p className="lede small">Every video is read through this. It decides which insights count as important to you.</p>
 
-      <section className="block settings-block">
-        <h2 className="section-title">Your profile</h2>
-        <p className="lede small">Every video is read through this. It decides which insights count as important to you.</p>
-        <form className="settings-form" onSubmit={saveProfile}>
-          <div className="field">
-            <label htmlFor="profile-name">Name</label>
-            <input id="profile-name" value={draft.display_name || ""} onChange={(event) => update("display_name", event.target.value)} placeholder="Your name" />
-          </div>
-          <div className="field">
-            <label htmlFor="profile-email">Email</label>
-            <input id="profile-email" type="email" value={draft.email || ""} onChange={(event) => update("email", event.target.value)} placeholder="you@example.com" />
-          </div>
-          <div className="field span-2">
-            <label htmlFor="profile-about">About you</label>
-            <textarea id="profile-about" value={draft.about_me || ""} onChange={(event) => update("about_me", event.target.value)} placeholder="Who you are, what you're building, what you're working towards…" />
-          </div>
-          <div className="field span-2">
-            <label htmlFor="profile-interests">Insights that matter to you</label>
-            <textarea id="profile-interests" value={draft.interests || ""} onChange={(event) => update("interests", event.target.value)} placeholder="Tools and workflows I can use, pricing, client delivery, automation ideas…" />
-          </div>
-          <div className="field span-2">
-            <label htmlFor="profile-style">How insights should be written</label>
-            <textarea id="profile-style" value={draft.insight_style || ""} onChange={(event) => update("insight_style", event.target.value)} placeholder="Specific and practical: steps, numbers, links, examples. No generic summaries." />
-          </div>
-          <div className="field span-2">
-            <label htmlFor="profile-known">What you already know</label>
-            <textarea id="profile-known" value={draft.known_topics || ""} onChange={(event) => update("known_topics", event.target.value)} placeholder="Topics to skip unless the video adds something new…" />
-          </div>
-          <label className="check-row span-2">
-            <input
-              type="checkbox"
-              checked={draft.personalize_extractions !== false}
-              onChange={(event) => update("personalize_extractions", event.target.checked)}
-            />
-            Use this profile when writing insights
-          </label>
-          <div className="form-actions span-2">
-            <button className="button" disabled={saving}>{saving ? "Saving…" : "Save profile"}</button>
-            {message ? <span className="form-message">{message}</span> : null}
-          </div>
-        </form>
-        {profilePrompt ? (
-          <details className="card">
-            <summary>See exactly what the AI is told about you</summary>
-            <pre>{profilePrompt}</pre>
-          </details>
-        ) : null}
-      </section>
-
-      <section className="block settings-block">
-        <h2 className="section-title">Playlists</h2>
-        <p className="lede small">
-          New videos in these YouTube playlists are pulled in every morning and processed automatically. Each playlist&apos;s
-          focus is added to your profile for its videos.
-        </p>
-        <div className="index">
-          {playlists.map((playlist) => (
-            <PlaylistEditor playlist={playlist} onSave={onPlaylistSaved} key={playlist.playlist_id} />
-          ))}
+      <form className="settings-form profile-form" onSubmit={saveProfile}>
+        <div className="field">
+          <label htmlFor="profile-name">Name</label>
+          <input id="profile-name" value={draft.display_name || ""} onChange={(event) => update("display_name", event.target.value)} placeholder="Your name" />
         </div>
-        <AddPlaylistForm onAdded={onPlaylistsChanged} />
-      </section>
+        <div className="field">
+          <label htmlFor="profile-email">Email</label>
+          <input id="profile-email" type="email" value={draft.email || ""} onChange={(event) => update("email", event.target.value)} placeholder="you@example.com" />
+        </div>
+        <div className="field span-2">
+          <label htmlFor="profile-about">About you</label>
+          <textarea id="profile-about" value={draft.about_me || ""} onChange={(event) => update("about_me", event.target.value)} placeholder="Who you are, what you're building, what you're working towards…" />
+        </div>
+        <div className="field span-2">
+          <label htmlFor="profile-interests">Insights that matter to you</label>
+          <textarea id="profile-interests" value={draft.interests || ""} onChange={(event) => update("interests", event.target.value)} placeholder="Tools and workflows I can use, pricing, client delivery, automation ideas…" />
+        </div>
+        <div className="field span-2">
+          <label htmlFor="profile-style">How insights should be written</label>
+          <textarea id="profile-style" value={draft.insight_style || ""} onChange={(event) => update("insight_style", event.target.value)} placeholder="Specific and practical: steps, numbers, links, examples. No generic summaries." />
+        </div>
+        <div className="field span-2">
+          <label htmlFor="profile-known">What you already know</label>
+          <textarea id="profile-known" value={draft.known_topics || ""} onChange={(event) => update("known_topics", event.target.value)} placeholder="Topics to skip unless the video adds something new…" />
+        </div>
+        <label className="check-row span-2">
+          <input
+            type="checkbox"
+            checked={draft.personalize_extractions !== false}
+            onChange={(event) => update("personalize_extractions", event.target.checked)}
+          />
+          Use this profile when writing insights
+        </label>
+        <div className="form-actions span-2">
+          <button className="button" disabled={saving}>{saving ? "Saving…" : "Save profile"}</button>
+          {message ? <span className="form-message">{message}</span> : null}
+        </div>
+      </form>
+      {profilePrompt ? (
+        <details className="card">
+          <summary>See exactly what the AI is told about you</summary>
+          <pre>{profilePrompt}</pre>
+        </details>
+      ) : null}
 
       <section className="block settings-block">
         <h2 className="section-title">System</h2>
@@ -1143,20 +1324,18 @@ function AddPlaylistForm({ onAdded }: { onAdded: () => Promise<void> }) {
     setBusy(true);
     setMessage(null);
     try {
-      const processNow = Number(form.get("processNow") || 3);
       const result = await api.createPlaylist({
         url: String(form.get("url") || ""),
         name: String(form.get("name") || ""),
         kind: String(form.get("kind") || "general") as "general" | "podcast",
-        extraction_focus: String(form.get("focus") || ""),
-        process_now: processNow
+        extraction_focus: String(form.get("focus") || "")
       });
       await onAdded();
       formElement.reset();
-      const count = result.video_count != null ? ` (${result.video_count} videos)` : "";
+      const count = result.video_count != null ? ` with ${result.video_count} videos` : "";
       setMessage({
         tone: "",
-        text: `Added “${result.item.name}”${count}. Syncing now — ${processNow ? `the first ${processNow} will be processed` : "videos are only being listed"}; the rest follow in the daily sync.`
+        text: `Added “${result.item.name}”${count}. It now has its own Library tab, and its videos are being queued — follow them in Queue.`
       });
     } catch (exc) {
       setMessage({ tone: "error", text: exc instanceof Error ? exc.message : "Could not add the playlist." });
@@ -1167,9 +1346,12 @@ function AddPlaylistForm({ onAdded }: { onAdded: () => Promise<void> }) {
 
   if (!open) {
     return (
-      <button className="ghost add-playlist-toggle" onClick={() => setOpen(true)}>
-        {iconPlus()} Add a playlist
-      </button>
+      <div className="add-playlist-bar">
+        <button className="ghost" onClick={() => setOpen(true)}>
+          {iconPlus()} New playlist
+        </button>
+        {message ? <p className={`notice ${message.tone}`}>{message.text}</p> : null}
+      </div>
     );
   }
 
@@ -1192,13 +1374,8 @@ function AddPlaylistForm({ onAdded }: { onAdded: () => Promise<void> }) {
         </select>
       </div>
       <div className="field span-2">
-        <label htmlFor="pl-focus">Focus for this playlist (optional)</label>
+        <label htmlFor="pl-focus">Focus for this playlist</label>
         <textarea id="pl-focus" name="focus" placeholder="For this playlist, prioritize…" />
-      </div>
-      <div className="field">
-        <label htmlFor="pl-now">Process right away</label>
-        <input id="pl-now" name="processNow" type="number" min="0" max="20" defaultValue="3" />
-        <small>Oldest videos first. 0 only lists them.</small>
       </div>
       <div className="form-actions span-2">
         <button className="button" disabled={busy}>{busy ? "Checking the playlist…" : "Add playlist"}</button>
@@ -1233,7 +1410,8 @@ function PlaylistEditor({
         name: draft.name || "",
         kind: draft.kind,
         extraction_focus: draft.extraction_focus || "",
-        enabled: draft.enabled !== false
+        enabled: draft.enabled !== false && Number(draft.enabled) !== 0,
+        queue_paused: Boolean(Number(draft.queue_paused || 0))
       });
       setDraft(saved);
       setMessage("Saved.");
@@ -1244,18 +1422,20 @@ function PlaylistEditor({
     }
   }
 
-  const paused = playlist.enabled === false || Number(playlist.enabled) === 0;
+  const syncing = playlist.enabled !== false && Number(playlist.enabled) !== 0;
+  const paused = Boolean(Number(playlist.queue_paused || 0));
   return (
-    <details className="entry">
+    <details className="playlist-card" open>
       <summary>
-        <span className="entry-title">{playlist.name || playlist.playlist_id}</span>
-        <span className="leader" aria-hidden="true" />
-        <span className="entry-count">
-          {playlist.kind === "podcast" ? "podcasts" : "videos"} · {playlist.done_count ?? 0}/{playlist.video_count ?? 0} done{paused ? " · paused" : ""}
+        <span className="playlist-card-title">{playlist.name || playlist.playlist_id}</span>
+        <span className="playlist-card-meta">
+          {playlist.kind === "podcast" ? "Podcasts" : "Videos"} · {playlist.done_count ?? 0} of {playlist.video_count ?? 0} done
+          {!syncing ? " · not syncing" : ""}
+          {paused ? " · processing paused" : ""}
         </span>
         {iconChevron()}
       </summary>
-      <form className="settings-form entry-body" onSubmit={submit}>
+      <form className="settings-form" onSubmit={submit}>
         <div className="field">
           <label htmlFor={`${playlist.playlist_id}-name`}>Name</label>
           <input id={`${playlist.playlist_id}-name`} value={draft.name || ""} onChange={(event) => setDraft((current) => ({ ...current, name: event.target.value }))} />
@@ -1271,16 +1451,27 @@ function PlaylistEditor({
           <label htmlFor={`${playlist.playlist_id}-focus`}>Focus for this playlist</label>
           <textarea id={`${playlist.playlist_id}-focus`} value={draft.extraction_focus || ""} onChange={(event) => setDraft((current) => ({ ...current, extraction_focus: event.target.value }))} placeholder="For this playlist, prioritize…" />
         </div>
-        <label className="check-row span-2">
+        <label className="check-row">
           <input
             type="checkbox"
             checked={draft.enabled !== false && Number(draft.enabled) !== 0}
             onChange={(event) => setDraft((current) => ({ ...current, enabled: event.target.checked }))}
           />
-          Include in the daily sync
+          Pull in new videos on sync
+        </label>
+        <label className="check-row">
+          <input
+            type="checkbox"
+            checked={Boolean(Number(draft.queue_paused || 0))}
+            onChange={(event) => setDraft((current) => ({ ...current, queue_paused: event.target.checked }))}
+          />
+          Pause processing (videos wait in Queue)
         </label>
         <div className="form-actions span-2">
           <button className="button" disabled={saving}>{saving ? "Saving…" : "Save playlist"}</button>
+          <a className="text-button" href={`https://www.youtube.com/playlist?list=${playlist.playlist_id}`} target="_blank" rel="noreferrer">
+            Open on YouTube ↗
+          </a>
           {message ? <span className="form-message">{message}</span> : null}
         </div>
       </form>
@@ -1313,11 +1504,20 @@ function iconQueue() {
   );
 }
 
-function iconSettings() {
+function iconPlaylists() {
   return (
     <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <path d="M12 15.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Z" stroke="currentColor" strokeWidth="1.7" />
-      <path d="M19 12a7 7 0 0 0-.1-1.1l2-1.5-2-3.4-2.4 1a7 7 0 0 0-1.9-1.1L14.3 3h-4.6l-.4 2.9A7 7 0 0 0 7.5 7l-2.4-1-2 3.4 2 1.5A7 7 0 0 0 5 12c0 .4 0 .8.1 1.1l-2 1.5 2 3.4 2.4-1a7 7 0 0 0 1.9 1.1l.4 2.9h4.6l.4-2.9a7 7 0 0 0 1.9-1.1l2.4 1 2-3.4-2-1.5c.1-.3.1-.7.1-1.1Z" stroke="currentColor" strokeWidth="1.3" strokeLinejoin="round" />
+      <path d="M4 6h11M4 11h11M4 16h7" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+      <path d="M17 13.5v6l4.5-3-4.5-3Z" fill="currentColor" />
+    </svg>
+  );
+}
+
+function iconProfile() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <circle cx="12" cy="8.5" r="3.5" stroke="currentColor" strokeWidth="1.7" />
+      <path d="M5 19.5c1.3-3.2 4-4.8 7-4.8s5.7 1.6 7 4.8" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
     </svg>
   );
 }

@@ -29,6 +29,12 @@ export type Playlist = {
   enabled?: boolean | number;
   video_count?: number;
   done_count?: number;
+  queue_paused?: boolean | number;
+};
+
+export type Automation = {
+  sync_every_hours: number;
+  last_auto_sync_at: string | null;
 };
 
 export type Profile = {
@@ -73,6 +79,9 @@ export type Job = {
   progress?: string;
   max_attempts?: number;
   video_title?: string;
+  playlist_id?: string;
+  playlist_name?: string;
+  playlist_paused?: number;
 };
 
 export type UsageSlot = {
@@ -173,20 +182,26 @@ export const api = {
   videos: () => request<{ items: Video[] }>("/videos?limit=200"),
   video: (id: string) => request<{ item: Video; jobs: Job[]; agenda_lens: AgendaLens }>(`/videos/${id}`),
   playlists: () => request<{ items: Playlist[] }>("/playlists"),
-  savePlaylist: (id: string, updates: Partial<Pick<Playlist, "name" | "description" | "kind" | "extraction_focus" | "enabled">>) =>
+  savePlaylist: (id: string, updates: Partial<Pick<Playlist, "name" | "description" | "kind" | "extraction_focus" | "enabled" | "queue_paused">>) =>
     request<{ ok: boolean; item: Playlist }>(`/playlists/${encodeURIComponent(id)}`, {
       method: "PATCH",
       body: JSON.stringify(updates)
     }),
-  createPlaylist: (input: { url: string; name: string; kind: "general" | "podcast"; extraction_focus: string; process_now: number }) =>
+  createPlaylist: (input: { url: string; name: string; kind: "general" | "podcast"; extraction_focus: string }) =>
     request<{ ok: boolean; item: Playlist; video_count: number | null; job: Job }>("/playlists", {
       method: "POST",
       body: JSON.stringify(input)
     }),
-  syncPlaylists: (maxProcess: number) =>
+  syncPlaylists: () =>
     request<{ ok: boolean; job: Job }>("/playlists/sync", {
       method: "POST",
-      body: JSON.stringify({ max_process: maxProcess })
+      body: JSON.stringify({})
+    }),
+  automation: () => request<Automation>("/settings/automation"),
+  saveAutomation: (syncEveryHours: number) =>
+    request<Automation>("/settings/automation", {
+      method: "POST",
+      body: JSON.stringify({ sync_every_hours: syncEveryHours })
     }),
   profile: () => request<ProfileResponse>("/settings/profile"),
   saveProfile: (profile: Profile) =>
@@ -199,7 +214,7 @@ export const api = {
       method: "POST",
       body: JSON.stringify({ overwrite })
     }),
-  jobs: () => request<{ items: Job[] }>("/jobs?limit=30"),
+  jobs: () => request<{ items: Job[] }>("/jobs?limit=100"),
   workerStatus: () => request<WorkerStatus>("/worker/status"),
   usage: () => request<UsageReport>("/usage"),
   readiness: () => request<Readiness>("/readiness"),

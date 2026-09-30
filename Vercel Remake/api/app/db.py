@@ -146,6 +146,7 @@ def ensure_job_schema() -> None:
         )
         cur.execute("ALTER TABLE knowledge_jobs ADD COLUMN IF NOT EXISTS run_after TIMESTAMPTZ")
         cur.execute("ALTER TABLE knowledge_jobs ADD COLUMN IF NOT EXISTS progress TEXT NOT NULL DEFAULT ''")
+        cur.execute("ALTER TABLE playlists ADD COLUMN IF NOT EXISTS queue_paused INTEGER NOT NULL DEFAULT 0")
         cur.execute(
             "CREATE INDEX IF NOT EXISTS knowledge_jobs_status_created_idx "
             "ON knowledge_jobs(status, created_at)"
@@ -454,11 +455,13 @@ def agenda_lens_for_video(
 
 
 def list_playlists() -> list[dict[str, Any]]:
+    ensure_job_schema()
     with connect() as conn:
         cur = conn.cursor()
         cur.execute(
             """
             SELECT p.playlist_id, p.name, p.description, p.kind, p.extraction_focus, p.enabled, p.created_at,
+                   COALESCE(p.queue_paused, 0) AS queue_paused,
                    COUNT(v.video_id) AS video_count,
                    COUNT(v.video_id) FILTER (WHERE v.status = 'done') AS done_count
             FROM playlists p
@@ -505,7 +508,9 @@ def update_playlist(
     kind: str | None = None,
     extraction_focus: str | None = None,
     enabled: bool | None = None,
+    queue_paused: bool | None = None,
 ) -> dict[str, Any] | None:
+    ensure_job_schema()
     fields: list[str] = []
     values: list[Any] = []
     updates = {
@@ -514,6 +519,7 @@ def update_playlist(
         "kind": kind,
         "extraction_focus": extraction_focus,
         "enabled": None if enabled is None else int(bool(enabled)),
+        "queue_paused": None if queue_paused is None else int(bool(queue_paused)),
     }
     for key, value in updates.items():
         if value is not None:
@@ -541,7 +547,8 @@ def update_playlist(
             UPDATE playlists
             SET {", ".join(fields)}
             WHERE playlist_id = %s
-            RETURNING playlist_id, name, description, kind, extraction_focus, enabled, created_at
+            RETURNING playlist_id, name, description, kind, extraction_focus, enabled, created_at,
+                      COALESCE(queue_paused, 0) AS queue_paused
             """,
             values,
         )
@@ -704,9 +711,13 @@ def list_jobs(video_id: str | None = None, limit: int = 50) -> list[dict[str, An
         params: list[Any] = [video_id] if video_id else []
         cur.execute(
             f"""
-            SELECT j.*, COALESCE(v.title, '') AS video_title
+            SELECT j.*, COALESCE(v.title, '') AS video_title,
+                   COALESCE(v.playlist_id, '') AS playlist_id,
+                   COALESCE(p.name, '') AS playlist_name,
+                   COALESCE(p.queue_paused, 0) AS playlist_paused
             FROM knowledge_jobs j
             LEFT JOIN videos v ON v.video_id = j.video_id
+            LEFT JOIN playlists p ON p.playlist_id = v.playlist_id
             {where}
             ORDER BY j.updated_at DESC
             LIMIT %s
@@ -1008,3 +1019,29 @@ def usage_report() -> dict[str, Any]:
         "day": today,
         "published_at": state.get("_published_at"),
     }
+
+
+def get_meta(key: str, default: str = "") -> str:
+    with connect() as conn:
+        cur = conn.cursor()
+        cur.execute("SELECT value FROM meta WHERE key = %s", (key,))
+        row = cur.fetchone()
+        return row["value"] if row else default
+
+
+def set_meta(key: str, value: str) -> None:
+    with connect() as conn:
+        cur = conn.cursor()
+        cur.execute(
+            "INSERT INTO meta (key, value) VALUES (%s, %s) ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value",
+            (key, value),
+        )
+
+
+def automation_settings() -> dict[str, Any]:
+    try:
+        hours = float(get_meta("sync_every_hours", "8") or 8)
+    except ValueError:
+        hours = 8.0
+    last = get_meta("last_auto_sync_at", "") or None
+    return {"sync_every_hours": hours, "last_auto_sync_at": last}

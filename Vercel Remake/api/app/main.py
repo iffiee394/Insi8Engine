@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-import hmac
-import os
 
 from typing import Literal
 
@@ -46,7 +44,11 @@ class ProcessRequest(BaseModel):
 
 
 class PlaylistSyncRequest(BaseModel):
-    max_process: int | None = Field(default=3, ge=0, le=50)
+    max_process: int | None = Field(default=None, ge=0, le=500)
+
+
+class AutomationRequest(BaseModel):
+    sync_every_hours: float = Field(ge=0, le=168)
 
 
 class PlaylistUpdateRequest(BaseModel):
@@ -55,6 +57,7 @@ class PlaylistUpdateRequest(BaseModel):
     kind: Literal["general", "podcast"] | None = None
     extraction_focus: str | None = None
     enabled: bool | None = None
+    queue_paused: bool | None = None
 
 
 class PlaylistCreateRequest(BaseModel):
@@ -62,7 +65,7 @@ class PlaylistCreateRequest(BaseModel):
     name: str = ""
     kind: Literal["general", "podcast"] = "general"
     extraction_focus: str = ""
-    process_now: int = Field(default=3, ge=0, le=20)
+    process_now: int | None = Field(default=None, ge=0, le=500)
 
 
 class ProviderKeysRequest(BaseModel):
@@ -203,6 +206,7 @@ def update_playlist(playlist_id: str, req: PlaylistUpdateRequest) -> dict:
         kind=req.kind,
         extraction_focus=req.extraction_focus.strip() if isinstance(req.extraction_focus, str) else None,
         enabled=req.enabled,
+        queue_paused=req.queue_paused,
     )
     if not item:
         raise HTTPException(status_code=404, detail="Playlist not found")
@@ -217,25 +221,20 @@ def sync_playlists(req: PlaylistSyncRequest) -> dict:
     return {"ok": True, "job": job}
 
 
-@app.get("/cron/sync-playlists")
-def cron_sync_playlists(request: Request) -> dict:
-    secret = os.getenv("CRON_SECRET", "").strip()
-    if not secret:
-        raise HTTPException(status_code=503, detail="CRON_SECRET is not configured")
-    supplied = request.headers.get("authorization", "")
-    if not hmac.compare_digest(supplied, f"Bearer {secret}"):
-        raise HTTPException(status_code=401, detail="Unauthorized")
-    existing = db.active_playlist_sync()
-    if existing:
-        return {"ok": True, "skipped": True, "job": existing}
-    max_process = int(os.getenv("CRON_SYNC_MAX_PROCESS", "3"))
-    job = db.enqueue_playlist_sync(max_process, source="cron")
-    return {"ok": True, "skipped": False, "job": job}
-
-
 @app.get("/usage")
 def usage() -> dict:
     return db.usage_report()
+
+
+@app.get("/settings/automation")
+def get_automation() -> dict:
+    return db.automation_settings()
+
+
+@app.post("/settings/automation")
+def save_automation(req: AutomationRequest) -> dict:
+    db.set_meta("sync_every_hours", str(req.sync_every_hours))
+    return db.automation_settings()
 
 
 @app.get("/worker/status")
